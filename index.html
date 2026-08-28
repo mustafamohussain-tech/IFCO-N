@@ -148,6 +148,25 @@
     transition: border-color 0.2s, box-shadow 0.2s;
   }
   input::placeholder, textarea::placeholder { color: var(--text-mute); }
+  .pwd-wrap { position: relative; }
+  .pwd-wrap input[type="password"], .pwd-wrap input[type="text"] { padding-left: 46px; }
+  .pwd-toggle {
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border: none;
+    background: transparent;
+    color: var(--text-mute);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+  }
+  .pwd-toggle:hover { color: var(--text-dim); background: var(--bg-1); }
   select { appearance: auto; }
   /* التكستارية وحدها تضل بزاوية مدوّرة عادية مو دائرة كاملة — نفس
      الملف الأصلي بالضبط (شكل capsule ما يناسب صندوق متعدد الأسطر). */
@@ -1025,7 +1044,12 @@
       <input type="text" id="loginUser" autocomplete="off">
 
       <label for="loginPass">كلمة المرور</label>
-      <input type="password" id="loginPass" autocomplete="off">
+      <div class="pwd-wrap">
+        <input type="password" id="loginPass" autocomplete="off">
+        <button type="button" class="pwd-toggle" id="loginPassToggle" onclick="togglePasswordVisibility()" aria-label="إظهار كلمة المرور">
+          <svg viewBox="0 0 24 24" fill="none" width="19" height="19"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/></svg>
+        </button>
+      </div>
 
       <label class="checkbox-item" style="margin-top:10px;">
         <input type="checkbox" id="loginRemember" checked> تذكرني على هذا الجهاز
@@ -1438,7 +1462,11 @@
       },
       {
         label: 'التقارير',
-        items: (!isMarketingManager() ? [
+        // تصحيح صلاحيات: أول 3 عناصر (تقارير الزيارات، الأداء، الخريطة الحية)
+        // ما كان عليهم أي فحص صلاحية — أي دور غير "مدير تسويق" يشوفهم، شامل
+        // المندوب نفسه. الحين مقصورة على الإدارة/المشرف/المالك، متل باقي
+        // عناصر هذي القائمة (نفس نمط canPlan()/isManagement()/isOwner()).
+        items: ((canPlan() || isManagement() || isOwner()) ? [
           { id: 'p-reportsVisits', label: 'عرض تقارير الزيارات الميدانية', fn: goPanel(buildReportsPanel) },
           { id: 'p-reportsPeriod', label: 'تقرير الأداء (يومي / فترة)', fn: goPanel(buildPeriodPanel) },
           { id: 'p-map', label: 'خريطة نقاط البيع (حيّة)', fn: goPanel(buildMapPanel) },
@@ -1859,6 +1887,17 @@
       }
     });
     return values;
+  }
+
+  const EYE_OPEN_SVG = '<svg viewBox="0 0 24 24" fill="none" width="19" height="19"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/></svg>';
+  const EYE_OFF_SVG = '<svg viewBox="0 0 24 24" fill="none" width="19" height="19"><path d="M3 3l18 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M10.6 5.2A10.6 10.6 0 0112 5c6.4 0 10 7 10 7a17.6 17.6 0 01-3.2 4.1M6.6 6.6C4 8.3 2 12 2 12s3.6 7 10 7c1.4 0 2.6-.3 3.7-.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.9 10a3 3 0 004.1 4.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function togglePasswordVisibility() {
+    const input = document.getElementById('loginPass');
+    const btn = document.getElementById('loginPassToggle');
+    const showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    btn.innerHTML = showing ? EYE_OPEN_SVG : EYE_OFF_SVG;
+    btn.setAttribute('aria-label', showing ? 'إظهار كلمة المرور' : 'إخفاء كلمة المرور');
   }
 
   const SESSION_KEY = 'savedSession';
@@ -8223,6 +8262,9 @@
         saveStore(storeNameToSave, phoneToSave, areaToSave);
         incrementVisit(repToSave);
         logActivePointVisit(repToSave, visitDetails);
+        // عدادات الشاشة الرئيسية (زيارات/نقاط اليوم) تتحدّث فورًا بعد أي
+        // إرسال ناجح — بدون ما ننتظر المندوب يرجع للشاشة الرئيسية بنفسه.
+        updateHomeStats();
         const wasRouteVisit = isRouteVisit;
         showToast(wasRouteVisit ? 'تم إنهاء الزيارة بنجاح' : 'تم إرسال الزيارة بنجاح', 'success');
         successMsg.innerHTML = wasRouteVisit ? 'تم إنهاء الزيارة بنجاح <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : 'تم إرسال البيانات بنجاح <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
