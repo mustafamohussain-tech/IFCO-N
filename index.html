@@ -9,71 +9,78 @@
 <title>نظام تسجيل الزيارات - ifco</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Baloo+Bhaijaan+2:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   /* ══════════════════════════════════════════════════════════════════
-     IFCO — نظام هوية بصرية جديد كليًا (V50)
-     الفكرة: "خط السير" هو جوهر المنتج — مندوب يمشي طريق حقيقي بين نقاط
-     بيع. لذلك اخترنا لغة بصرية مستوحاة من الطريق والإشارات المرورية:
-       • برتقالي إشارة (--accent) للفعل والحركة والـCTA — عالي الوضوح
-         تحت الشمس، مناسب لعمل ميداني بالخارج.
-       • أخضر-صنوبري عميق (--pine) للهيكل والثقة (الهيدر/الشريط الجانبي).
-       • ورقة دافئة (--paper) بدل الرمادي البارد التقليدي لواجهات SaaS —
-         تقرأ بوضوح أكبر بضوء الشمس المباشر من الأبيض الفاقع أو الرمادي
-         الأزرق.
-       • خط Cairo يبقى الأساس (عربي هندسي واضح) + JetBrains Mono للأرقام
-         التفصيلية (مسافات/عدادات) — إحساس "كمبيوتر رحلة" دقيق ومقروء.
-     كل أسماء الـclasses/IDs محفوظة 100% — هذا تجديد بصري فقط، الهيكل
-     والمنطق البرمجي لم يتغيّر. ═══════════════════════════════════════ */
+     IFCO — هوية بصرية V56: تطبيق نظام تصميم "Organic" الجاهز
+     هذا مو تصميم مبتكر مني — هذا تطبيق حرفي لملف تصميم جاهز زوّدني
+     إياه المستخدم (نظام إدارة المبيعات والمندوبين/IFCO - نظام متابعة
+     الزبائن.dc.html + styles.css المرفق)، بكل توكناته بالضبط:
+       • أرضية كريمية دافئة (#f5ead8) + نص شبه أسود (#201e1d).
+       • لون أساسي واحد: تراكوتا (--accent #c67139) — للأزرار والروابط
+         والتأكيد. النظام الأصلي نفسه يحذّر: هذا اللون يعدّي 3:1 بس
+         (مناسب لأيقونات ونص كبير)، فأي نص صغير أو زر معبّى بخلفيته
+         لازم ياخذ الدرجة الغامقة --accent-dark (#8c491a، تعدّي 6.8:1).
+       • لون ثاني واحد بس: سيج/زيتوني (--pine كدرجته الغامقة للهيكل،
+         --teal كدرجته الوسط للاستخدام الثانوي) — ماكو ألوان ثالثة
+         (لا بنفسجي ولا أزرق ولا أحمر منفصل)؛ حتى "الخطر/التحذير" بهذا
+         النظام يرجع لعائلة التراكوتا الغامقة (--accent-800) مو لون أحمر
+         منفصل — نفس اختيار الملف الأصلي بالضبط.
+       • خط العناوين Baloo Bhaijaan 2 (عريض ومدوّر) فوق Cairo للنص
+         العادي — نفس زوج الخطوط بالملف الأصلي.
+       • كل شي مدوّر لحد الدائرة الكاملة (999px) على الأزرار والحقول
+         والشارات؛ البطاقات تاخذ زوايا كبيرة بس مو دائرية بالكامل.
+     كل أسماء الـclasses/IDs محفوظة 100% — هذا تجديد بصري فقط. */
   :root {
-    --bg-0: #f4f1e8;
-    --bg-1: #faf8f2;
+    --bg-0: #f5ead8;
+    --bg-1: #ebddc5;
     --bg-2: #ffffff;
-    --card: #ffffff;
-    --card-hi: #f0ebdc;
-    --line: #e2dbc7;
-    --line-soft: #ece6d6;
+    --card: #f9f4ed;
+    --card-hi: #eee7db;
+    --line: #dcd3c4;
+    --line-soft: #eee7db;
 
-    --accent: #ff5a1f;
-    --accent-2: #e34d18;
-    --accent-dark: #b83c10;
-    --accent-glow: rgba(255,90,31,0.22);
+    --accent-vivid: #c67139;
+    --accent: #8c491a;
+    --accent-2: #b2622d;
+    --accent-dark: #643312;
+    --accent-glow: rgba(198,113,57,0.22);
 
-    --pine: #0e4b43;
-    --pine-2: #0a3934;
-    --pine-dark: #072925;
-    --pine-glow: rgba(14,75,67,0.18);
+    --pine: #272e1b;
+    --pine-2: #3d472b;
+    --pine-dark: #1a1f12;
+    --pine-glow: rgba(39,46,27,0.16);
 
-    --teal: #0e9f86;
-    --amber: #c9820a;
-    --danger: #d33b2c;
-    --green: #1e9e5a;
+    --teal: #56633f;
+    --violet: #3d472b;
+    --violet-2: #272e1b;
+    --amber: #8c491a;
+    --danger: #643312;
+    --green: #56633f;
 
-    --ink: #17231f;
-    --paper: #f4f1e8;
-    --text: #17231f;
-    --text-dim: #675f4f;
-    --text-mute: #9c9481;
+    --ink: #201e1d;
+    --paper: #f5ead8;
+    --text: #201e1d;
+    --text-dim: #645c50;
+    --text-mute: #6f675a;
 
     --font-body: 'Cairo', 'Tahoma', 'Segoe UI', sans-serif;
-    --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+    --font-heading: 'Baloo Bhaijaan 2', 'Cairo', 'Tahoma', sans-serif;
+    --font-mono: 'Cairo', 'Tahoma', 'Segoe UI', sans-serif;
 
     --sp-1: 8px; --sp-2: 12px; --sp-3: 16px; --sp-4: 24px;
-    --r-sm: 10px; --r-md: 14px; --r-lg: 20px;
+    --r-sm: 12px; --r-md: 16px; --r-lg: 26px;
 
     --sidebar-w: 300px;
   }
   * { box-sizing: border-box; }
+  h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: 700; }
   body {
     margin: 0;
     font-family: var(--font-body);
-    background:
-      radial-gradient(1100px 560px at 84% -8%, #ffe4d1 0%, transparent 58%),
-      radial-gradient(900px 520px at -8% 6%, #e4efe9 0%, transparent 55%),
-      linear-gradient(160deg, #f6f3ea 0%, #efe9da 100%);
-    background-attachment: fixed;
+    background: var(--bg-0);
     color: var(--text);
     min-height: 100vh;
     display: flex;
@@ -85,9 +92,9 @@
     max-width: 460px;
     background: var(--card);
     border: 1px solid var(--line);
-    border-radius: 22px;
+    border-radius: var(--r-lg);
     padding: 24px 20px 28px;
-    box-shadow: 0 22px 48px -22px rgba(30,17,4,0.45);
+    box-shadow: 0 22px 48px -22px rgba(32,30,29,0.35);
     animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1);
   }
   .company-logo {
@@ -130,9 +137,9 @@
   select,
   textarea {
     width: 100%;
-    padding: 14px 15px;
+    padding: 14px 20px;
     border: 1.5px solid var(--line);
-    border-radius: 12px;
+    border-radius: 999px;
     font-size: 16px;
     font-family: inherit;
     background: var(--bg-2);
@@ -142,6 +149,9 @@
   }
   input::placeholder, textarea::placeholder { color: var(--text-mute); }
   select { appearance: auto; }
+  /* التكستارية وحدها تضل بزاوية مدوّرة عادية مو دائرة كاملة — نفس
+     الملف الأصلي بالضبط (شكل capsule ما يناسب صندوق متعدد الأسطر). */
+  textarea { border-radius: var(--r-md); padding: 12px 16px; }
   input:focus,
   select:focus,
   textarea:focus {
@@ -151,6 +161,15 @@
   }
   input:disabled { opacity: 0.5; }
 
+  /* حلقة تركيز موحّدة بهوية النظام لكل عنصر تفاعلي — بدل حلقة المتصفح
+     الافتراضية (عادة زرقاء) اللي ما تنسجم مع البرتقالي/الصنوبري. ما
+     نلمس :focus (اللي بالأعلى للحقول له تصميمه الخاص عبر box-shadow)،
+     هذي فقط لعناصر ما إلها تصميم focus مخصص أصلاً (أزرار، روابط). */
+  button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
   .geo-row { display: flex; gap: 10px; margin-top: 22px; align-items: center; }
   .geo-btn {
     flex: 1;
@@ -158,7 +177,7 @@
     color: var(--teal);
     border: 1px solid rgba(14,159,134,0.35);
     padding: 13px;
-    border-radius: 12px;
+    border-radius: 999px;
     font-size: 14px;
     font-weight: bold;
     cursor: pointer;
@@ -170,7 +189,7 @@
   .field-hint { font-size: 11px; color: var(--text-mute); margin-top: 5px; }
 
   .coords { display: flex; gap: 10px; margin-top: 10px; }
-  .coords input { background: var(--bg-1); color: var(--text-mute); font-size: 13px; font-family: var(--font-mono); }
+  .coords input { background: var(--bg-1); color: var(--text-mute); font-size: 13px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
   .submit-btn {
     width: 100%;
@@ -179,7 +198,7 @@
     color: #fff;
     border: none;
     padding: 18px;
-    border-radius: 14px;
+    border-radius: 999px;
     font-size: 17px;
     font-weight: 800;
     cursor: pointer;
@@ -200,9 +219,9 @@
     text-align: center;
     font-size: 12px;
     color: var(--amber);
-    background: rgba(201,130,10,0.12);
-    border: 1px solid rgba(201,130,10,0.35);
-    border-radius: 10px;
+    background: rgba(140,73,26,0.12);
+    border: 1px solid rgba(140,73,26,0.35);
+    border-radius: var(--r-md);
     padding: 9px;
   }
   .visit-counter {
@@ -211,9 +230,9 @@
     font-size: 13px;
     font-weight: bold;
     color: var(--pine);
-    background: rgba(14,75,67,0.1);
-    border: 1px solid rgba(14,75,67,0.3);
-    border-radius: 10px;
+    background: rgba(39,46,27,0.08);
+    border: 1px solid rgba(39,46,27,0.25);
+    border-radius: var(--r-md);
     padding: 10px;
   }
 
@@ -223,10 +242,10 @@
     margin-top: 16px;
     display: none;
     padding: 11px;
-    border-radius: 10px;
+    border-radius: var(--r-md);
   }
-  .msg.success { color: var(--green); background: rgba(30,158,90,0.12); border: 1px solid rgba(30,158,90,0.3); }
-  .msg.error { color: var(--danger); background: rgba(211,59,44,0.12); border: 1px solid rgba(211,59,44,0.3); }
+  .msg.success { color: var(--green); background: rgba(86,99,63,0.12); border: 1px solid rgba(86,99,63,0.3); }
+  .msg.error { color: var(--danger); background: rgba(100,51,18,0.12); border: 1px solid rgba(100,51,18,0.3); }
 
   .checkbox-group {
     display: grid;
@@ -243,7 +262,7 @@
     margin: 0;
     padding: 10px 11px;
     border: 1px solid var(--line);
-    border-radius: 11px;
+    border-radius: var(--r-md);
     background: var(--bg-1);
     color: var(--text);
     cursor: pointer;
@@ -257,16 +276,16 @@
     accent-color: var(--accent);
     flex-shrink: 0;
   }
-  .repeat-mode-tabs { display: flex; gap: 6px; background: var(--card-hi); border-radius: 12px; padding: 3px; margin: 10px 0; }
-  .repeat-mode-tab { flex: 1; background: none; border: none; padding: 9px; border-radius: 9px; font-size: 12.5px;
+  .repeat-mode-tabs { display: flex; gap: 6px; background: var(--card-hi); border-radius: 999px; padding: 3px; margin: 10px 0; }
+  .repeat-mode-tab { flex: 1; background: none; border: none; padding: 9px; border-radius: 999px; font-size: 12.5px;
     font-weight: 700; color: var(--text-mute); cursor: pointer; font-family: inherit; }
-  .repeat-mode-tab.on { background: #fff; color: var(--accent); box-shadow: 0 3px 10px -6px rgba(30,17,4,.25); }
+  .repeat-mode-tab.on { background: #fff; color: var(--accent); box-shadow: 0 3px 10px -6px rgba(32,30,29,.2); }
   .specific-day-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
   .specific-day-row input[type="date"] { flex: 1; }
-  .remove-day-btn { background: rgba(211,59,44,0.12); color: var(--danger); border: none; width: 34px; height: 34px;
-    border-radius: 10px; font-size: 14px; cursor: pointer; flex-shrink: 0; }
-  .add-day-btn { width: 100%; background: rgba(255,90,31,0.08); color: var(--accent); border: 1.5px dashed var(--accent);
-    padding: 10px; border-radius: 12px; font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 4px; }
+  .remove-day-btn { background: rgba(100,51,18,0.12); color: var(--danger); border: none; width: 34px; height: 34px;
+    border-radius: 999px; font-size: 14px; cursor: pointer; flex-shrink: 0; }
+  .add-day-btn { width: 100%; background: rgba(140,73,26,0.07); color: var(--accent); border: 1.5px dashed var(--accent);
+    padding: 10px; border-radius: 999px; font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 4px; }
   #reasonWrapper { display: none; }
 
   .home-btn {
@@ -275,10 +294,10 @@
     justify-content: center;
     gap: 8px;
     width: 100%;
-    padding: 19px;
+    padding: 19px 26px;
     margin-top: 13px;
     border: 1px solid var(--line);
-    border-radius: 16px;
+    border-radius: 999px;
     font-size: 16px;
     font-weight: 700;
     cursor: pointer;
@@ -300,8 +319,8 @@
     color: var(--accent);
     flex-shrink: 0;
   }
-  .home-btn.secondary > svg:first-child { color: var(--pine); }
-  .home-btn.admin > svg:first-child { color: #8b5cf6; }
+  .home-btn.secondary > svg:first-child { color: var(--teal); }
+  .home-btn.admin > svg:first-child { color: var(--violet); }
   .home-btn.secondary {
     background: var(--bg-1);
     box-shadow: none;
@@ -309,14 +328,14 @@
   }
   .home-btn.secondary:hover {
     background: var(--card);
-    border-color: var(--pine);
+    border-color: var(--teal);
   }
   .home-btn.admin {
     background: var(--bg-1);
     box-shadow: none;
     border-color: var(--line-soft);
   }
-  .home-btn.admin:hover { border-color: #a78bff; background: var(--card); }
+  .home-btn.admin:hover { border-color: var(--violet); background: var(--card); }
 
   .back-btn {
     display: inline-flex;
@@ -330,7 +349,7 @@
     font-family: inherit;
     cursor: pointer;
     padding: 10px 18px;
-    border-radius: 12px;
+    border-radius: 999px;
     margin-bottom: 18px;
     transition: background 0.2s, transform 0.15s, border-color 0.2s;
   }
@@ -338,24 +357,30 @@
   .back-btn:active { transform: scale(0.96); }
   .back-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.5; }
 
-  /* شريط تنقّل (Breadcrumb) — يبقى ظاهر بأعلى كل شاشات لوحة الإدارة،
-     ويرجّع الموظف لواجهته الرئيسية (الداشبورد) بضغطة وحدة من أي عمق
-     وصله بالتنقّل، بدل ما يدوس "رجوع" أكثر من مرة. */
-  .crumb-bar {
-    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-    font-size: 12.5px; color: var(--text-mute); margin-bottom: 14px;
-    padding-bottom: 12px; border-bottom: 1px solid var(--line-soft);
+  /* هيدر ثابت بأعلى كل شاشات لوحة الإدارة — نفس بنية <header> بملف
+     design_reference.dc.html بالضبط: عنوان + وصف على جهة، وأدوات
+     (شارة الصلاحية/الجرس/خروج) على الجهة الثانية. full-bleed لحواف
+     البطاقة عبر هامش سالب يلغي حشوتها (.card padding: 24px 20px). */
+  .app-header {
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(245,234,216,.92); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    margin: -24px -20px 20px; padding: 14px 20px;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
   }
-  .crumb-home {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: none; border: none; padding: 4px 2px; margin: -4px -2px;
-    font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--pine);
-    cursor: pointer; border-radius: 6px; transition: color 0.15s;
+  .app-header-title { font-family: var(--font-heading); font-size: clamp(18px,2.2vw,22px); line-height: 1.25; }
+  .app-header-sub { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
+  .role-badge {
+    font-size: 12px; font-weight: 700; color: var(--text-dim);
+    background: var(--bg-1); border: 1.5px solid var(--line); border-radius: 999px; padding: 8px 14px;
   }
-  .crumb-home:hover { color: var(--accent); }
-  .crumb-home svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
-  .crumb-sep { color: var(--text-mute); font-size: 11px; }
-  .crumb-here { color: var(--text-dim); font-weight: 600; }
+  .header-ghost-btn {
+    height: 38px; padding: 0 16px; border-radius: 999px; border: 1.5px solid var(--line);
+    background: var(--bg-1); color: var(--text); font-family: inherit; font-size: 12.5px; font-weight: 700;
+    cursor: pointer;
+  }
+  .header-ghost-btn:hover { background: var(--card-hi); }
 
   /* شريط أدوات لوحة المؤشرات — فلتر الفترة الزمنية + زر تخصيص الأقسام
      الظاهرة. تفضيلات المستخدم (الفترة + الأقسام) تُحفظ محليًا بالجهاز
@@ -377,15 +402,15 @@
 
   .route-card {
     border: 1px solid var(--line);
-    border-radius: 15px;
+    border-radius: var(--r-md);
     padding: 15px;
     margin-top: 12px;
     background: var(--bg-1);
     animation: fadeUp 0.5s backwards;
   }
   .route-card.visited-card {
-    background: linear-gradient(135deg, rgba(30,158,90,0.1), var(--bg-1));
-    border-color: rgba(30,158,90,0.4);
+    background: linear-gradient(135deg, rgba(86,99,63,0.12), var(--bg-1));
+    border-color: rgba(86,99,63,0.4);
   }
   .route-card-title {
     font-size: 15px;
@@ -410,7 +435,7 @@
   #routeList { position: relative; padding-right: 32px; counter-reset: stop; }
   #routeList::before {
     content: ""; position: absolute; right: 13px; top: 8px; bottom: 8px; width: 3px;
-    background: linear-gradient(180deg, var(--accent) 0%, var(--pine) 100%);
+    background: linear-gradient(180deg, var(--accent-vivid) 0%, var(--pine) 100%);
     -webkit-mask-image: linear-gradient(var(--ink) 55%, transparent 0%);
     mask-image: linear-gradient(var(--ink) 55%, transparent 0%);
     -webkit-mask-size: 3px 9px; mask-size: 3px 9px; -webkit-mask-repeat: repeat-y; mask-repeat: repeat-y;
@@ -439,15 +464,15 @@
     text-align: center;
     text-decoration: none;
     padding: 10px;
-    border-radius: 10px;
+    border-radius: 999px;
     font-size: 13px;
     font-weight: bold;
     transition: transform 0.15s;
   }
   .nav-btn:active { transform: scale(0.95); }
-  .waze-btn { background: rgba(14,75,67,0.12); color: var(--pine); }
-  .gmaps-btn { background: rgba(30,158,90,0.14); color: var(--green); }
-  .call-btn { background: rgba(14,159,134,0.14); color: var(--teal); }
+  .waze-btn { background: rgba(39,46,27,0.1); color: var(--pine); }
+  .gmaps-btn { background: rgba(86,99,63,0.14); color: var(--green); }
+  .call-btn { background: rgba(86,99,63,0.14); color: var(--teal); }
 
   @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -474,18 +499,23 @@
 
   /* Home hero band — لمسة "لافتة طريق": تدرّج صنوبري عميق + خطوط طريق
      متقطعة خفيفة تعبر الخلفية، إشارة بصرية لعالم الطرق والمسارات. */
+  /* هيدر الترحيب — دوائر ناعمة متراكبة بدل خطوط، نفس لغة "Organic"
+     بالضبط (دوائر/فقاعات كديكور، لا أنماط هندسية حادة). */
   .home-hero {
-    background:
-      repeating-linear-gradient(-35deg, rgba(255,255,255,0.055) 0 2px, transparent 2px 26px),
-      linear-gradient(135deg, var(--pine) 0%, var(--pine-dark) 100%);
+    background: linear-gradient(135deg, var(--pine) 0%, var(--pine-dark) 100%);
     border: 1px solid var(--line);
-    border-radius: 18px;
+    border-radius: var(--r-lg);
     padding: 20px 18px 22px;
     text-align: center;
     position: relative;
     overflow: hidden;
     margin-bottom: 0;
-    box-shadow: 0 16px 34px -16px rgba(7,41,37,0.55);
+    box-shadow: 0 16px 34px -16px rgba(39,46,27,0.5);
+  }
+  .home-hero::before {
+    content: ''; position: absolute; inset: auto -60px -90px auto;
+    width: 220px; height: 220px; border-radius: 999px;
+    background: var(--pine-2); opacity: .6; z-index: 0;
   }
   .home-hero h1 { color: #fff; }
   .home-hero .sub { color: rgba(255,255,255,0.82) !important; }
@@ -493,7 +523,8 @@
     position: absolute;
     top: -70%; right: -20%;
     width: 240px; height: 240px;
-    background: radial-gradient(circle, rgba(255,90,31,0.28) 0%, transparent 70%);
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(198,113,57,0.28) 0%, transparent 70%);
     animation: floaty 6s ease-in-out infinite;
     z-index: 0;
   }
@@ -515,7 +546,7 @@
   .hero-stat:nth-child(2) { animation-delay: 0.1s; }
   .hs-ic { display: flex; align-items: center; justify-content: center; color: var(--accent); }
   .hs-num {
-    font-family: var(--font-mono);
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
     font-size: 26px; font-weight: 700; margin-top: 3px; color: var(--accent);
   }
   .hs-lbl { font-size: 11.5px; color: var(--text-dim); margin-top: 1px; }
@@ -526,10 +557,10 @@
     width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; font-size: 22px;
   }
-  .hb-blue { background: rgba(47,124,224,0.15); color: #2f7ce0; }
-  .hb-green { background: rgba(14,75,67,0.13); color: var(--pine); }
-  .hb-purple { background: rgba(139,92,246,0.15); color: #8b5cf6; }
-  .hb-amber { background: rgba(201,130,10,0.15); color: var(--amber); }
+  .hb-blue { background: rgba(140,73,26,0.12); color: var(--accent); }
+  .hb-green { background: rgba(86,99,63,0.13); color: var(--green); }
+  .hb-purple { background: rgba(61,71,43,0.14); color: var(--violet); }
+  .hb-amber { background: rgba(140,73,26,0.12); color: var(--amber); }
   .hb-txt { flex: 1; display: flex; flex-direction: column; }
   .hb-t { font-size: 15px; font-weight: 700; }
   .hb-s { font-size: 12px; color: var(--text-dim); font-weight: normal; margin-top: 2px; }
@@ -545,7 +576,7 @@
   }
   #splash .splash-logo {
     background: #fff; padding: 18px 28px; border-radius: 20px;
-    box-shadow: 0 16px 40px -12px rgba(7,41,37,0.7);
+    box-shadow: 0 16px 40px -12px rgba(39,46,27,0.7);
     animation: pop 0.6s cubic-bezier(0.22,1,0.36,1);
   }
   #splash .splash-logo img { display: block; max-width: 130px; height: auto; }
@@ -561,7 +592,7 @@
   .top-app-bar {
     position: fixed; top: 0; right: 0; left: 0; height: 54px; z-index: 900;
     display: none; align-items: center; justify-content: flex-start; padding: 0 14px;
-    background: rgba(250,248,242,0.9); backdrop-filter: blur(10px);
+    background: rgba(249,244,237,0.9); backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--line);
   }
   body.logged-in .top-app-bar { display: flex; }
@@ -580,59 +611,74 @@
   .menu-toggle span::after { position: absolute; top: 6px; }
 
   .sidebar-backdrop {
-    position: fixed; inset: 0; background: rgba(9,15,12,.5); z-index: 950;
+    position: fixed; inset: 0; background: rgba(46,43,37,.5); z-index: 950;
     opacity: 0; pointer-events: none; transition: opacity .2s ease;
   }
   .sidebar-backdrop.open { opacity: 1; pointer-events: auto; }
 
   .sidebar {
     position: fixed; top: 0; bottom: 0; right: 0; width: min(var(--sidebar-w), 86vw);
-    background: var(--card); z-index: 960; box-shadow: -18px 0 40px -20px rgba(7,41,37,.45);
+    background: var(--pine); color: rgba(245,234,216,.9); z-index: 960;
+    box-shadow: -18px 0 40px -20px rgba(39,46,27,.45);
     transform: translateX(100%); transition: transform .25s cubic-bezier(.22,1,.36,1);
     display: flex; flex-direction: column;
   }
   .sidebar.open { transform: translateX(0); }
   .sidebar-head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: var(--sp-3); border-bottom: 1px solid var(--line); flex-shrink: 0;
-    background: linear-gradient(120deg, var(--pine) 0%, var(--pine-dark) 100%); color: #fff;
+    display: flex; align-items: center; gap: 11px;
+    padding: 22px 16px 10px; flex-shrink: 0;
   }
-  .sidebar-head b { font-size: 15px; }
-  .sidebar-head .who { font-size: 11.5px; color: rgba(255,255,255,0.75); margin-top: 2px; }
   .sidebar-close {
-    width: 34px; height: 34px; border-radius: var(--r-sm); border: 1px solid rgba(255,255,255,0.3);
+    width: 32px; height: 32px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.3);
     background: rgba(255,255,255,0.12); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
-  .sidebar-body { flex: 1; overflow-y: auto; padding: var(--sp-2); }
-
-  .side-cat { margin-bottom: 4px; }
-  .side-cat-btn {
-    width: 100%; display: flex; align-items: center; justify-content: space-between;
-    background: none; border: none; padding: 13px var(--sp-2); border-radius: var(--r-sm);
-    font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--ink); cursor: pointer;
-    text-align: right;
+  .sidebar-body { flex: 1; overflow-y: auto; padding: 10px 16px; }
+  .sidebar-user {
+    display: flex; align-items: center; gap: 10px; background: rgba(245,234,216,.09);
+    border-radius: var(--r-md); padding: 10px 12px; margin: 0 16px 16px; flex-shrink: 0;
   }
-  .side-cat-btn:hover { background: var(--bg-1); }
-  .side-cat-btn .chev { transition: transform .18s ease; color: var(--text-mute); flex-shrink: 0; }
-  .side-cat.open .side-cat-btn .chev { transform: rotate(90deg); }
-  .side-cat.open .side-cat-btn { color: var(--accent); }
-  .side-items { max-height: 0; overflow: hidden; transition: max-height .22s ease; }
-  .side-cat.open .side-items { max-height: 600px; }
+  .sidebar-user b { font-size: 13px; font-weight: 600; color: #fff; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sidebar-user .who { font-size: 11.5px; color: rgba(255,255,255,0.7); margin-top: 1px; }
+  .sidebar-user-av {
+    width: 34px; height: 34px; border-radius: 999px; background: var(--pine-2); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0;
+  }
+
+  /* أكورديون بحركة: تضغط عنوان القسم ("خط السير") تنفتح تفرعاته
+     بانزلاق ناعم (max-height)، تضغط ثانية تنطوي. كل قسم مستقل. */
+  .side-cat { margin-bottom: 6px; display: flex; flex-direction: column; }
+  .side-cat-label {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    background: none; border: none; padding: 10px 12px; border-radius: var(--r-md);
+    font-family: inherit; font-size: 12px; letter-spacing: .04em;
+    color: rgba(245,234,216,.75); font-weight: 700; cursor: pointer; text-align: right;
+  }
+  .side-cat-label:hover { background: rgba(245,234,216,.08); }
+  .side-cat-chev { transition: transform .2s ease; flex-shrink: 0; opacity: .8; }
+  .side-cat.open .side-cat-chev { transform: rotate(90deg); }
+  /* الفتح/الطي بحركة تلاشي+انزلاق خفيف (opacity+transform) بدل
+     max-height — أوثق وما يعتمد على قياس ارتفاع المحتوى. display
+     نفسه يتحكم فيه الجافاسكربت (يتزامن مع مدة الانتقال .18s). */
+  .side-items {
+    opacity: 0; transform: translateY(-4px);
+    transition: opacity .18s ease, transform .18s ease;
+  }
+  .side-items-inner { display: flex; flex-direction: column; gap: 2px; }
   .side-item {
     display: block; width: 100%; text-align: right; background: none; border: none;
-    font-family: inherit; font-size: 13px; color: var(--text-dim); cursor: pointer;
-    padding: 10px 14px 10px 10px; border-radius: var(--r-sm);
-    border-right: 2px solid var(--line-soft); margin-inline-start: 14px;
+    font-family: inherit; font-size: 13.5px; font-weight: 600; color: inherit; cursor: pointer;
+    padding: 10px 12px 10px 20px; border-radius: var(--r-md);
   }
-  .side-item:hover { color: var(--accent); background: var(--bg-1); border-color: var(--accent); }
+  .side-item:hover { background: rgba(245,234,216,.1); }
+  .side-item.active { background: var(--accent); color: #fff; }
 
   /* Toast */
   .toast {
     position: fixed; top: 64px; left: 50%;
     transform: translateX(-50%) translateY(-90px);
     color: #fff; padding: 13px 22px; border-radius: 12px;
-    font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px -8px rgba(7,41,37,0.5);
+    font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px -8px rgba(39,46,27,0.5);
     z-index: 1500; opacity: 0; transition: all 0.4s cubic-bezier(0.22,1,0.36,1);
     display: flex; align-items: center; gap: 8px; max-width: 90%;
   }
@@ -653,7 +699,7 @@
     border-radius: 20px; transition: width 0.8s cubic-bezier(0.22,1,0.36,1); }
 
   /* Ripple */
-  .ripple-el { position: absolute; border-radius: 50%; background: rgba(255,90,31,0.3);
+  .ripple-el { position: absolute; border-radius: 50%; background: rgba(198,113,57,0.3);
     transform: scale(0); animation: rip 0.6s ease-out; pointer-events: none; }
   @keyframes rip { to { transform: scale(4); opacity: 0; } }
 
@@ -722,18 +768,11 @@
   .rep-tab:active { transform: scale(0.96); }
   .kpis { display: flex; gap: 8px; margin: 10px 0 6px; }
 
-  /* ── شاشة الحاسوب: قائمة جانبية ثابتة بدل نافذة منزلقة، مو مجرد تكبير.
-     نفس النمط المستخدم بلوحات التحكم العالمية (Linear/Stripe/Vercel):
-     القائمة تضل ظاهرة دايمًا على اليمين، والمحتوى ياخذ العرض الباقي. */
+  /* ── القائمة الجانبية درج منسدل (Drawer) بكل المقاسات — حاسوب وهاتف
+     على حد سواء، حسب الطلب: زر ☰ يفتحها، ونفس الزر (أو الخلفية
+     المعتمة، أو X) يسكّرها. ما فيه "تثبيت دائم" بعد الحين حتى بعرض
+     حاسوب — القائمة تظهر فوق المحتوى (overlay) وتختفي بضغطة ثانية. */
   @media (min-width: 860px) {
-    body.logged-in { padding-top: 0; padding-right: var(--sidebar-w); }
-    body.logged-in .top-app-bar { display: none !important; }
-    /* مقصورة على body.logged-in — قبل تسجيل الدخول ما فيه currentAdmin
-       أصلاً (القائمة تطلع فاضية)، وما نريدها تظهر أو تاخذ مساحة بشاشة
-       الدخول. */
-    body.logged-in .sidebar { transform: none !important; box-shadow: none; border-inline-start: 1px solid var(--line); }
-    body.logged-in .sidebar-backdrop { display: none !important; }
-    body.logged-in .sidebar-close { display: none; }
     .card.wide-card { max-width: 1040px; }
     /* بطاقات KPI ما تنمط لعرض فاضي — تاخذ حجم مريح وتلزّق يمين بدل ما
        تنتشر على كامل العرض */
@@ -756,6 +795,66 @@
       break-inside: avoid; display: inline-block; width: 100%;
     }
   }
+
+  /* ── قوائم الأزرار الطويلة بالموبايل (buildAdminMenu/buildReportsMenu
+     وشبيهاتها) — شبكة "بطاقات إجراء سريع" ملوّنة بدل عمود أبيض طويل
+     رتيب. كل بطاقة تاخذ لون فئتها (البرتقالي الافتراضي / الصنوبري
+     secondary / البنفسجي admin) بخلفية متدرّجة خفيفة + أيقونة بحجم أكبر
+     داخل "چيب" ملوّن + دخول متدرّج (stagger) بلمسة حياة، مو مجرد صفوف
+     رمادية متطابقة. الأيقونات هنا SVG مباشرة داخل الزر (بدون .hb-ic
+     wrapper) — عاملناها بالـCSS مباشرة. */
+  @media (max-width: 859px) {
+    #adminContent:has(.home-btn:nth-of-type(3)) {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn {
+      flex-direction: column; text-align: center; padding: 18px 10px 16px;
+      margin-top: 0; gap: 10px; min-height: 122px; justify-content: center;
+      border-radius: 16px; border-width: 1.5px;
+      background: linear-gradient(165deg, rgba(140,73,26,0.07) 0%, var(--card) 68%);
+      border-color: rgba(140,73,26,0.2);
+      box-shadow: 0 12px 24px -18px rgba(140,73,26,0.4);
+      animation: fadeUp 0.4s cubic-bezier(.22,1,.36,1) backwards;
+    }
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn.secondary {
+      background: linear-gradient(165deg, rgba(86,99,63,0.08) 0%, var(--card) 68%);
+      border-color: rgba(86,99,63,0.22);
+      box-shadow: 0 12px 24px -18px rgba(86,99,63,0.35);
+    }
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn.admin {
+      background: linear-gradient(165deg, rgba(61,71,43,0.1) 0%, var(--card) 68%);
+      border-color: rgba(61,71,43,0.26);
+      box-shadow: 0 12px 24px -18px rgba(61,71,43,0.4);
+    }
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn:nth-child(1) { animation-delay: 0s; }
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn:nth-child(2) { animation-delay: .04s; }
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn:nth-child(3) { animation-delay: .08s; }
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn:nth-child(4) { animation-delay: .12s; }
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn:nth-child(n+5) { animation-delay: .16s; }
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn:active { transform: scale(0.95); }
+
+    /* الأيقونة تكبر وتاخذ "چيب" مدوّر بلون فئتها — بدل خط رفيع فاقد للوزن */
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn > svg:first-child {
+      width: 26px !important; height: 26px !important;
+      box-sizing: content-box; padding: 11px; border-radius: 14px;
+      background: rgba(140,73,26,0.12); color: var(--accent) !important;
+    }
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn.secondary > svg:first-child {
+      background: rgba(86,99,63,0.14); color: var(--teal) !important;
+    }
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn.admin > svg:first-child {
+      background: rgba(61,71,43,0.16); color: var(--violet) !important;
+    }
+
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn .hb-txt { align-items: center; }
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn .hb-t { font-size: 13px; line-height: 1.35; }
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn .hb-s,
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn .hb-arrow { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn { animation: none; }
+  }
+
   .kpi {
     flex: 1; background: var(--card); border: 1px solid var(--line);
     border-radius: 12px; padding: 11px 6px; text-align: center;
@@ -799,9 +898,9 @@
     display: inline-block; font-size: 11px; font-weight: 600;
     padding: 3px 9px; border-radius: 20px; margin: 3px 3px 0 0;
   }
-  .p-green { background: rgba(30,158,90,0.13); color: var(--green); }
-  .p-amber { background: rgba(201,130,10,0.13); color: var(--amber); }
-  .p-red { background: rgba(211,59,44,0.13); color: var(--danger); }
+  .p-green { background: rgba(86,99,63,0.13); color: var(--green); }
+  .p-amber { background: rgba(140,73,26,0.13); color: var(--amber); }
+  .p-red { background: rgba(100,51,18,0.13); color: var(--danger); }
   .warn-line { color: var(--danger); font-weight: 600; font-size: 12.5px; margin-top: 5px; }
 
   /* زر "لديه عارضة" — تبديل دائري مخصص */
@@ -839,18 +938,18 @@
   .hist-card.hist-green { border-inline-start-color: var(--green); }
   .hist-card.hist-amber { border-inline-start-color: var(--amber); }
   .hist-card.hist-red { border-inline-start-color: var(--danger); }
-  .hist-card.hist-purple { border-inline-start-color: #8b5cf6; }
+  .hist-card.hist-purple { border-inline-start-color: var(--violet); }
   .hist-top { display: flex; justify-content: space-between; align-items: center; }
   .hist-title { font-size: 13.5px; font-weight: 700; }
-  .hist-time { font-size: 11px; color: var(--text-mute); font-family: var(--font-mono); }
+  .hist-time { font-size: 11px; color: var(--text-mute); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
   .hist-status {
     display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px;
     border-radius: 20px; margin-top: 6px;
   }
-  .hist-status-green { background: rgba(30,158,90,0.13); color: var(--green); }
-  .hist-status-amber { background: rgba(201,130,10,0.13); color: var(--amber); }
-  .hist-status-red { background: rgba(211,59,44,0.13); color: var(--danger); }
-  .hist-status-purple { background: rgba(139,92,246,0.13); color: #8b5cf6; }
+  .hist-status-green { background: rgba(86,99,63,0.13); color: var(--green); }
+  .hist-status-amber { background: rgba(140,73,26,0.13); color: var(--amber); }
+  .hist-status-red { background: rgba(100,51,18,0.13); color: var(--danger); }
+  .hist-status-purple { background: rgba(61,71,43,0.13); color: var(--violet); }
   .hist-status-gray { background: var(--bg-1); color: var(--text-dim); }
   .hist-detail { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
   .hist-note {
@@ -938,20 +1037,26 @@
 
     <!-- ADMIN PANEL VIEW -->
     <div id="adminView" style="display:none;">
-      <div class="crumb-bar">
-        <button type="button" class="crumb-home" onclick="goToMyHome()"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7M6 10v9a1 1 0 001 1h3v-6h4v6h3a1 1 0 001-1v-9" stroke-linecap="round" stroke-linejoin="round"/></svg> الرئيسية</button>
-        <span class="crumb-sep">›</span>
-        <span class="crumb-here" id="crumbHere">لوحة الإدارة</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <button type="button" class="back-btn" onclick="adminLogout()"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M15 3H8a2 2 0 00-2 2v14a2 2 0 002 2h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 12H9M15 8l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> تسجيل الخروج</button>
-        <button type="button" id="notifBell" onclick="toggleNotifPanel()" style="display:none;position:relative;width:40px;height:40px;border-radius:12px;background:var(--bg-1);border:1px solid var(--line);font-size:18px;cursor:pointer;flex-shrink:0;">
-          <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M6 9a6 6 0 1112 0c0 5 2 6 2 6H4s2-1 2-6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 19a2 2 0 004 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span id="notifBadge" style="display:none;position:absolute;top:-4px;left:-4px;min-width:17px;height:17px;padding:0 3px;background:var(--danger);border-radius:20px;border:2px solid #fff;font-size:9.5px;color:#fff;font-weight:700;align-items:center;justify-content:center;line-height:1;"></span>
-        </button>
+      <!-- هيدر ثابت (sticky) بعرض كامل — نفس بنية <header> بملف
+           design_reference.dc.html بالضبط: عنوان الشاشة + وصفها على
+           جهة، وشارة الصلاحية + الجرس + تسجيل الخروج على الجهة الثانية.
+           الهامش السالب يلغي حشوة .card حتى يوصل الهيدر لحواف البطاقة
+           تمامًا (full-bleed) متل التصميم. -->
+      <div class="app-header">
+        <div style="flex:1;min-width:120px;">
+          <div class="app-header-title" id="pageTitleEl">لوحة الإدارة</div>
+          <div class="app-header-sub" id="pageSubEl"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span class="role-badge" id="roleBadge">—</span>
+          <button type="button" id="notifBell" onclick="toggleNotifPanel()" style="display:none;position:relative;width:38px;height:38px;border-radius:999px;background:var(--bg-1);border:1.5px solid var(--line);font-size:18px;cursor:pointer;flex-shrink:0;">
+            <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M6 9a6 6 0 1112 0c0 5 2 6 2 6H4s2-1 2-6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 19a2 2 0 004 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span id="notifBadge" style="display:none;position:absolute;top:-4px;left:-4px;min-width:17px;height:17px;padding:0 3px;background:var(--danger);border-radius:20px;border:2px solid #fff;font-size:9.5px;color:#fff;font-weight:700;align-items:center;justify-content:center;line-height:1;"></span>
+          </button>
+          <button type="button" class="header-ghost-btn" onclick="adminLogout()">تسجيل الخروج</button>
+        </div>
       </div>
       <div id="notifPanel" style="display:none;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:8px;"></div>
-      <h1>لوحة الإدارة</h1>
-      <p class="sub" id="adminWelcome"></p>
+      <p class="sub" id="adminWelcome" style="display:none;"></p>
       <div id="adminContent"></div>
     </div>
 
@@ -1256,6 +1361,25 @@
     highlightNav(view);
   }
 
+  // عنوان الهيدر الثابت يتحدّث أساسًا من عنوان رابط القائمة الجانبية
+  // اللي ضغطه المستخدم (مضبوط بمعالج onclick بالأسفل). هذا الفحص هون
+  // إضافي بس: بعض الشاشات (زي شاشات التقارير الفرعية اللي توصلها بزر
+  // "رجوع" لا من القائمة الجانبية) تبدأ بعنوان <h2> صريح — إذا انلقى،
+  // ناخذ منه العنوان الأدق؛ إذا مالقيناه نسيب العنوان متل ما هو (ما
+  // نرجّعه لعنوان عام، حتى ما نمسح عنوان صحيح مضبوط قبل شوي).
+  function syncPageTitle() {
+    const titleEl = document.getElementById('pageTitleEl');
+    const content = document.getElementById('adminContent');
+    if (!titleEl || !content) return;
+    const h2 = content.querySelector('h2');
+    if (h2) titleEl.textContent = h2.textContent.trim();
+  }
+  (function initPageTitleObserver() {
+    const target = document.getElementById('adminContent');
+    if (!target) return;
+    new MutationObserver(syncPageTitle).observe(target, { childList: true });
+  })();
+
   function highlightNav(view) {
     const map = { home: 'navHome', route: 'navRoute', form: 'navAdd', login: 'navAdmin', admin: 'navAdmin' };
     ['navHome', 'navRoute', 'navAdd', 'navAdmin'].forEach(function (id) {
@@ -1285,8 +1409,13 @@
   function buildSidebarMenu() {
     const nameEl = document.getElementById('sideWhoName');
     const roleEl = document.getElementById('sideWhoRole');
-    if (nameEl) nameEl.textContent = (currentAdmin && (currentAdmin.displayName || currentAdmin.username)) || '—';
+    const avEl = document.getElementById('sideAvatar');
+    const roleBadgeEl = document.getElementById('roleBadge');
+    const who = (currentAdmin && (currentAdmin.displayName || currentAdmin.username)) || '—';
+    if (nameEl) nameEl.textContent = who;
     if (roleEl) roleEl.textContent = (currentAdmin && currentAdmin.role) || '—';
+    if (avEl) avEl.textContent = who.trim().charAt(0) || '-';
+    if (roleBadgeEl) roleBadgeEl.textContent = (currentAdmin && currentAdmin.role) || '—';
 
     // ملاحظة: أزرار التنقّل هذي ما تسكّر القائمة الجانبية بعد الضغط —
     // تضل مفتوحة عشان يقدر المستخدم يتنقّل بين أكثر من قسم بسرعة بدون
@@ -1296,70 +1425,72 @@
     const goAdd = function () { openNewPointForm(); };
     const goPanel = function (fn) { return function () { fn(); showView('admin'); }; };
 
+    // نفس id لكل رابط زي مصفوفة NAV بملف design_reference.dc.html —
+    // نستخدمها بس لتحديد الرابط "النشط" (تلوين ممتلئ) بدل تعقّب فتح/طي.
     const categories = [
       {
         label: 'خط السير',
         items: [
-          canDoFieldWork() && { label: 'خط سيري لهذا اليوم', fn: goRoute },
-          canDoFieldWork() && { label: 'رفع نقطة بيع جديدة', fn: goAdd },
-          canPlan() && { label: 'تحديد وترتيب خطوط السير', fn: goPanel(buildSupervisorPanel) }
+          canDoFieldWork() && { id: 'go-route', label: 'خط سيري لهذا اليوم', fn: goRoute },
+          canDoFieldWork() && { id: 'go-newpoint', label: 'رفع نقطة بيع جديدة', fn: goAdd },
+          canPlan() && { id: 'p-routePlan', label: 'تحديد وترتيب خطوط السير', fn: goPanel(buildSupervisorPanel) }
         ].filter(Boolean)
       },
       {
         label: 'التقارير',
         items: (!isMarketingManager() ? [
-          { label: 'عرض تقارير الزيارات الميدانية', fn: goPanel(buildReportsPanel) },
-          { label: 'تقرير الأداء (يومي / فترة)', fn: goPanel(buildPeriodPanel) },
-          { label: 'خريطة نقاط البيع (حيّة)', fn: goPanel(buildMapPanel) },
-          !isOwner() && { label: 'سجل تفاعل الزبون', fn: goPanel(buildCustomerTimelinePanel) },
-          !isOwner() && { label: 'تحليل المنافسين جغرافيًا', fn: goPanel(buildCompetitorAnalysisPanel) },
-          canPlan() && { label: 'متابعة النقاط (أولوية + مهملة)', fn: goPanel(buildNeglectedPanel) },
-          canPlan() && { label: 'توزيع حالات الزبائن حسب المندوب', fn: goPanel(buildStatusByRepPanel) }
+          { id: 'p-reportsVisits', label: 'عرض تقارير الزيارات الميدانية', fn: goPanel(buildReportsPanel) },
+          { id: 'p-reportsPeriod', label: 'تقرير الأداء (يومي / فترة)', fn: goPanel(buildPeriodPanel) },
+          { id: 'p-map', label: 'خريطة نقاط البيع (حيّة)', fn: goPanel(buildMapPanel) },
+          !isOwner() && { id: 'p-customerTimeline', label: 'سجل تفاعل الزبون', fn: goPanel(buildCustomerTimelinePanel) },
+          !isOwner() && { id: 'p-competitorAnalysis', label: 'تحليل المنافسين جغرافيًا', fn: goPanel(buildCompetitorAnalysisPanel) },
+          canPlan() && { id: 'p-neglected', label: 'متابعة النقاط (أولوية + مهملة)', fn: goPanel(buildNeglectedPanel) },
+          canPlan() && { id: 'p-statusByRep', label: 'توزيع حالات الزبائن حسب المندوب', fn: goPanel(buildStatusByRepPanel) }
         ] : []).filter(Boolean)
       },
       {
         label: 'التسويق',
         items: [
-          canPlan() && { label: 'تحويل نقاط لمدير التسويق (تحتاج مروّج)', fn: goPanel(buildFlagPromoterPanel) },
-          (isMarketingManager() || isManagement()) && { label: 'تحديد خط سير المروّج', fn: goPanel(buildPromoterRoutePlanPanel) },
-          (isMarketingManager() || isManagement()) && { label: 'تقرير زيارات المروّج', fn: goPanel(buildPromoterVisitReport) },
-          (isMarketingManager() || isManagement()) && { label: 'الزبائن الذين لديهم عارضة', fn: goPanel(buildDisplayStandReport) }
+          canPlan() && { id: 'p-flagPromoter', label: 'تحويل نقاط لمدير التسويق (تحتاج مروّج)', fn: goPanel(buildFlagPromoterPanel) },
+          (isMarketingManager() || isManagement()) && { id: 'p-promoterRoutePlan', label: 'تحديد خط سير المروّج', fn: goPanel(buildPromoterRoutePlanPanel) },
+          (isMarketingManager() || isManagement()) && { id: 'p-promoterVisitReport', label: 'تقرير زيارات المروّج', fn: goPanel(buildPromoterVisitReport) },
+          (isMarketingManager() || isManagement()) && { id: 'p-displayStandReport', label: 'الزبائن الذين لديهم عارضة', fn: goPanel(buildDisplayStandReport) }
         ].filter(Boolean)
       },
       {
         label: 'الموارد البشرية',
         items: [
-          isRep() && { label: 'طلب إجازة', fn: goPanel(buildLeaveRequestPanel) },
-          canPlan() && { label: 'طلبات الإجازات', fn: goPanel(buildLeaveReviewPanel) },
-          (canPlan() || isManagement() || isOwner()) && { label: 'إجازات اليوم', fn: goPanel(buildLeavesTodayPanel) }
+          isRep() && { id: 'p-leaveRequest', label: 'طلب إجازة', fn: goPanel(buildLeaveRequestPanel) },
+          canPlan() && { id: 'p-leaveReview', label: 'طلبات الإجازات', fn: goPanel(buildLeaveReviewPanel) },
+          (canPlan() || isManagement() || isOwner()) && { id: 'p-leavesToday', label: 'إجازات اليوم', fn: goPanel(buildLeavesTodayPanel) }
         ].filter(Boolean)
       },
       {
         label: 'السائقين',
         items: [
-          canPlan() && { label: 'تخصيص السيارات للمندوبين', fn: goPanel(buildTruckAssignPanel) },
-          (isManagement() || isWarehouseKeeper()) && { label: 'حالة السيارات (كأمين المخزن)', fn: goPanel(buildWarehouseKeeperPanel) },
-          (canPlan() || isManagement() || isOwner()) && { label: 'تقرير السيارات والسائقين', fn: goPanel(buildTruckReportPanel) }
+          canPlan() && { id: 'p-truckAssign', label: 'تخصيص السيارات للمندوبين', fn: goPanel(buildTruckAssignPanel) },
+          (isManagement() || isWarehouseKeeper()) && { id: 'p-warehouseStatus', label: 'حالة السيارات (كأمين المخزن)', fn: goPanel(buildWarehouseKeeperPanel) },
+          (canPlan() || isManagement() || isOwner()) && { id: 'p-truckReport', label: 'تقرير السيارات والسائقين', fn: goPanel(buildTruckReportPanel) }
         ].filter(Boolean)
       },
       {
         label: 'الإدارة',
         items: isManagement() ? [
-          { label: 'تنظيف النقاط المكررة', fn: goPanel(buildDuplicateCleanupPanel) },
-          { label: 'إدارة الشركات المنافسة', fn: goPanel(buildCompetitorsPanel) },
-          { label: 'معرّفات الزبائن (ID)', fn: goPanel(buildCustomerIdPanel) },
-          { label: 'إعدادات الملخص الدوري', fn: goPanel(buildEmailSettingsPanel) },
-          { label: 'النسخ الاحتياطي', fn: goPanel(buildBackupPanel) },
-          { label: 'إعدادات الإشعارات', fn: goPanel(buildNotifSettingsPanel) },
-          { label: 'تصميم الفورمة (حقول إضافية)', fn: goPanel(buildFormBuilderMenu) },
-          { label: 'إجبار تحديث لكل المستخدمين', fn: function () { closeSidebar(); forceUpdateAllUsers(); } }
+          { id: 'p-duplicateCleanup', label: 'تنظيف النقاط المكررة', fn: goPanel(buildDuplicateCleanupPanel) },
+          { id: 'p-competitorsAdmin', label: 'إدارة الشركات المنافسة', fn: goPanel(buildCompetitorsPanel) },
+          { id: 'p-customerIds', label: 'معرّفات الزبائن (ID)', fn: goPanel(buildCustomerIdPanel) },
+          { id: 'p-emailSettings', label: 'إعدادات الملخص الدوري', fn: goPanel(buildEmailSettingsPanel) },
+          { id: 'p-backup', label: 'النسخ الاحتياطي', fn: goPanel(buildBackupPanel) },
+          { id: 'p-notifSettings', label: 'إعدادات الإشعارات', fn: goPanel(buildNotifSettingsPanel) },
+          { id: 'p-formBuilder', label: 'تصميم الفورمة (حقول إضافية)', fn: goPanel(buildFormBuilderMenu) },
+          { id: 'a-forceUpdate', label: 'إجبار تحديث لكل المستخدمين', fn: function () { forceUpdateAllUsers(); } }
         ] : []
       },
       {
         label: 'الحساب',
         items: [
-          { label: 'معلومات حسابي', fn: goPanel(buildAccountPanel) },
-          { label: 'تسجيل الخروج', fn: function () { closeSidebar(); adminLogout(); } }
+          { id: 'p-account', label: 'معلومات حسابي', fn: goPanel(buildAccountPanel) },
+          { id: 'a-logout', label: 'تسجيل الخروج', fn: function () { closeSidebar(); adminLogout(); } }
         ]
       }
     ];
@@ -1367,40 +1498,84 @@
     const body = document.getElementById('sidebarBody');
     if (!body) return;
 
-    // showView() يعيد بناء هذي القائمة بكل تنقّل (حتى تنعكس صلاحيات/حالة
-    // محدّثة)، وبدون هذا الحفظ كل الأقسام المفتوحة (مثل "الموارد
-    // البشرية") كانت ترجع تنطبق (تختفي عناصرها) بعد كل ضغطة على أي رابط
-    // بداخلها. نحفظ عناوين الأقسام المفتوحة قبل المسح، ونعيد فتحها بعد
-    // إعادة البناء — تضل مفتوحة لين المستخدم نفسه يسكّرها بالضغط عليها.
-    const openLabels = {};
-    body.querySelectorAll('.side-cat.open').forEach(function (el) {
-      const lbl = el.querySelector('.side-cat-btn span');
-      if (lbl) openLabels[lbl.textContent] = true;
-    });
+    // أكورديون: تضغط عنوان القسم ("خط السير" مثلاً) تنفرد تفرعاته
+    // بحركة انزلاق (max-height)، تضغط عليه ثانية تنطوي. كل قسم مستقل
+    // عن الباقي (تقدر تفتح أكثر من وحد بنفس الوقت). window._openCats
+    // يحفظ شنو مفتوح حاليًا حتى يضل الحال متل ما هو عبر كل إعادة بناء
+    // (buildSidebarMenu تنبني من جديد بكل تنقّل)، والقسم اللي فيه
+    // الرابط النشط ينفتح تلقائيًا أول مرة.
+    if (!window._openCats) window._openCats = {};
+    if (window._activeSideId) {
+      categories.forEach(function (cat) {
+        if (cat.items.some(function (it) { return it.id === window._activeSideId; })) {
+          window._openCats[cat.label] = true;
+        }
+      });
+    }
 
     body.innerHTML = '';
     categories.forEach(function (cat) {
       if (!cat.items.length) return;
+      const isOpen = !!window._openCats[cat.label];
       const wrap = document.createElement('div');
-      wrap.className = 'side-cat' + (openLabels[cat.label] ? ' open' : '');
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'side-cat-btn';
-      btn.innerHTML = '<span>' + esc(cat.label) + '</span><span class="chev">‹</span>';
+      wrap.className = 'side-cat' + (isOpen ? ' open' : '');
+      const label = document.createElement('button');
+      label.type = 'button';
+      label.className = 'side-cat-label';
+      label.innerHTML = '<span>' + esc(cat.label) + '</span><svg class="side-cat-chev" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>';
       const itemsBox = document.createElement('div');
       itemsBox.className = 'side-items';
+      const itemsInner = document.createElement('div');
+      itemsInner.className = 'side-items-inner';
+      label.onclick = function () {
+        const nowOpen = !window._openCats[cat.label];
+        window._openCats[cat.label] = nowOpen;
+        wrap.classList.toggle('open', nowOpen);
+        if (nowOpen) {
+          // نظهرها أول (display) وهي شفافة، وبعد فاصل صغير (setTimeout
+          // أوثق من requestAnimationFrame بعد تجربة فعلية) نشغّل
+          // الانتقال — لو غيّرنا display وopacity بنفس اللحظة ما تنحرّك.
+          itemsBox.style.display = 'flex';
+          void itemsBox.offsetHeight; // يفرض إعادة تخطيط قبل التحريك
+          setTimeout(function () {
+            itemsBox.style.opacity = '1';
+            itemsBox.style.transform = 'translateY(0)';
+          }, 10);
+        } else {
+          itemsBox.style.opacity = '0';
+          itemsBox.style.transform = 'translateY(-4px)';
+          setTimeout(function () {
+            if (!window._openCats[cat.label]) itemsBox.style.display = 'none';
+          }, 190);
+        }
+      };
       cat.items.forEach(function (it) {
         const ib = document.createElement('button');
         ib.type = 'button';
-        ib.className = 'side-item';
+        ib.className = 'side-item' + (window._activeSideId === it.id ? ' active' : '');
         ib.textContent = it.label;
-        ib.onclick = it.fn;
-        itemsBox.appendChild(ib);
+        ib.onclick = function () {
+          window._activeSideId = it.id;
+          window._activeSideLabel = it.label;
+          it.fn();
+          const t = document.getElementById('pageTitleEl');
+          if (t) t.textContent = it.label;
+        };
+        itemsInner.appendChild(ib);
       });
-      btn.onclick = function () { wrap.classList.toggle('open'); };
-      wrap.appendChild(btn);
+      itemsBox.appendChild(itemsInner);
+      wrap.appendChild(label);
       wrap.appendChild(itemsBox);
       body.appendChild(wrap);
+      // حالة العرض الابتدائية — بدون حركة (ما نريد "يتفتح" كل مرة
+      // تنبني القائمة، بس القسم اللي فيه الرابط النشط يطلع جاهز مفتوح).
+      if (isOpen) {
+        itemsBox.style.display = 'flex';
+        itemsBox.style.opacity = '1';
+        itemsBox.style.transform = 'translateY(0)';
+      } else {
+        itemsBox.style.display = 'none';
+      }
     });
   }
 
@@ -8133,17 +8308,31 @@
     <div class="menu-toggle" id="menuToggle" onclick="toggleSidebar()"><span></span></div>
   </div>
   <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+  <!-- نفس بنية <aside> بملف design_reference.dc.html بالضبط: شعار
+       "IF" + اسم النظام أعلى، nav بالنص، وبطاقة مستخدم (صورة رمزية +
+       اسم + صلاحية) بالأسفل. زر الإغلاق (X) بالزاوية للموبايل فقط —
+       الملف الأصلي معاينة تصميم ثابتة ما تحتاجه، بس تطبيقنا الحقيقي
+       يحتاج طريقة يسكّر فيها المستخدم الدرج المنزلق. -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-head">
-      <div>
-        <b id="sideWhoName">—</b>
-        <div class="who" id="sideWhoRole">—</div>
+      <div style="background:#fff;border-radius:12px;padding:5px 10px;display:flex;align-items:center;flex-shrink:0;box-shadow:0 2px 8px -2px rgba(0,0,0,.3);">
+        <img src="data:image/png;base64,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" alt="ifco" style="height:32px;display:block;">
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:11px;opacity:.65;color:#fff;">نظام تسجيل الزيارات</div>
       </div>
       <button type="button" class="sidebar-close" onclick="closeSidebar()" aria-label="إغلاق القائمة">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
     </div>
     <div class="sidebar-body" id="sidebarBody"></div>
+    <div class="sidebar-user">
+      <div class="sidebar-user-av" id="sideAvatar">-</div>
+      <div style="flex:1;min-width:0;">
+        <b id="sideWhoName">—</b>
+        <div class="who" id="sideWhoRole">—</div>
+      </div>
+    </div>
   </div>
 </body>
 </html>
