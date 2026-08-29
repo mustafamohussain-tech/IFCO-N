@@ -7343,10 +7343,12 @@
         .then(function (res) { return res.json(); })
         .then(function (data) {
           if (data.result !== 'success') {
+            list.innerHTML = ''; // يمسح بطاقات الهيكل (skeleton) — بدونه تضل معلّقة "تحمّل" للأبد
             status.innerHTML = '<span style="color:#d63d33;font-weight:600;">⚠️ خطأ من الخادم: ' + esc(data.error || 'استجابة غير متوقعة') + '</span>';
             return;
           }
         if (!data.rows || data.rows.length === 0) {
+          list.innerHTML = ''; // يمسح بطاقات الهيكل (skeleton) — بدونه تضل معلّقة "تحمّل" للأبد
           status.textContent = 'لا توجد نقاط مسجلة لك اليوم';
           return;
         }
