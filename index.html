@@ -8331,15 +8331,23 @@
         submitBtn.textContent = "إرسال البيانات";
       })
       .catch(function () {
-        // فشل اتصال حقيقي (لا يوجد نت) — هذا فقط يُحفظ بطابور الإرسال.
+        // فشل اتصال حقيقي (لا يوجد نت) — نحفظها بطابور الإرسال ونرسلها
+        // تلقائيًا أول ما يرجع النت (window.addEventListener('online', ...)).
         // ملاحظة: الفحص الصارم ضد التكرار ما يعاد وقت الإرسال التلقائي
         // لهذا الطابور — الاعتماد الأساسي هنا على فحص الواجهة قبل الحفظ محليًا.
+        //
+        // تصحيح تجربة الاستخدام: بطلب المستخدم، نخلي التجربة متطابقة تمامًا
+        // بين متصل/غير متصل — نفس رسالة النجاح بالضبط، بدون ما يحس المندوب
+        // بأي فرق. الحفظ والإرسال التلقائي يصيرون بالخلفية بصمت — البادج
+        // الهادئ (queueBadge) يضل متوفر لأي وقت يريد يتأكد بنفسه.
         saveStore(storeNameToSave, phoneToSave, areaToSave);
         incrementVisit(repToSave);
         logActivePointVisit(repToSave, visitDetails);
         queueSubmission(formDataToObject(formData));
-        showToast('لا يوجد اتصال — تم الحفظ وسيُرسل تلقائيًا', 'info');
-        successMsg.innerHTML = 'لا يوجد اتصال بالإنترنت حاليًا. تم حفظ البيانات وسيتم إرسالها تلقائيًا عند توفر الاتصال <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M3 20h2v-4H3v4zM8 20h2v-8H8v8zM13 20h2v-12h-2v12zM18 20h2v-16h-2v16z" fill="currentColor"/></svg>';
+        updateHomeStats();
+        const wasRouteVisitOffline = isRouteVisit;
+        showToast(wasRouteVisitOffline ? 'تم إنهاء الزيارة بنجاح' : 'تم إرسال الزيارة بنجاح', 'success');
+        successMsg.innerHTML = wasRouteVisitOffline ? 'تم إنهاء الزيارة بنجاح <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : 'تم إرسال البيانات بنجاح <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         successMsg.style.display = 'block';
         document.getElementById('geoForm').reset();
         document.getElementById('geoStatus').textContent = '';
@@ -8391,8 +8399,13 @@
         body.append(label, details.custom[label]);
       });
     }
-    // Fire and forget; no-cors is fine since we don't need to read the response.
-    fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body, mode: 'no-cors' }).catch(function (err) { /* صامتة — غير حرجة */ });
+    // تصحيح: كانت "أرسل وانسى" بالكامل (no-cors، بدون قراءة الرد) — لو
+    // فشلت (بدون نت)، سجل مدة الزيارة يضيع نهائيًا بدون أي إعادة محاولة،
+    // بعكس "رفع نقطة جديدة" اللي كانت محمية بطابور الإرسال أصلًا. الحين
+    // نفس الحماية: لو فشلت، تنحفظ بنفس الطابور وترسل تلقائيًا لما يرجع
+    // النت — بصمت تمامًا، بدون ما المندوب يحس أي فرق بتجربته.
+    fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body, mode: 'no-cors' })
+      .catch(function () { queueSubmission(formDataToObject(body)); });
     activeVisit = null;
   }
 </script>
