@@ -7343,6 +7343,25 @@
     try { localStorage.setItem(VISITED_KEY, JSON.stringify(map)); } catch (err) { /* ignore */ }
   }
 
+  const ROUTE_CACHE_KEY = 'ifco:routeCache:v1';
+  // خط سير المندوب يحدده المشرف مرة وحدة ونادرًا يتغير خلال اليوم — نحفظ
+  // آخر نسخة وصلت بنجاح محليًا (لكل مندوب+تاريخ)، حتى يقدر يفتح خط سيره
+  // ويشتغل عليه طول يومه حتى لو فتح التطبيق بدون نت من الأساس. أي تحميل
+  // ناجح (الآن، أو بعدين أول ما يرجع النت) يحدّث النسخة المحفوظة بصمت.
+  function saveRouteCache(rep, date, rows) {
+    try {
+      const all = JSON.parse(localStorage.getItem(ROUTE_CACHE_KEY) || '{}');
+      all[rep + '|' + date] = { rows: rows, cachedAt: Date.now() };
+      localStorage.setItem(ROUTE_CACHE_KEY, JSON.stringify(all));
+    } catch (e) { /* تخزين غير متاح، نتجاهل */ }
+  }
+  function getRouteCache(rep, date) {
+    try {
+      const all = JSON.parse(localStorage.getItem(ROUTE_CACHE_KEY) || '{}');
+      return all[rep + '|' + date] || null;
+    } catch (e) { return null; }
+  }
+
   function loadRoute() {
     const rep = document.getElementById('routeRep').value;
     const status = document.getElementById('routeStatus');
@@ -7360,33 +7379,6 @@
 
     const selectedDate = document.getElementById('routeDate').value || getTodayDateStr();
 
-    // ── Retry تلقائي: نحاول 2 مرة قبل نعرض الخطأ ──────────────────────────
-    // Apps Script أحياناً يفشل الطلب الأول بسبب Cold Start — المحاولة الثانية
-    // تنجح عادةً لأن السيرفر يكون جاهزاً بعد المحاولة الأولى.
-    let _routeAttempt = 0;
-    function _doLoadRoute() {
-      _routeAttempt++;
-      status.innerHTML = _routeAttempt === 1
-        ? 'جارٍ التحميل...'
-        : 'جارٍ إعادة المحاولة (' + _routeAttempt + '/2)...';
-
-      const url = WEB_APP_URL + '?rep=' + encodeURIComponent(rep) + '&date=' + selectedDate +
-        '&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || '');
-
-      fetchWithTimeout(url)
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-          if (data.result !== 'success') {
-            list.innerHTML = ''; // يمسح بطاقات الهيكل (skeleton) — بدونه تضل معلّقة "تحمّل" للأبد
-            status.innerHTML = '<span style="color:#d63d33;font-weight:600;">⚠️ خطأ من الخادم: ' + esc(data.error || 'استجابة غير متوقعة') + '</span>';
-            return;
-          }
-        if (!data.rows || data.rows.length === 0) {
-          list.innerHTML = ''; // يمسح بطاقات الهيكل (skeleton) — بدونه تضل معلّقة "تحمّل" للأبد
-          status.textContent = 'لا توجد نقاط مسجلة لك اليوم';
-          return;
-        }
-        // Render function: progress bar + point cards (rows may be distance-sorted)
         function renderRouteRows(rows, sortedByDistance) {
           list.innerHTML = '';
           status.innerHTML = 'عدد النقاط المطلوبة اليوم: ' + rows.length +
@@ -7510,6 +7502,33 @@
         });
         } // end renderRouteRows
 
+    // ── Retry تلقائي: نحاول 2 مرة قبل نعرض الخطأ ──────────────────────────
+    // Apps Script أحياناً يفشل الطلب الأول بسبب Cold Start — المحاولة الثانية
+    // تنجح عادةً لأن السيرفر يكون جاهزًا بعد المحاولة الأولى.
+    let _routeAttempt = 0;
+    function _doLoadRoute() {
+      _routeAttempt++;
+      status.innerHTML = _routeAttempt === 1
+        ? 'جارٍ التحميل...'
+        : 'جارٍ إعادة المحاولة (' + _routeAttempt + '/2)...';
+
+      const url = WEB_APP_URL + '?rep=' + encodeURIComponent(rep) + '&date=' + selectedDate +
+        '&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || '');
+
+      fetchWithTimeout(url)
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data.result !== 'success') {
+            list.innerHTML = ''; // يمسح بطاقات الهيكل (skeleton) — بدونه تضل معلّقة "تحمّل" للأبد
+            status.innerHTML = '<span style="color:#d63d33;font-weight:600;">⚠️ خطأ من الخادم: ' + esc(data.error || 'استجابة غير متوقعة') + '</span>';
+            return;
+          }
+          saveRouteCache(rep, selectedDate, data.rows || []);
+          if (!data.rows || data.rows.length === 0) {
+            list.innerHTML = ''; // يمسح بطاقات الهيكل (skeleton) — بدونه تضل معلّقة "تحمّل" للأبد
+            status.textContent = 'لا توجد نقاط مسجلة لك اليوم';
+            return;
+          }
         // Try to get the rep's position to sort points nearest-first
         if (navigator.geolocation) {
           status.textContent = 'جارٍ ترتيب النقاط حسب الأقرب إليك...';
@@ -7530,28 +7549,40 @@
         } else {
           renderRouteRows(data.rows, false);
         }
-      })
+        })
         .catch(function (err) {
           if (_routeAttempt < 2) {
             // محاولة ثانية بعد 2 ثانية
             setTimeout(_doLoadRoute, 2000);
-          } else {
-            // فشلت المحاولتان — نعرض تشخيصاً واضحاً
-            const isOffline = !navigator.onLine;
-            if (isOffline) {
-              showError(status, { name: 'TypeError' });
-            } else {
-              showError(status, err);
-            }
-            // زر إعادة المحاولة اليدوية
-            const retryBtn = document.createElement('button');
-            retryBtn.type = 'button';
-            retryBtn.style.cssText = 'margin-top:10px;padding:8px 18px;border:none;border-radius:10px;background:#7c5cff;color:#fff;font-weight:700;cursor:pointer;font-size:13px;';
-            retryBtn.textContent = '🔄 إعادة المحاولة';
-            retryBtn.onclick = function () { _routeAttempt = 0; list.innerHTML = ''; _doLoadRoute(); };
-            list.innerHTML = '';
-            list.appendChild(retryBtn);
+            return;
           }
+          // فشلت المحاولتان — نجرب النسخة المحفوظة محليًا قبل ما نعرض خطأ (بدون
+          // نت من الأساس، أو انقطع لحظة فتح الشاشة — خط السير ثابت أغلب اليوم).
+          const cached = getRouteCache(rep, selectedDate);
+          if (cached) {
+            if (!cached.rows || cached.rows.length === 0) {
+              list.innerHTML = '';
+              status.textContent = 'لا توجد نقاط مسجلة لك اليوم';
+            } else {
+              renderRouteRows(cached.rows, false);
+            }
+            return;
+          }
+          // ما فيه نسخة محفوظة أصلًا — نعرض تشخيصًا واضحًا بدل شاشة فاضية
+          const isOffline = !navigator.onLine;
+          if (isOffline) {
+            showError(status, { name: 'TypeError' });
+          } else {
+            showError(status, err);
+          }
+          // زر إعادة المحاولة اليدوية
+          const retryBtn = document.createElement('button');
+          retryBtn.type = 'button';
+          retryBtn.style.cssText = 'margin-top:10px;padding:8px 18px;border:none;border-radius:10px;background:#7c5cff;color:#fff;font-weight:700;cursor:pointer;font-size:13px;';
+          retryBtn.textContent = '🔄 إعادة المحاولة';
+          retryBtn.onclick = function () { _routeAttempt = 0; list.innerHTML = ''; _doLoadRoute(); };
+          list.innerHTML = '';
+          list.appendChild(retryBtn);
         });
     }
     _doLoadRoute();
@@ -7855,6 +7886,14 @@
   }
 
   window.addEventListener('online', sendQueuedSubmissions);
+  // أول ما يرجع النت وهو فاتح شاشة خط السير، نحدّثه بصمت بالخلفية — يلتقط
+  // أي تعديل سواه المشرف وهو كان بدون نت، بدون ما يحتاج يعمل شي بنفسه.
+  window.addEventListener('online', function () {
+    const routeViewEl = document.getElementById('routeView');
+    if (routeViewEl && routeViewEl.style.display === 'block' && typeof loadRoute === 'function') {
+      loadRoute();
+    }
+  });
   window.addEventListener('load', function () {
     updateQueueBadge();
     sendQueuedSubmissions();
