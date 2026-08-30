@@ -2297,9 +2297,16 @@
       }
     });
     // Close the dropdown when tapping outside
-    document.addEventListener('click', function (ev) {
+    // تصحيح تسريب ذاكرة: initAreaPicker تنعاد بكل فتح شاشة (الشريط الجانبي
+    // يخلي المستخدم يتنقّل بين الشاشات بدون إعادة تحميل)، وكانت تضيف
+    // مستمع جديد على document بكل مرة بدون ما تشيل القديم — يتراكمون
+    // بجلسة طويلة. الحين نشيل مستمع الجلسة السابقة (لو موجود) قبل ما
+    // نضيف الجديد.
+    if (box._outsideClickHandler) document.removeEventListener('click', box._outsideClickHandler);
+    box._outsideClickHandler = function (ev) {
       if (!box.contains(ev.target)) dd.classList.remove('open');
-    });
+    };
+    document.addEventListener('click', box._outsideClickHandler);
   }
 
   function getPickerAreas(boxId) {
@@ -2588,7 +2595,7 @@
           msg.style.display = 'block';
         }
       })
-      .catch(function () {
+      .catch(function (err) {
         msg.className = 'msg error';
         msg.textContent = getErrorMessage(err);
         msg.style.display = 'block';
@@ -3411,6 +3418,12 @@
 
   function buildMapPanel() {
     var content = document.getElementById('adminContent');
+    // دفاع بعمق: نفس فحص الشريط الجانبي، مو اعتماد بس على إن اللي يفتح
+    // الشاشة يكون تحقق قبلها — أي مسار مستقبلي يوصل لهذي الدالة مباشرة.
+    if (!(canPlan() || isManagement() || isOwner())) {
+      notAllowedPanel('هذه الصفحة غير متاحة لحسابك');
+      return;
+    }
     content.innerHTML =
       '<button type="button" class="back-btn" onclick="destroyMap();buildReportsMenu()"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;vertical-align:-3px"><path d="M9 6l6 6-6 6"/></svg> التقارير</button>' +
       '<h2 style="font-size:16px;margin-bottom:4px;"><svg viewBox="0 0 24 24" fill="none" width="18" height="18" style="vertical-align:-4px;display:inline-block;color:var(--accent-dark);"><path d="M9 20l-6-2V4l6 2 6-2 6 2v14l-6-2-6 2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 4v14M15 6v14" stroke="currentColor" stroke-width="1.8"/></svg> خريطة نقاط البيع (حيّة)</h2>' +
@@ -4481,7 +4494,7 @@
           msg.style.display = 'block';
         }
       })
-      .catch(function () {
+      .catch(function (err) {
         msg.className = 'msg error';
         msg.textContent = getErrorMessage(err);
         msg.style.display = 'block';
@@ -5137,12 +5150,18 @@
   // --- تقرير السيارات والسائقين ---
   function buildTruckReportPanel() {
     const content = document.getElementById('adminContent');
+    // دفاع بعمق: نفس فحص الشريط الجانبي، مو اعتماد بس على إن اللي يفتح
+    // الشاشة يكون تحقق قبلها.
+    if (!(canPlan() || isManagement() || isOwner())) {
+      notAllowedPanel('هذه الصفحة غير متاحة لحسابك');
+      return;
+    }
     content.innerHTML =
       '<button type="button" class="back-btn" onclick="buildReportsMenu()"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;vertical-align:-3px"><path d="M9 6l6 6-6 6"/></svg> التقارير</button>' +
       '<h2 style="font-size:16px;margin-bottom:10px;"><svg viewBox="0 0 24 24" fill="none" width="18" height="18" style="vertical-align:-4px;display:inline-block;color:var(--accent-dark);"><rect x="2" y="7" width="12" height="9" rx="1" stroke="currentColor" stroke-width="1.7"/><path d="M14 10h4l3 3v3h-7v-6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="1.6" stroke="currentColor" stroke-width="1.5"/><circle cx="17" cy="17.5" r="1.6" stroke="currentColor" stroke-width="1.5"/></svg> تقرير السيارات والسائقين</h2>' +
       '<div class="rep-tabs">' +
       '<button type="button" class="rep-tab on" onclick="setTruckReportRange(0,0)">اليوم</button>' +
-      '<button type="button" class="rep-tab" onclick="setTruckReportRange(7,0)">آخر 7 أيام</button>' +
+      '<button type="button" class="rep-tab" onclick="setTruckReportRange(6,0)">آخر 7 أيام</button>' +
       '<button type="button" class="rep-tab" onclick="document.getElementById(\'trFrom\').focus();"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M4 9h16M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> فترة مخصصة</button>' +
       '</div>' +
       '<label>من تاريخ</label><input type="date" id="trFrom">' +
@@ -5625,7 +5644,10 @@
     }
 
     // Unified reports menu: supervisor + management + owner
-    if (!isMarketingManager()) {
+    // تصحيح: الفحص كان !isMarketingManager() بس — يسمح لمندوب/مروج/أمين
+    // مخزن يشوفون الزر لو وصلوا لهذي الشاشة (نفس نمط الثغرة اللي انصلحت
+    // بالشريط الجانبي، هنا بطبقة القائمة الإدارية).
+    if (canPlan() || isManagement() || isOwner()) {
       html += '<button type="button" class="home-btn secondary" onclick="buildReportsMenu()"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M5 20V10M12 20V4M19 20v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> التقارير</button>';
     }
 
@@ -5812,6 +5834,12 @@
 
   function buildPeriodPanel() {
     const content = document.getElementById('adminContent');
+    // دفاع بعمق: نفس فحص الشريط الجانبي، مو اعتماد بس على إن اللي يفتح
+    // الشاشة يكون تحقق قبلها.
+    if (!(canPlan() || isManagement() || isOwner())) {
+      notAllowedPanel('هذه الصفحة غير متاحة لحسابك');
+      return;
+    }
     periodData = null;
     periodTab = 'team';
     content.innerHTML =
@@ -5821,8 +5849,8 @@
       '<div class="rep-tabs" style="margin-bottom:10px;">' +
       '<button type="button" class="rep-tab" onclick="setPeriodQuickRange(0,0)">اليوم</button>' +
       '<button type="button" class="rep-tab" onclick="setPeriodQuickRange(1,1)">أمس</button>' +
-      '<button type="button" class="rep-tab" onclick="setPeriodQuickRange(7,0)">آخر 7 أيام</button>' +
-      '<button type="button" class="rep-tab" onclick="setPeriodQuickRange(30,0)">آخر 30 يوم</button>' +
+      '<button type="button" class="rep-tab" onclick="setPeriodQuickRange(6,0)">آخر 7 أيام</button>' +
+      '<button type="button" class="rep-tab" onclick="setPeriodQuickRange(29,0)">آخر 30 يوم</button>' +
       '<button type="button" class="rep-tab" onclick="document.getElementById(\'perFrom\').focus();"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M4 9h16M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> فترة مخصصة</button>' +
       '</div>' +
       '<label for="perFrom">من تاريخ</label>' +
@@ -6412,7 +6440,7 @@
           msg.style.display = 'block';
         }
       })
-      .catch(function () {
+      .catch(function (err) {
         msg.className = 'msg error';
         msg.textContent = getErrorMessage(err);
         msg.style.display = 'block';
@@ -7061,6 +7089,12 @@
 
   function buildReportsPanel() {
     const content = document.getElementById('adminContent');
+    // دفاع بعمق: نفس فحص الشريط الجانبي، مو اعتماد بس على إن اللي يفتح
+    // الشاشة يكون تحقق قبلها.
+    if (!(canPlan() || isManagement() || isOwner())) {
+      notAllowedPanel('هذه الصفحة غير متاحة لحسابك');
+      return;
+    }
 
     let repOptions = '<option value="">كل المندوبين</option>';
     REP_NAMES.forEach(function (r) {
