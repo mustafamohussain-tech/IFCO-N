@@ -7829,13 +7829,27 @@
             // السيرفر رفضها (نقطة مكررة) — نحذفها من الطابور (رفض متعمّد، مو
             // فشل اتصال) بس لازم المندوب يعرف، مو تختفي بصمت.
             showToast('<svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M6 6l12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> رُفضت نقطة من طابور الإرسال — مكررة: ' + esc(item['اسم نقطة البيع'] || ''), 'error');
+          } else if (data && data.result === 'error' && data.error === 'unauthorized') {
+            // تصحيح: كانت تعيد المحاولة بصمت للأبد — لو الجلسة صارت غير
+            // صالحة (خروج من جهاز ثاني، أو نادرًا انتهاء توكن)، العملية
+            // تضل عالقة بالطابور بدون ما المندوب يعرف السبب أو يتصرف.
+            // نعلمه صراحة يحتاج يسجّل دخول من جديد، ونضلها بالطابور
+            // (تترسل تلقائيًا أول ما يرجع يسجّل دخول ويرجع أونلاين).
+            remaining.push(item);
+            showToast('<svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> جلستك منتهية — سجّل دخول من جديد لإرسال العمليات المعلّقة (' + queue.length + ')', 'error');
           } else if (!data || data.result !== 'success') {
-            // خطأ ثاني غير متوقع — نعيد المحاولة لاحقًا بدل ما نضيّعها.
+            // خطأ ثاني غير متوقع — نعيد المحاولة لاحقًا بدل ما نضيّعها، بس
+            // نعدّ المحاولات ونعلم المندوب لو ضلت تفشل بشكل متكرر (بدل
+            // إعادة محاولة صامتة للأبد بدون أي إشارة إنها عالقة فعلاً).
+            item._failCount = (item._failCount || 0) + 1;
+            if (item._failCount === 3 || item._failCount === 10) {
+              showToast('<svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> عملية بطابور الإرسال ضلت تفشل (' + item._failCount + ' محاولات) — تأكد من الاتصال بالإنترنت', 'error');
+            }
             remaining.push(item);
           }
           index++; sendNext();
         })
-        .catch(function () { remaining.push(item); index++; sendNext(); });
+        .catch(function () { item._failCount = (item._failCount || 0) + 1; remaining.push(item); index++; sendNext(); });
     }
     sendNext();
   }
