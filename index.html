@@ -1514,6 +1514,7 @@
       {
         label: 'الإدارة',
         items: isManagement() ? [
+          { id: 'p-repManagement', label: 'إدارة المندوبين', fn: goPanel(buildRepManagementPanel) },
           { id: 'p-duplicateCleanup', label: 'تنظيف النقاط المكررة', fn: goPanel(buildDuplicateCleanupPanel) },
           { id: 'p-competitorsAdmin', label: 'إدارة الشركات المنافسة', fn: goPanel(buildCompetitorsPanel) },
           { id: 'p-customerIds', label: 'معرّفات الزبائن (ID)', fn: goPanel(buildCustomerIdPanel) },
@@ -2034,6 +2035,7 @@
 
   // Sends the logged-in user to their correct landing screen based on role.
   function routeAfterLogin() {
+    refreshRepNames();
     if (isRep()) {
       showRepHome();
     } else {
@@ -2464,6 +2466,148 @@
       })
       .catch(function (err) {
         status.textContent = '';
+        msg.className = 'msg error';
+        msg.textContent = getErrorMessage(err);
+        msg.style.display = 'block';
+      });
+  }
+
+  // --- إدارة المندوبين: إضافة مندوب جديد، تعطيل/تفعيل حساب — إدارة فقط ---
+  function buildRepManagementPanel() {
+    const content = document.getElementById('adminContent');
+    if (!isManagement()) {
+      notAllowedPanel('هذه الصفحة متاحة لحساب الإدارة فقط');
+      return;
+    }
+    content.innerHTML =
+      '<button type="button" class="back-btn" onclick="buildAdminMenu()"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;vertical-align:-3px"><path d="M9 6l6 6-6 6"/></svg> قائمة الإدارة</button>' +
+      '<h2 style="font-size:16px;margin-bottom:4px;"><svg viewBox="0 0 24 24" fill="none" width="18" height="18" style="vertical-align:-4px;display:inline-block;color:var(--accent-dark);"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16 4.5a3.2 3.2 0 010 6.4M19 20c0-3-1.8-5.2-4.3-5.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> إدارة المندوبين</h2>' +
+      '<p class="field-hint" style="margin-bottom:10px;">موظف طلع من الشركة؟ عطّل حسابه بس (لا تحذف ولا تغيّر اسمه) — بيانات زياراته القديمة تضل صحيحة. الموظف الجديد ياخذ حساب جديد لحاله.</p>' +
+      '<div class="geo-status" id="repMgmtStatus">جارٍ التحميل...</div>' +
+      '<div id="repMgmtList"></div>' +
+      '<div style="border-top:1px solid var(--line-soft);margin:22px 0 14px;padding-top:16px;">' +
+      '<h3 style="font-size:14px;margin-bottom:10px;">إضافة مندوب جديد</h3>' +
+      '</div>' +
+      '<label for="newRepName">اسم المندوب الكامل</label>' +
+      '<input type="text" id="newRepName" autocomplete="off" placeholder="مثال: أحمد علي حسين">' +
+      '<label for="newRepUsername">اسم المستخدم (لتسجيل الدخول)</label>' +
+      '<input type="text" id="newRepUsername" autocomplete="off">' +
+      '<label for="newRepPassword">كلمة المرور</label>' +
+      '<input type="password" id="newRepPassword" autocomplete="off">' +
+      '<button type="button" class="submit-btn" onclick="submitAddRep()" style="margin-top:14px;"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> إضافة المندوب</button>' +
+      '<div class="msg success" id="repMgmtAddMsg" style="display:none;"></div>';
+
+    loadRepManagementList();
+  }
+
+  function loadRepManagementList() {
+    const status = document.getElementById('repMgmtStatus');
+    const list = document.getElementById('repMgmtList');
+    if (!status || !list) return;
+    status.textContent = 'جارٍ التحميل...';
+    list.innerHTML = '';
+    fetchWithTimeout(WEB_APP_URL + '?action=getReps&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || ''))
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.result !== 'success') {
+          status.textContent = 'تعذّر تحميل قائمة المندوبين';
+          return;
+        }
+        repAccounts = data.reps;
+        REP_NAMES = data.reps.filter(function (r) { return !r.disabled; }).map(function (r) { return r.name; });
+        status.textContent = 'عدد الحسابات: ' + data.reps.length;
+        data.reps.forEach(function (r) {
+          const row = document.createElement('div');
+          row.className = 'route-card';
+          const title = document.createElement('div');
+          title.className = 'route-card-title';
+          title.innerHTML = esc(r.name) + (r.disabled ? ' <span style="color:var(--danger);font-weight:700;font-size:12px;">(معطّل)</span>' : '');
+          row.appendChild(title);
+          const detail = document.createElement('div');
+          detail.className = 'route-card-detail';
+          detail.textContent = 'اسم المستخدم: ' + r.username;
+          row.appendChild(detail);
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'submit-btn';
+          btn.style.marginTop = '10px';
+          btn.textContent = r.disabled ? '✅ تفعيل الحساب' : '⛔ تعطيل الحساب';
+          btn.onclick = function () { toggleRepDisabled(r.username, !r.disabled, btn); };
+          row.appendChild(btn);
+          list.appendChild(row);
+        });
+      })
+      .catch(function () { status.textContent = 'تعذّر الاتصال بالخادم'; });
+  }
+
+  function toggleRepDisabled(username, disabled, btn) {
+    if (disabled && !confirm('متأكد تريد تعطيل هذا الحساب؟ راح يقطع أي جلسة مفتوحة له فورًا، ويمنعه من تسجيل الدخول.')) return;
+    if (btn) btn.disabled = true;
+    const body = new FormData();
+    body.append('action', 'setUserDisabled');
+    body.append('username', (currentAdmin && currentAdmin.username) || '');
+    body.append('password', (currentAdmin && currentAdmin.pass) || '');
+    body.append('targetUsername', username);
+    body.append('disabled', disabled ? '1' : '0');
+    fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.result === 'success') {
+          showToast(disabled ? 'تم تعطيل الحساب' : 'تم تفعيل الحساب', 'success');
+          loadRepManagementList();
+        } else {
+          showToast('حدث خطأ، حاول مرة ثانية', 'error');
+          if (btn) btn.disabled = false;
+        }
+      })
+      .catch(function () {
+        showToast('تعذّر الاتصال بالخادم', 'error');
+        if (btn) btn.disabled = false;
+      });
+  }
+
+  function submitAddRep() {
+    const name = document.getElementById('newRepName').value.trim();
+    const username = document.getElementById('newRepUsername').value.trim();
+    const password = document.getElementById('newRepPassword').value.trim();
+    const msg = document.getElementById('repMgmtAddMsg');
+    msg.style.display = 'none';
+    if (!name || !username || !password) {
+      msg.className = 'msg error';
+      msg.textContent = 'عبّي كل الحقول (الاسم، اسم المستخدم، كلمة المرور)';
+      msg.style.display = 'block';
+      return;
+    }
+    const body = new FormData();
+    body.append('action', 'addRep');
+    body.append('username', (currentAdmin && currentAdmin.username) || '');
+    body.append('password', (currentAdmin && currentAdmin.pass) || '');
+    body.append('repName', name);
+    body.append('newUsername', username);
+    body.append('newPassword', password);
+    fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.result === 'success') {
+          msg.className = 'msg success';
+          msg.textContent = 'تمت إضافة المندوب بنجاح';
+          msg.style.display = 'block';
+          document.getElementById('newRepName').value = '';
+          document.getElementById('newRepUsername').value = '';
+          document.getElementById('newRepPassword').value = '';
+          showToast('تمت الإضافة', 'success');
+          loadRepManagementList();
+        } else if (data.error === 'username_taken') {
+          msg.className = 'msg error';
+          msg.textContent = 'اسم المستخدم هذا مستخدم أصلًا — اختر اسم ثاني';
+          msg.style.display = 'block';
+        } else {
+          msg.className = 'msg error';
+          msg.textContent = 'حدث خطأ أثناء الإضافة';
+          msg.style.display = 'block';
+        }
+      })
+      .catch(function (err) {
         msg.className = 'msg error';
         msg.textContent = getErrorMessage(err);
         msg.style.display = 'block';
@@ -5677,6 +5821,7 @@
     // Shared-list editing: management only
     if (isManagement()) {
       html += '<button type="button" class="home-btn admin" onclick="buildWarehouseKeeperPanel()"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><rect x="2" y="7" width="12" height="9" rx="1" stroke="currentColor" stroke-width="1.7"/><path d="M14 10h4l3 3v3h-7v-6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="1.6" stroke="currentColor" stroke-width="1.5"/><circle cx="17" cy="17.5" r="1.6" stroke="currentColor" stroke-width="1.5"/></svg> حالة السيارات (كأمين المخزن)</button>';
+      html += '<button type="button" class="home-btn secondary" onclick="buildRepManagementPanel()"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16 4.5a3.2 3.2 0 010 6.4M19 20c0-3-1.8-5.2-4.3-5.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> إدارة المندوبين</button>';
       html += '<button type="button" class="home-btn secondary" onclick="buildDuplicateCleanupPanel()"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M14 3L5 12l3 3 9-9-3-3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 15l-4 5M10.5 17.5L7 21" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg> تنظيف النقاط المكررة</button>';
       html += '<button type="button" class="home-btn admin" onclick="buildCompetitorsPanel()"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><rect x="5" y="3" width="14" height="18" rx="1" stroke="currentColor" stroke-width="1.8"/><path d="M9 7h.01M15 7h.01M9 11h.01M15 11h.01M9 15h.01M15 15h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> إدارة الشركات المنافسة</button>';
       html += '<button type="button" class="home-btn" onclick="buildCustomerIdPanel()"><b style="font-size:.85em;opacity:.75;">ID</b> معرّفات الزبائن</button>';
@@ -6574,10 +6719,25 @@
   // --- Supervisor panel: build a daily route by area ---
   let selectedPoints = {}; // key: store name, value: point object
 
-  const REP_NAMES = [
+  // تصحيح: كانت قائمة ثابتة بالكود — أي مندوب جديد يحتاج تعديل هذا الملف
+  // نفسه. الحين قيمة ابتدائية احتياطية بس (لو ما وصل رد السيرفر بعد)،
+  // وrefreshRepNames() تجيب القائمة الحقيقية من جدول Users فور تسجيل الدخول.
+  let REP_NAMES = [
     'عبدالرحمن حقي إسماعيل', 'فراس عبدالرضا عودة', 'حسين حيدر صالح',
     'كرار نارس جاسم', 'صالح قصي محمد', 'حيدر محمد عبد'
   ];
+  let repAccounts = []; // [{username, name, disabled}] — من آخر getReps ناجح
+  function refreshRepNames() {
+    if (!currentAdmin) return;
+    fetchWithTimeout(WEB_APP_URL + '?action=getReps&username=' + encodeURIComponent(currentAdmin.username))
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.result !== 'success' || !data.reps) return;
+        repAccounts = data.reps;
+        REP_NAMES = data.reps.filter(function (r) { return !r.disabled; }).map(function (r) { return r.name; });
+      })
+      .catch(function () { /* نضل على القائمة الاحتياطية لو فشل الطلب */ });
+  }
 
   function buildSupervisorPanel() {
     const content = document.getElementById('adminContent');
