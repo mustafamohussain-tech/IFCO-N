@@ -2515,6 +2515,10 @@
         }
         repAccounts = data.reps;
         REP_NAMES = data.reps.filter(function (r) { return !r.disabled; }).map(function (r) { return r.name; });
+        // يحدّث قائمتي routeRep/rep فورًا بنفس الجلسة — بدون هذا، مندوب مُضاف
+        // أو محسوم للتو يضل غايب عن القوائم لين يعيد المستخدم تحميل الصفحة.
+        rebuildStaticRepSelect('routeRep');
+        rebuildStaticRepSelect('rep');
         status.textContent = 'عدد الحسابات: ' + data.reps.length;
         data.reps.forEach(function (r) {
           const row = document.createElement('div');
@@ -2600,6 +2604,10 @@
         } else if (data.error === 'username_taken') {
           msg.className = 'msg error';
           msg.textContent = 'اسم المستخدم هذا مستخدم أصلًا — اختر اسم ثاني';
+          msg.style.display = 'block';
+        } else if (data.error === 'name_taken') {
+          msg.className = 'msg error';
+          msg.textContent = 'يوجد مندوب فعّال بهذا الاسم بالضبط — إذا كان استبدال موظف، عطّل حسابه القديم أولاً';
           msg.style.display = 'block';
         } else {
           msg.className = 'msg error';
@@ -6727,6 +6735,25 @@
     'كرار نارس جاسم', 'صالح قصي محمد', 'حيدر محمد عبد'
   ];
   let repAccounts = []; // [{username, name, disabled}] — من آخر getReps ناجح
+
+  // تصحيح: قائمة REP_NAMES تتحدّث، بس اثنين قائمتين ثابتتين بالـ HTML نفسه
+  // (routeRep بشاشة "خط السير"، وrep بفورم تسجيل الزيارة) كانوا ما ينحدّثون
+  // إطلاقًا — مشرف/إدارة يحاول يختار مندوب جديد من هالقائمتين تحديدًا
+  // (لعرض خط سيره أو تسجيل نقطة بالنيابة عنه) ما يلقاه، رغم إنه مضاف صح
+  // بالنظام. (ملاحظة: المندوب نفسه ما يتأثر — عنده منطق تعبئة تلقائي
+  // لاسمه هو بس، منفصل عن هالقائمة). نعيد بناء القائمتين هنا من نفس البيانات.
+  function rebuildStaticRepSelect(selectId) {
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+    const currentVal = sel.value;
+    let html = '<option value="" disabled' + (currentVal ? '' : ' selected') + '>اختر المندوب</option>';
+    REP_NAMES.forEach(function (name) {
+      html += '<option value="' + name + '">' + name + '</option>';
+    });
+    sel.innerHTML = html;
+    if (currentVal && REP_NAMES.indexOf(currentVal) !== -1) sel.value = currentVal;
+  }
+
   function refreshRepNames() {
     if (!currentAdmin) return;
     fetchWithTimeout(WEB_APP_URL + '?action=getReps&username=' + encodeURIComponent(currentAdmin.username))
@@ -6735,6 +6762,8 @@
         if (data.result !== 'success' || !data.reps) return;
         repAccounts = data.reps;
         REP_NAMES = data.reps.filter(function (r) { return !r.disabled; }).map(function (r) { return r.name; });
+        rebuildStaticRepSelect('routeRep');
+        rebuildStaticRepSelect('rep');
       })
       .catch(function () { /* نضل على القائمة الاحتياطية لو فشل الطلب */ });
   }
