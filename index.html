@@ -953,6 +953,24 @@
   .stand-switch.on::before { transform: translateX(-22px); }
   .stand-switch:disabled { cursor: default; opacity: 0.85; }
 
+  /* صف مضغوط لقائمة "إدارة المندوبين" — بديل الـ route-card الكبير، شريط
+     واحد لكل مندوب (اسم + اسم مستخدم) مع مفتاح تبديل صغير بنفس أسلوب
+     stand-switch أعلاه، بدل بطاقة كاملة لكل صف. */
+  .rep-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: var(--bg-1); border: 1px solid var(--line); border-radius: 12px;
+    padding: 9px 12px; margin-top: 7px;
+  }
+  .rep-row-info { min-width: 0; }
+  .rep-row-name {
+    font-size: 13.5px; font-weight: 700; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .rep-row.disabled .rep-row-name { color: var(--text-dim); }
+  .rep-row-name .rep-row-disabled-tag { color: var(--danger); font-weight: 700; font-size: 11px; }
+  .rep-row-user { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+  .rep-row .stand-switch { flex-shrink: 0; }
+
   /* Customer timeline — card-based history grouped by date */
   .cust-history { margin-top: 18px; }
   .hist-date-head {
@@ -2519,23 +2537,25 @@
         // أو محسوم للتو يضل غايب عن القوائم لين يعيد المستخدم تحميل الصفحة.
         rebuildStaticRepSelect('routeRep');
         rebuildStaticRepSelect('rep');
-        status.textContent = 'عدد الحسابات: ' + data.reps.length;
+        status.textContent = 'عدد الحسابات: ' + data.reps.length + ' (مرتّبة أبجديًا)';
         data.reps.forEach(function (r) {
           const row = document.createElement('div');
-          row.className = 'route-card';
-          const title = document.createElement('div');
-          title.className = 'route-card-title';
-          title.innerHTML = esc(r.name) + (r.disabled ? ' <span style="color:var(--danger);font-weight:700;font-size:12px;">(معطّل)</span>' : '');
-          row.appendChild(title);
-          const detail = document.createElement('div');
-          detail.className = 'route-card-detail';
-          detail.textContent = 'اسم المستخدم: ' + r.username;
-          row.appendChild(detail);
+          row.className = 'rep-row' + (r.disabled ? ' disabled' : '');
+          const info = document.createElement('div');
+          info.className = 'rep-row-info';
+          const nameEl = document.createElement('div');
+          nameEl.className = 'rep-row-name';
+          nameEl.innerHTML = esc(r.name) + (r.disabled ? ' <span class="rep-row-disabled-tag">(معطّل)</span>' : '');
+          const userEl = document.createElement('div');
+          userEl.className = 'rep-row-user';
+          userEl.textContent = r.username;
+          info.appendChild(nameEl);
+          info.appendChild(userEl);
+          row.appendChild(info);
           const btn = document.createElement('button');
           btn.type = 'button';
-          btn.className = 'submit-btn';
-          btn.style.marginTop = '10px';
-          btn.textContent = r.disabled ? '✅ تفعيل الحساب' : '⛔ تعطيل الحساب';
+          btn.className = 'stand-switch' + (r.disabled ? '' : ' on');
+          btn.title = r.disabled ? 'مُعطّل — اضغط للتفعيل' : 'فعّال — اضغط للتعطيل';
           btn.onclick = function () { toggleRepDisabled(r.username, !r.disabled, btn); };
           row.appendChild(btn);
           list.appendChild(row);
