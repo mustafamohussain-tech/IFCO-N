@@ -3797,7 +3797,7 @@
       '<div id="areaPickerCust"></div>' +
       '<label for="custRepFilter">تصفية حسب المندوب (اختياري)</label>' +
       '<select id="custRepFilter"><option value="">كل المندوبين</option>' +
-      REP_NAMES.map(function (r) { return '<option value="' + r + '">' + r + '</option>'; }).join('') +
+      REP_NAMES.map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + '</option>'; }).join('') +
       '</select>' +
       '<button type="button" class="submit-btn" onclick="searchCustomers()"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> بحث</button>' +
       '<div class="geo-status" id="custSearchStatus"></div>' +
@@ -3968,7 +3968,7 @@
       '<div id="areaPickerComp"></div>' +
       '<label for="compRep">المندوب (اختياري)</label>' +
       '<select id="compRep"><option value="">كل المندوبين</option>' +
-      REP_NAMES.map(function (r) { return '<option value="' + r + '">' + r + '</option>'; }).join('') +
+      REP_NAMES.map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + '</option>'; }).join('') +
       '</select>' +
       '<button type="button" class="submit-btn" onclick="loadCompetitorAnalysis()">عرض التحليل</button>' +
       '<div class="geo-status" id="compStatus2"></div>' +
@@ -4060,7 +4060,7 @@
       return;
     }
     let repOptions = '<option value="" disabled selected>اختر المندوب</option>';
-    REP_NAMES.forEach(function (r) { repOptions += '<option value="' + r + '">' + r + '</option>'; });
+    REP_NAMES.forEach(function (r) { repOptions += '<option value="' + esc(r) + '">' + esc(r) + '</option>'; });
     let typeOptions = LEAVE_TYPES.map(function (t) { return '<option value="' + t + '">' + t + '</option>'; }).join('');
 
     content.innerHTML =
@@ -5281,7 +5281,7 @@
             '<div class="route-card-detail">السائق: ' + esc(t.driver) + '</div>' +
             '<label style="margin-top:8px;">تطلع مع المندوب:</label>' +
             '<select id="assignSel_' + t.number + '"><option value="" disabled selected>اختر المندوب</option>' +
-            REP_NAMES.map(function (r) { return '<option value="' + r + '">' + r + '</option>'; }).join('') +
+            REP_NAMES.map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + '</option>'; }).join('') +
             '</select>' +
             '<label style="margin-top:8px;">حتى تاريخ (اختياري — لتخصيص لفترة كاملة، اتركه فارغًا ليوم واحد بس)</label>' +
             '<input type="date" id="assignTo_' + t.number + '">' +
@@ -6452,7 +6452,7 @@
 
     let repOptions = '<option value="" disabled selected>اختر المندوب</option>';
     REP_NAMES.forEach(function (r) {
-      repOptions += '<option value="' + r + '">' + r + '</option>';
+      repOptions += '<option value="' + esc(r) + '">' + esc(r) + '</option>';
     });
 
     content.innerHTML =
@@ -6465,7 +6465,7 @@
       '<div id="areaPickerNeg"></div>' +
       '<label for="negRepFilter">تصفية حسب المندوب (اختياري)</label>' +
       '<select id="negRepFilter"><option value="">كل المندوبين</option>' +
-      REP_NAMES.map(function (r) { return '<option value="' + r + '">' + r + '</option>'; }).join('') +
+      REP_NAMES.map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + '</option>'; }).join('') +
       '</select>' +
       '<button type="button" class="submit-btn" onclick="loadNeglectedPoints()">عرض النقاط</button>' +
       '<div class="geo-status" id="negStatus"></div>' +
@@ -6768,7 +6768,7 @@
     const currentVal = sel.value;
     let html = '<option value="" disabled' + (currentVal ? '' : ' selected') + '>اختر المندوب</option>';
     REP_NAMES.forEach(function (name) {
-      html += '<option value="' + name + '">' + name + '</option>';
+      html += '<option value="' + esc(name) + '">' + esc(name) + '</option>';
     });
     sel.innerHTML = html;
     if (currentVal && REP_NAMES.indexOf(currentVal) !== -1) sel.value = currentVal;
@@ -6798,7 +6798,7 @@
 
     let repOptions = '<option value="" disabled selected>اختر المندوب</option>';
     REP_NAMES.forEach(function (r) {
-      repOptions += '<option value="' + r + '">' + r + '</option>';
+      repOptions += '<option value="' + esc(r) + '">' + esc(r) + '</option>';
     });
 
     content.innerHTML =
@@ -7317,7 +7317,7 @@
 
     let repOptions = '<option value="">كل المندوبين</option>';
     REP_NAMES.forEach(function (r) {
-      repOptions += '<option value="' + r + '">' + r + '</option>';
+      repOptions += '<option value="' + esc(r) + '">' + esc(r) + '</option>';
     });
 
     content.innerHTML =
