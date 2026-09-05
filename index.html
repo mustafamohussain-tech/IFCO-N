@@ -590,6 +590,7 @@
   .hb-green { background: rgba(86,99,63,0.13); color: var(--green); }
   .hb-purple { background: rgba(61,71,43,0.14); color: var(--violet); }
   .hb-amber { background: rgba(140,73,26,0.12); color: var(--amber); }
+  .hb-red { background: rgba(100,51,18,0.13); color: var(--danger); }
   .hb-txt { flex: 1; display: flex; flex-direction: column; }
   .hb-t { font-size: 15px; font-weight: 700; }
   .hb-s { font-size: 12px; color: var(--text-dim); font-weight: normal; margin-top: 2px; }
@@ -1058,6 +1059,7 @@
       </div>
       <div id="myTruckCard"></div>
       <button type="button" class="home-btn" onclick="showView('route')"><span class="hb-ic hb-blue"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M9 20l-6-2V4l6 2 6-2 6 2v14l-6-2-6 2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 4v14M15 6v14" stroke="currentColor" stroke-width="1.8"/></svg></span><span class="hb-txt"><span class="hb-t">خط سيري لهذا اليوم</span><span class="hb-s">نقاط الزيارة المحددة لك</span></span><span class="hb-arrow">‹</span></button>
+      <button type="button" class="home-btn" onclick="buildDueCustomersPanel();showView('admin')"><span class="hb-ic hb-red"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12 21s7-6.5 7-11.5A7 7 0 105 9.5C5 14.5 12 21 12 21z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.3" stroke="currentColor" stroke-width="1.6"/></svg></span><span class="hb-txt"><span class="hb-t">زبائن يجب زيارتهم</span><span class="hb-s">حسب موعد محدد أو أيام بدون زيارة</span></span><span class="hb-arrow">‹</span></button>
       <button type="button" class="home-btn secondary" onclick="openNewPointForm()"><span class="hb-ic hb-green"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span class="hb-txt"><span class="hb-t">رفع نقطة بيع جديدة</span><span class="hb-s">إضافة متجر جديد للنظام</span></span><span class="hb-arrow">‹</span></button>
       <button type="button" class="home-btn" onclick="buildLeaveRequestPanel();showView('admin')"><span class="hb-ic hb-amber"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><rect x="6" y="4" width="12" height="17" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M9 3.5h6a1 1 0 011 1V6H8V4.5a1 1 0 011-1z" stroke="currentColor" stroke-width="1.8"/><path d="M9 11h6M9 14.5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="hb-txt"><span class="hb-t">طلب إجازة</span><span class="hb-s">أرسل طلبك وتابع حالته</span></span><span class="hb-arrow">‹</span></button>
       <button type="button" class="home-btn admin" onclick="adminLogout()"><span class="hb-ic hb-purple"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M15 3H8a2 2 0 00-2 2v14a2 2 0 002 2h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 12H9M15 8l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="hb-txt"><span class="hb-t">تسجيل الخروج</span><span class="hb-s">إنهاء الجلسة على هذا الجهاز</span></span><span class="hb-arrow">‹</span></button>
@@ -2640,6 +2642,233 @@
         msg.textContent = getErrorMessage(err);
         msg.style.display = 'block';
       });
+  }
+
+  // ── زبائن يجب زيارتهم ────────────────────────────────────────────────────
+  // المندوب يشوف زبائنه هو بس (تلقائي، بدون فلتر). المشرف/الإدارة يشوفون
+  // نظرة عامة لكل المندوبين مع فلتر اختياري + إمكانية تحويل زبون (أو كل
+  // زبائن مندوب) لمندوب ثاني — نفس بطاقة route-card المستخدمة بباقي النظام.
+  function buildDueCustomersPanel() {
+    const content = document.getElementById('adminContent');
+    if (!currentAdmin) { notAllowedPanel('سجّل الدخول أولاً'); return; }
+    const overview = canPlan();
+
+    let repFilterBox = '';
+    let transferBox = '';
+    if (overview) {
+      const repOptions = REP_NAMES.map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + '</option>'; }).join('');
+      repFilterBox =
+        '<label for="dueRepFilter">تصفية حسب المندوب (اختياري)</label>' +
+        '<select id="dueRepFilter" onchange="loadDueCustomers()"><option value="">كل المندوبين</option>' + repOptions + '</select>';
+    }
+    if (isManagement()) {
+      const repOptions = REP_NAMES.map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + '</option>'; }).join('');
+      transferBox =
+        '<div class="route-card" style="margin-top:14px;">' +
+        '<div class="route-card-title">نقل كل زبائن مندوب لمندوب آخر</div>' +
+        '<label for="transferFromRep" style="margin-top:8px;">من</label>' +
+        '<select id="transferFromRep"><option value="" disabled selected>اختر المندوب</option>' + repOptions + '</select>' +
+        '<label for="transferToRep">إلى</label>' +
+        '<select id="transferToRep"><option value="" disabled selected>اختر المندوب</option>' + repOptions + '</select>' +
+        '<button type="button" class="submit-btn" style="margin-top:10px;" onclick="bulkReassignCustomers()">نقل كل الزبائن</button>' +
+        '<div class="msg success" id="transferMsg" style="display:none;"></div>' +
+        '</div>';
+    }
+
+    content.innerHTML =
+      '<h2 style="font-size:16px;margin-bottom:4px;"><svg viewBox="0 0 24 24" fill="none" width="18" height="18" style="vertical-align:-4px;display:inline-block;color:var(--accent-dark);"><path d="M12 21s7-6.5 7-11.5A7 7 0 105 9.5C5 14.5 12 21 12 21z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.3" stroke="currentColor" stroke-width="1.6"/></svg> زبائن يجب زيارتهم</h2>' +
+      '<p class="field-hint" style="margin-bottom:10px;">تظهر تلقائيًا حسب موعد محدد يدويًا لكل زبون، أو عدد أيام بدون زيارة (تتحكم فيه الإدارة من إعدادات الإشعارات).</p>' +
+      repFilterBox +
+      '<div class="geo-status" id="dueStatus"></div>' +
+      '<div id="dueList"></div>' +
+      transferBox;
+
+    loadDueCustomers();
+  }
+
+  function loadDueCustomers() {
+    const status = document.getElementById('dueStatus');
+    const list = document.getElementById('dueList');
+    if (!status || !list) return;
+    status.textContent = 'جارٍ التحميل...';
+    list.innerHTML = '';
+    const repSel = document.getElementById('dueRepFilter');
+    const repFilter = repSel ? repSel.value : '';
+
+    fetchWithTimeout(WEB_APP_URL + '?action=getDueCustomers&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || '') +
+      (repFilter ? '&rep=' + encodeURIComponent(repFilter) : ''))
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.result !== 'success') {
+          status.textContent = 'تعذّر تحميل القائمة: ' + getErrorMessage({ message: data.error });
+          return;
+        }
+        if (!data.customers.length) {
+          status.textContent = 'ما فيه زبائن يحتاجون زيارة حاليًا 👍';
+          return;
+        }
+        status.textContent = 'عدد الزبائن: ' + data.customers.length;
+        const overview = canPlan();
+        data.customers.forEach(function (c) {
+          const card = document.createElement('div');
+          card.className = 'route-card';
+
+          const title = document.createElement('div');
+          title.className = 'route-card-title';
+          title.textContent = c.name || '(بدون اسم)';
+          card.appendChild(title);
+
+          const urgency = document.createElement('span');
+          const veryLate = !c.lastVisit || c.daysSince >= 30;
+          urgency.className = 'pill ' + (veryLate ? 'p-red' : 'p-amber');
+          urgency.textContent = c.nextDue ? ('موعد محدد: ' + c.nextDue) : (c.lastVisit ? ('متأخر ' + c.daysSince + ' يوم') : 'لم يُزر إطلاقًا');
+          card.appendChild(urgency);
+
+          if (c.area) {
+            const area = document.createElement('div');
+            area.className = 'route-card-detail';
+            area.innerHTML = '<svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M12 21s7-6.5 7-11.5A7 7 0 105 9.5C5 14.5 12 21 12 21z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.3" stroke="currentColor" stroke-width="1.6"/></svg> ' + esc(c.area);
+            card.appendChild(area);
+          }
+          if (overview && c.rep) {
+            const repLine = document.createElement('div');
+            repLine.className = 'route-card-detail';
+            repLine.innerHTML = '<svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="7" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> المندوب: ' + esc(c.rep);
+            card.appendChild(repLine);
+          }
+          if (c.lastVisit) {
+            const lv = document.createElement('div');
+            lv.className = 'route-card-detail';
+            lv.innerHTML = '<svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> آخر زيارة: ' + esc(c.lastVisit);
+            card.appendChild(lv);
+          }
+
+          let phoneNum = String(c.phone || '').replace(/[^0-9]/g, '');
+          if (phoneNum.length === 10 && phoneNum.charAt(0) === '7') phoneNum = '0' + phoneNum;
+          const actions = document.createElement('div');
+          actions.className = 'route-card-actions';
+          if (phoneNum) {
+            const call = document.createElement('a');
+            call.href = 'tel:' + phoneNum;
+            call.className = 'nav-btn call-btn';
+            call.innerHTML = '<svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M6.5 4.5c.5 2 1.3 3.9 2.5 5.6-1 1-1 1.5-1.5 2 1.3 2.6 3.4 4.7 6 6 .5-.5 1-.5 2-1.5 1.7 1.2 3.6 2 5.6 2.5.5-3.5-.5-4.5-2.5-6-.5.5-1 1.5-1.5 2-2-1-3.6-2.6-4.6-4.6.5-.5 1.5-1 2-1.5-1.5-2-2.5-3-6-2.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg> اتصال';
+            actions.appendChild(call);
+          }
+          if (actions.children.length) card.appendChild(actions);
+
+          // تحديد/إلغاء موعد الزيارة القادمة يدويًا — للمندوب بزبونه هو، وللمشرف/الإدارة بأي زبون.
+          const dateRow = document.createElement('div');
+          dateRow.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:10px;';
+          const dateInput = document.createElement('input');
+          dateInput.type = 'date';
+          dateInput.value = c.nextDue || '';
+          dateInput.style.flex = '1';
+          const dateBtn = document.createElement('button');
+          dateBtn.type = 'button';
+          dateBtn.className = 'submit-btn';
+          dateBtn.style.cssText = 'width:auto;padding:8px 14px;';
+          dateBtn.textContent = 'حفظ الموعد';
+          dateBtn.onclick = function () { setCustomerNextVisitDate(c.id, dateInput.value, dateBtn); };
+          dateRow.appendChild(dateInput);
+          dateRow.appendChild(dateBtn);
+          card.appendChild(dateRow);
+
+          // تحويل الزبون لمندوب ثاني — الإدارة فقط.
+          if (isManagement()) {
+            const reassignRow = document.createElement('div');
+            reassignRow.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:8px;';
+            const reassignSel = document.createElement('select');
+            reassignSel.style.flex = '1';
+            reassignSel.innerHTML = '<option value="" disabled selected>تحويل لمندوب آخر</option>' +
+              REP_NAMES.filter(function (r) { return r !== c.rep; }).map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + '</option>'; }).join('');
+            const reassignBtn = document.createElement('button');
+            reassignBtn.type = 'button';
+            reassignBtn.className = 'submit-btn';
+            reassignBtn.style.cssText = 'width:auto;padding:8px 14px;';
+            reassignBtn.textContent = 'تحويل';
+            reassignBtn.onclick = function () {
+              if (!reassignSel.value) return;
+              reassignCustomerToRep(c.id, reassignSel.value, reassignBtn);
+            };
+            reassignRow.appendChild(reassignSel);
+            reassignRow.appendChild(reassignBtn);
+            card.appendChild(reassignRow);
+          }
+
+          list.appendChild(card);
+        });
+      })
+      .catch(function () { status.textContent = 'تعذّر الاتصال بالخادم'; });
+  }
+
+  function setCustomerNextVisitDate(customerId, dateValue, btn) {
+    if (btn) btn.disabled = true;
+    const body = new FormData();
+    body.append('action', 'setCustomerNextVisit');
+    body.append('username', (currentAdmin && currentAdmin.username) || '');
+    body.append('password', (currentAdmin && currentAdmin.pass) || '');
+    body.append('customerId', customerId);
+    body.append('nextDate', dateValue || '');
+    fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.result === 'success') { showToast('تم حفظ الموعد', 'success'); loadDueCustomers(); }
+        else { showToast('حدث خطأ، حاول مرة ثانية', 'error'); if (btn) btn.disabled = false; }
+      })
+      .catch(function () { showToast('تعذّر الاتصال بالخادم', 'error'); if (btn) btn.disabled = false; });
+  }
+
+  function reassignCustomerToRep(customerId, newRep, btn) {
+    if (!confirm('تحويل هذا الزبون إلى "' + newRep + '"؟')) return;
+    if (btn) btn.disabled = true;
+    const body = new FormData();
+    body.append('action', 'reassignCustomer');
+    body.append('username', (currentAdmin && currentAdmin.username) || '');
+    body.append('password', (currentAdmin && currentAdmin.pass) || '');
+    body.append('customerId', customerId);
+    body.append('newRep', newRep);
+    fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.result === 'success') { showToast('تم التحويل', 'success'); loadDueCustomers(); }
+        else { showToast('حدث خطأ، حاول مرة ثانية', 'error'); if (btn) btn.disabled = false; }
+      })
+      .catch(function () { showToast('تعذّر الاتصال بالخادم', 'error'); if (btn) btn.disabled = false; });
+  }
+
+  function bulkReassignCustomers() {
+    const fromRep = document.getElementById('transferFromRep').value;
+    const toRep = document.getElementById('transferToRep').value;
+    const msg = document.getElementById('transferMsg');
+    msg.style.display = 'none';
+    if (!fromRep || !toRep) {
+      msg.className = 'msg error'; msg.textContent = 'اختر المندوبين (من / إلى)'; msg.style.display = 'block';
+      return;
+    }
+    if (fromRep === toRep) {
+      msg.className = 'msg error'; msg.textContent = 'اختر مندوبين مختلفين'; msg.style.display = 'block';
+      return;
+    }
+    if (!confirm('نقل كل زبائن "' + fromRep + '" إلى "' + toRep + '"؟ هذا يشمل كل زبائنه الحاليين، مو بس اللي بالقائمة فوق.')) return;
+    const body = new FormData();
+    body.append('action', 'reassignCustomer');
+    body.append('username', (currentAdmin && currentAdmin.username) || '');
+    body.append('password', (currentAdmin && currentAdmin.pass) || '');
+    body.append('fromRep', fromRep);
+    body.append('newRep', toRep);
+    fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.result === 'success') {
+          msg.className = 'msg success';
+          msg.textContent = 'تم نقل ' + data.count + ' زبون';
+          msg.style.display = 'block';
+          loadDueCustomers();
+        } else {
+          msg.className = 'msg error'; msg.textContent = 'حدث خطأ أثناء النقل'; msg.style.display = 'block';
+        }
+      })
+      .catch(function () { msg.className = 'msg error'; msg.textContent = 'تعذّر الاتصال بالخادم'; msg.style.display = 'block'; });
   }
 
   function buildCompetitorsPanel() {
@@ -4526,6 +4755,8 @@
       '<input type="tel" id="notifEmailDays" inputmode="numeric" maxlength="2">' +
       '<label for="notifBackupDays">كم يوم بدون نسخة احتياطية ناجحة يعتبر "متوقف"</label>' +
       '<input type="tel" id="notifBackupDays" inputmode="numeric" maxlength="2">' +
+      '<label for="notifRevisitDays">كم يوم بدون زيارة يخلي الزبون يظهر بتبويب "يجب زيارته" (ما لم يكن له تاريخ محدد يدويًا)</label>' +
+      '<input type="tel" id="notifRevisitDays" inputmode="numeric" maxlength="3">' +
       '<button type="button" class="submit-btn" onclick="saveNotifSettings()"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M5 4h11l3 3v13H5V4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 4v5h8V4M8 20v-6h8v6" stroke="currentColor" stroke-width="1.8"/></svg> حفظ الإعدادات</button>' +
       '<div class="msg success" id="notifSettingsMsg"></div>';
 
@@ -4539,6 +4770,7 @@
         document.getElementById('notifRouteHour').value = s.routeMissingHour;
         document.getElementById('notifEmailDays').value = s.emailStaleDays;
         document.getElementById('notifBackupDays').value = s.backupStaleDays;
+        document.getElementById('notifRevisitDays').value = s.revisitDueDays;
       })
       .catch(function (err) { /* صامتة — غير حرجة */ });
   }
@@ -4555,6 +4787,7 @@
     body.append('routeMissingHour', document.getElementById('notifRouteHour').value || '17');
     body.append('emailStaleDays', document.getElementById('notifEmailDays').value || '3');
     body.append('backupStaleDays', document.getElementById('notifBackupDays').value || '3');
+    body.append('revisitDueDays', document.getElementById('notifRevisitDays').value || '15');
     body.append('username', (currentAdmin && currentAdmin.username) || '');
     body.append('password', (currentAdmin && currentAdmin.pass) || '');
 
@@ -5882,6 +6115,7 @@
     }
     if (canPlan()) {
       html += '<button type="button" class="home-btn admin" onclick="buildNeglectedPanel()"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M12 4l9.5 16.5H2.5L12 4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 10.5v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17.3" r=".95" fill="currentColor"/></svg> متابعة النقاط (أولوية + مهملة)</button>' +
+        '<button type="button" class="home-btn secondary" onclick="buildDueCustomersPanel()"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M12 21s7-6.5 7-11.5A7 7 0 105 9.5C5 14.5 12 21 12 21z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.3" stroke="currentColor" stroke-width="1.6"/></svg> زبائن يجب زيارتهم (كل المندوبين)</button>' +
         '<button type="button" class="home-btn" onclick="buildStatusByRepPanel()"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M5 20V10M12 20V4M19 20v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> توزيع حالات الزبائن حسب المندوب</button>';
     }
     content.innerHTML = html;
