@@ -502,6 +502,8 @@
   .waze-btn { background: rgba(39,46,27,0.1); color: var(--pine); }
   .gmaps-btn { background: rgba(86,99,63,0.14); color: var(--green); }
   .call-btn { background: rgba(86,99,63,0.14); color: var(--teal); }
+  .save-btn { background: rgba(140,73,26,0.12); color: var(--accent-dark); border: none; cursor: pointer; font-family: inherit; }
+  .transfer-btn { background: rgba(61,71,43,0.14); color: var(--violet); border: none; cursor: pointer; font-family: inherit; }
 
   @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -2765,8 +2767,8 @@
           dateInput.style.flex = '1';
           const dateBtn = document.createElement('button');
           dateBtn.type = 'button';
-          dateBtn.className = 'submit-btn';
-          dateBtn.style.cssText = 'width:auto;padding:8px 14px;';
+          dateBtn.className = 'nav-btn save-btn';
+          dateBtn.style.flex = '0 0 auto';
           dateBtn.textContent = 'حفظ الموعد';
           dateBtn.onclick = function () { setCustomerNextVisitDate(c.id, dateInput.value, dateBtn); };
           dateRow.appendChild(dateInput);
@@ -2783,8 +2785,8 @@
               REP_NAMES.filter(function (r) { return r !== c.rep; }).map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + '</option>'; }).join('');
             const reassignBtn = document.createElement('button');
             reassignBtn.type = 'button';
-            reassignBtn.className = 'submit-btn';
-            reassignBtn.style.cssText = 'width:auto;padding:8px 14px;';
+            reassignBtn.className = 'nav-btn transfer-btn';
+            reassignBtn.style.flex = '0 0 auto';
             reassignBtn.textContent = 'تحويل';
             reassignBtn.onclick = function () {
               if (!reassignSel.value) return;
