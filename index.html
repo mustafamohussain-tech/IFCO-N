@@ -1697,7 +1697,12 @@
   function toggleSidebar() {
     const open = document.getElementById('sidebar').classList.toggle('open');
     document.getElementById('sidebarBackdrop').classList.toggle('open', open);
-    if (open) buildSidebarMenu();
+    if (open) {
+      buildSidebarMenu();
+      // زر رجوع الهاتف وهو مفتوح يسكّرها بس، ما يطلع من التطبيق ولا يغيّر
+      // الشاشة — نفس منطق __pushNavState المستخدم لباقي الشاشات.
+      __pushNavState(closeSidebar);
+    }
   }
   function closeSidebar() {
     document.getElementById('sidebar').classList.remove('open');
