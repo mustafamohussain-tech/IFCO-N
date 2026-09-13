@@ -1877,7 +1877,10 @@
     const container = document.getElementById('customFieldsContainer');
     container.innerHTML = '';
     currentCustomFields = [];
-    fetchWithTimeout(WEB_APP_URL + '?action=getFormSchema&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || '') + '&formType=' + formType)
+    // يرجّع الـ promise (بدل ما يكون fire-and-forget) حتى endPointVisitFromCard
+    // يقدر ينتظرها قبل ما يفحص صلاحية الفورمة — لو فيه حقل إضافي إلزامي لسا
+    // ما انبنى بالـDOM وقت الفحص، checkValidity() ما راح يشوفه أصلًا.
+    return fetchWithTimeout(WEB_APP_URL + '?action=getFormSchema&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || '') + '&formType=' + formType)
       .then(function (res) { return res.json(); })
       .then(function (data) {
         if (data.result !== 'success' || !data.fields || !data.fields.length) return;
@@ -8254,7 +8257,7 @@
   // المختارين على البطاقة، ونرسلها مباشرة. لو فيه حقل إضافي إلزامي
   // (تضيفه الإدارة أحيانًا من "تصميم الفورمة") ناقص، نفتح الفورمة عادي
   // حتى المندوب يشوفه ويكمّله، بدل ما يفشل الإرسال بصمت.
-  function endPointVisitFromCard(pid, pointName, area, phone, myAccuracy) {
+  async function endPointVisitFromCard(pid, pointName, area, phone, myAccuracy) {
     const cardStatus = document.getElementById('cardStatus_' + pid);
     const cardReason = document.getElementById('cardReason_' + pid);
     const chosenStatus = cardStatus ? cardStatus.value : '';
@@ -8270,7 +8273,10 @@
     }
 
     clearInterval(activeVisitTimerInterval);
-    openVisitFormForPoint(pointName, area, activeVisit.lat, activeVisit.lng, phone, myAccuracy, true);
+    // ننتظرها (بدل fire-and-forget) — لو فيه حقل إضافي إلزامي (تضيفه
+    // الإدارة لاحقًا من "تصميم الفورمة")، لازم يوصل ويُبنى بالـDOM قبل ما
+    // نفحص صلاحية الفورمة بالأسفل، وإلا checkValidity() ما راح يشوفه.
+    await openVisitFormForPoint(pointName, area, activeVisit.lat, activeVisit.lng, phone, myAccuracy, true);
     const statusSelect = document.getElementById('status');
     statusSelect.value = chosenStatus;
     statusSelect.dispatchEvent(new Event('change'));
@@ -8383,10 +8389,11 @@
     document.getElementById('geoStatus').innerHTML = 'تم تحديد الموقع تلقائيًا لهذه النقطة <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     document.getElementById('submitBtn').disabled = false;
     document.getElementById('submitBtn').textContent = '⏹️ إنهاء الزيارة';
-    loadCustomFormFields('route');
+    const customFieldsPromise = loadCustomFormFields('route');
     // trigger stored-store autofill (phone / last visit) for this name
     const evt = new Event('input');
     document.getElementById('store').dispatchEvent(evt);
+    return customFieldsPromise;
   }
 
   // --- Remember stores on this device: autofill phone/area when a known store name is typed ---
