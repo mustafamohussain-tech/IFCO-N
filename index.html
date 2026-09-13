@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-title" content="ifco">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Baloo+Bhaijaan+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -38,8 +38,8 @@
          (لا بنفسجي ولا أزرق ولا أحمر منفصل)؛ حتى "الخطر/التحذير" بهذا
          النظام يرجع لعائلة التراكوتا الغامقة (--accent-800) مو لون أحمر
          منفصل — نفس اختيار الملف الأصلي بالضبط.
-       • خط العناوين Baloo Bhaijaan 2 (عريض ومدوّر) فوق Cairo للنص
-         العادي — نفس زوج الخطوط بالملف الأصلي.
+       • خط واحد بكل النظام: Alexandria (عناوين ونص عادي وأرقام) —
+         يدعم العربي بالكامل بكل أوزانه.
        • كل شي مدوّر لحد الدائرة الكاملة (999px) على الأزرار والحقول
          والشارات؛ البطاقات تاخذ زوايا كبيرة بس مو دائرية بالكامل.
      كل أسماء الـclasses/IDs محفوظة 100% — هذا تجديد بصري فقط. */
@@ -76,9 +76,9 @@
     --text-dim: #645c50;
     --text-mute: #6f675a;
 
-    --font-body: 'Cairo', 'Tahoma', 'Segoe UI', sans-serif;
-    --font-heading: 'Baloo Bhaijaan 2', 'Cairo', 'Tahoma', sans-serif;
-    --font-mono: 'Cairo', 'Tahoma', 'Segoe UI', sans-serif;
+    --font-body: 'Alexandria', 'Tahoma', 'Segoe UI', sans-serif;
+    --font-heading: 'Alexandria', 'Tahoma', 'Segoe UI', sans-serif;
+    --font-mono: 'Alexandria', 'Tahoma', 'Segoe UI', sans-serif;
 
     --sp-1: 8px; --sp-2: 12px; --sp-3: 16px; --sp-4: 24px;
     --r-sm: 12px; --r-md: 16px; --r-lg: 26px;
@@ -4009,7 +4009,7 @@
           });
 
           marker.bindPopup(
-            '<div style="direction:rtl;font-family:Cairo,Tahoma;min-width:160px;">' +
+            '<div style="direction:rtl;font-family:Alexandria,Tahoma;min-width:160px;">' +
             '<b>' + esc(p.n) + '</b><br>' +
             (p.id ? '🆔 ' + esc(p.id) + '<br>' : '') +
             '<svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M12 21s7-6.5 7-11.5A7 7 0 105 9.5C5 14.5 12 21 12 21z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.3" stroke="currentColor" stroke-width="1.6"/></svg> ' + esc(p.a || '') + '<br>' +
