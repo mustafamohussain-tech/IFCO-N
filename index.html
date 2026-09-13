@@ -8988,6 +8988,8 @@
     const phoneToSave = document.getElementById('phone').value;
     const areaToSave = document.getElementById('area').value;
     const repToSave = document.getElementById('rep').value;
+    const latToSave = document.getElementById('lat').value;
+    const lngToSave = document.getElementById('lng').value;
     const visitDetails = {
       phone: document.getElementById('phone').value,
       customerStatus: statusSelect.value,
@@ -9017,7 +9019,11 @@
 
         saveStore(storeNameToSave, phoneToSave, areaToSave);
         incrementVisit(repToSave);
-        logActivePointVisit(repToSave, visitDetails);
+        if (isRouteVisit) {
+          logActivePointVisit(repToSave, visitDetails);
+        } else {
+          logNewPointVisit(repToSave, visitDetails, storeNameToSave, areaToSave, latToSave, lngToSave);
+        }
         // عدادات الشاشة الرئيسية (زيارات/نقاط اليوم) تتحدّث فورًا بعد أي
         // إرسال ناجح — بدون ما ننتظر المندوب يرجع للشاشة الرئيسية بنفسه.
         updateHomeStats();
@@ -9048,7 +9054,11 @@
         // الهادئ (queueBadge) يضل متوفر لأي وقت يريد يتأكد بنفسه.
         saveStore(storeNameToSave, phoneToSave, areaToSave);
         incrementVisit(repToSave);
-        logActivePointVisit(repToSave, visitDetails);
+        if (isRouteVisit) {
+          logActivePointVisit(repToSave, visitDetails);
+        } else {
+          logNewPointVisit(repToSave, visitDetails, storeNameToSave, areaToSave, latToSave, lngToSave);
+        }
         queueSubmission(formDataToObject(formData));
         updateHomeStats();
         const wasRouteVisitOffline = isRouteVisit;
@@ -9141,6 +9151,44 @@
     activeVisitBtn = null;
     activeVisitResetArgs = null;
     document.querySelectorAll('.route-visit-start-btn').forEach(function (b) { b.disabled = false; });
+  }
+
+  // تصحيح: نقاط جديدة (مو زيارات خط سير) كانت ما تنسجل إطلاقًا بجدول
+  // FieldVisitLog — activeVisit يضل null لأي نقطة جديدة (openNewPointForm
+  // يصفّره عمدًا)، فـlogActivePointVisit كانت تتوقف بأول سطر فيها
+  // (if (!activeVisit) return;) وما توصل أبدًا لسطر الإرسال. تبويب "نقاط
+  // جديدة" بشاشة التقارير كان موجود وجاهز بالواجهة، بس ما يرجّع نتائج
+  // إطلاقًا بسبب هذا. هذي الدالة تسجّل نقطة جديدة بنفس الجدول، بدون مؤقت
+  // (ما فيه "بدء/إنهاء" لنقطة جديدة، فالمدة صفر دايمًا).
+  function logNewPointVisit(repName, details, storeName, area, lat, lng) {
+    details = details || {};
+    const body = new FormData();
+    body.append('action', 'logVisit');
+    body.append('username', (currentAdmin && currentAdmin.username) || '');
+    body.append('password', (currentAdmin && currentAdmin.pass) || '');
+    body.append('rep', repName || '');
+    body.append('pointName', storeName || '');
+    body.append('area', area || '');
+    body.append('visitType', 'نقطة جديدة');
+    body.append('durationSeconds', '0');
+    body.append('phone', details.phone || '');
+    body.append('customerStatus', details.customerStatus || '');
+    body.append('reason', details.reason || '');
+    body.append('competitors', details.competitors || '');
+    body.append('needsPromoter', details.needsPromoter || '');
+    body.append('notes', details.notes || '');
+    body.append('Latitude', lat || '');
+    body.append('Longitude', lng || '');
+    body.append('officialLat', '');
+    body.append('officialLng', '');
+    body.append('distanceAtCheckin', '');
+    if (details.custom) {
+      Object.keys(details.custom).forEach(function (label) {
+        body.append(label, details.custom[label]);
+      });
+    }
+    fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body, mode: 'no-cors' })
+      .catch(function () { queueSubmission(formDataToObject(body)); });
   }
 </script>
   <div class="top-app-bar">
