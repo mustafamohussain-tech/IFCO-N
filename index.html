@@ -818,14 +818,11 @@
     }
     #adminContent:has(.home-btn:nth-of-type(3)) > .home-btn { margin-bottom: 0; }
 
-    /* قوائم التقارير (بطاقات .route-card متعددة) تصير عمودين بدل عمود
-       واحد طويل — استخدام أفضل لعرض الشاشة، نفس منطق لوحات التحكم. */
-    #adminContent:has(.route-card:nth-child(4)) {
-      column-count: 2; column-gap: 16px;
-    }
-    #adminContent:has(.route-card:nth-child(4)) > .route-card {
-      break-inside: avoid; display: inline-block; width: 100%;
-    }
+    /* تصحيح: تقسيم بطاقات .route-card لعمودين (column-count) جُرّب هنا —
+       بس بطاقات التقارير عدد أسطرها يتفاوت كثير (وحدة بس اسم+هاتف، ثانية
+       فيها سبب/منافسين/ملاحظات كمان)، وCSS multi-column ما يتعامل زين مع
+       ارتفاعات متفاوتة — يطلع عمودين مضغوطين وغير متوازنين. رجعناها عمود
+       واحد مرتب دايمًا (زي الموبايل، بس بعرض أوسع من .wide-card بس). */
   }
 
   /* ── قوائم الأزرار الطويلة بالموبايل (buildAdminMenu/buildReportsMenu
