@@ -8164,6 +8164,8 @@
   let activeVisit = null; // { pointName, area, lat, lng, startTime }
   let activeVisitTimerInterval = null;
   let activeVisitPid = null;
+  let activeVisitBtn = null;
+  let activeVisitResetArgs = null; // { pointName, area, pLat, pLng, phone } — لإرجاع الزر لحالة "بدء" صح بعد الإرسال
 
   function startPointVisit(pointName, area, pLat, pLng, btn, phone) {
     const pid = encodeURIComponent(pointName);
@@ -8209,6 +8211,7 @@
         rep: document.getElementById('routeRep').value,
         date: document.getElementById('routeDate').value || getTodayDateStr()
       };
+      activeVisitResetArgs = { pointName: pointName, area: area, pLat: pLat, pLng: pLng, phone: phone };
       startActiveVisitCardUI(pid, btn, pointName, area, phone, myAccuracy);
     }, function () {
       statusEl.textContent = 'تعذر تحديد موقعك، تأكد من تفعيل صلاحية الموقع.';
@@ -8221,6 +8224,7 @@
   // زيارة ثانية بنفس الوقت (activeVisit واحد بس بكل لحظة).
   function startActiveVisitCardUI(pid, btn, pointName, area, phone, myAccuracy) {
     activeVisitPid = pid;
+    activeVisitBtn = btn;
     const chip = document.getElementById('timerChip_' + pid);
     if (chip) chip.style.display = 'inline-flex';
     clearInterval(activeVisitTimerInterval);
@@ -8244,23 +8248,40 @@
     });
   }
 
-  // "إنهاء الزيارة" من البطاقة: ينقل حالة الزبون/السبب اللي اختارهم
-  // المندوب على البطاقة مباشرة لفورمة التفاصيل (بدل ما يعيد اختيارهم)،
-  // ويفتحها لإكمال باقي الحقول (ملاحظات، منافسين...) وتسجيل الزيارة فعليًا.
+  // "إنهاء الزيارة" من البطاقة: يسجّل الزيارة فورًا بدون ما يفتح أي شاشة
+  // ثانية — باقي حقول الفورمة (ملاحظات، منافسين، يحتاج مروج) اختيارية،
+  // فنعبّي فورمة التفاصيل بصمت بالخلفية (بدون عرضها) بحالة الزبون/السبب
+  // المختارين على البطاقة، ونرسلها مباشرة. لو فيه حقل إضافي إلزامي
+  // (تضيفه الإدارة أحيانًا من "تصميم الفورمة") ناقص، نفتح الفورمة عادي
+  // حتى المندوب يشوفه ويكمّله، بدل ما يفشل الإرسال بصمت.
   function endPointVisitFromCard(pid, pointName, area, phone, myAccuracy) {
-    clearInterval(activeVisitTimerInterval);
     const cardStatus = document.getElementById('cardStatus_' + pid);
     const cardReason = document.getElementById('cardReason_' + pid);
     const chosenStatus = cardStatus ? cardStatus.value : '';
     const chosenReason = cardReason ? cardReason.value : '';
 
-    openVisitFormForPoint(pointName, area, activeVisit.lat, activeVisit.lng, phone, myAccuracy);
+    if (!chosenStatus) {
+      showToast('اختر حالة الزبون أولًا', 'error');
+      return;
+    }
+    if (chosenStatus === 'لا يريد التعامل معنا' && !chosenReason) {
+      showToast('اختر سبب عدم التعامل أولًا', 'error');
+      return;
+    }
 
-    if (chosenStatus) {
-      const statusSelect = document.getElementById('status');
-      statusSelect.value = chosenStatus;
-      statusSelect.dispatchEvent(new Event('change'));
-      if (chosenReason) document.getElementById('reason').value = chosenReason;
+    clearInterval(activeVisitTimerInterval);
+    openVisitFormForPoint(pointName, area, activeVisit.lat, activeVisit.lng, phone, myAccuracy, true);
+    const statusSelect = document.getElementById('status');
+    statusSelect.value = chosenStatus;
+    statusSelect.dispatchEvent(new Event('change'));
+    if (chosenReason) document.getElementById('reason').value = chosenReason;
+
+    const form = document.getElementById('geoForm');
+    if (form.checkValidity()) {
+      form.requestSubmit();
+    } else {
+      showView('form');
+      showToast('أكمل الحقول الناقصة بالأسفل', 'error');
     }
   }
 
@@ -8297,10 +8318,12 @@
     document.getElementById('hasDisplayStand').value = '1';
   }
 
-  function openVisitFormForPoint(pointName, area, myLat, myLng, phone, myAccuracy) {
+  function openVisitFormForPoint(pointName, area, myLat, myLng, phone, myAccuracy, silent) {
     // Switch to the visit form and pre-fill store name + area + coordinates + rep + phone.
     isRouteVisit = true; // this is a visit to an existing point → skip duplicate check
-    showView('form');
+    // silent=true: نعبّي الفورمة بالخلفية بدون ما نعرضها (راجع endPointVisitFromCard) —
+    // تبقى مخفية بس تنرسل مباشرة لو كل الحقول الإلزامية مكتملة.
+    if (!silent) showView('form');
     document.getElementById('store').value = pointName;
     document.getElementById('area').value = area || '';
     document.getElementById('lat').value = myLat;
@@ -9083,15 +9106,33 @@
     fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body, mode: 'no-cors' })
       .catch(function () { queueSubmission(formDataToObject(body)); });
     activeVisit = null;
-    // احتياطي: لو المندوب يرجع لخط السير بدون ما يكون فيه إعادة تحميل
-    // كاملة، نرجّع أزرار البطاقات الثانية شغّالة (كانت معطّلة أثناء الزيارة
-    // النشطة) بدل ما تضل متجمّدة.
+    // الزيارة صارت مسجّلة — نرجّع بطاقة هذي النقطة بالذات لحالة "بدء" عادية
+    // (المندوب يضل شايفها لأنه ما غادر شاشة خط السير إطلاقًا)، ونفك تعطيل
+    // باقي البطاقات اللي كانت معطّلة أثناء الزيارة النشطة.
     clearInterval(activeVisitTimerInterval);
     if (activeVisitPid) {
       const chip = document.getElementById('timerChip_' + activeVisitPid);
       if (chip) chip.style.display = 'none';
+      const statusField = document.getElementById('statusField_' + activeVisitPid);
+      if (statusField) statusField.style.display = 'none';
+      const cardStatus = document.getElementById('cardStatus_' + activeVisitPid);
+      if (cardStatus) cardStatus.value = '';
+      const cardReasonWrap = document.getElementById('cardReasonWrap_' + activeVisitPid);
+      if (cardReasonWrap) cardReasonWrap.style.display = 'none';
+    }
+    if (activeVisitBtn && activeVisitResetArgs) {
+      const a = activeVisitResetArgs;
+      const resetBtn = activeVisitBtn;
+      resetBtn.disabled = false;
+      resetBtn.textContent = '▶️ بدء الزيارة (تسجيل مرة أخرى)';
+      resetBtn.style.opacity = '0.7';
+      resetBtn.onclick = function () {
+        startPointVisit(a.pointName, a.area, a.pLat, a.pLng, resetBtn, a.phone);
+      };
     }
     activeVisitPid = null;
+    activeVisitBtn = null;
+    activeVisitResetArgs = null;
     document.querySelectorAll('.route-visit-start-btn').forEach(function (b) { b.disabled = false; });
   }
 </script>
