@@ -7924,14 +7924,32 @@
           const lng = row['Longitude'];
           const pointName = row['اسم نقطة البيع'] || '';
           const alreadyVisited = !!row.visited;
+          const pid = encodeURIComponent(pointName);
 
           const card = document.createElement('div');
           card.className = 'route-card' + (alreadyVisited ? ' visited-card' : '');
 
+          const cardTop = document.createElement('div');
+          cardTop.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:10px;';
+
+          const titleBlock = document.createElement('div');
+          titleBlock.style.minWidth = '0';
           const title = document.createElement('div');
           title.className = 'route-card-title';
           title.innerHTML = (alreadyVisited ? '<svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> ' : '') + esc(pointName);
-          card.appendChild(title);
+          titleBlock.appendChild(title);
+          const lastVisitLine = document.createElement('div');
+          lastVisitLine.style.cssText = 'font-size:11.5px;color:var(--text-mute);margin-top:2px;';
+          lastVisitLine.textContent = formatLastVisitLine(row['آخر زيارة']);
+          titleBlock.appendChild(lastVisitLine);
+          cardTop.appendChild(titleBlock);
+
+          const timerChip = document.createElement('span');
+          timerChip.id = 'timerChip_' + pid;
+          timerChip.style.cssText = 'display:none;flex-shrink:0;align-items:center;gap:6px;background:rgba(100,51,18,0.1);color:var(--accent-dark);font-weight:800;font-size:13px;font-variant-numeric:tabular-nums;padding:5px 10px;border-radius:999px;white-space:nowrap;';
+          timerChip.innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:var(--accent-dark);"></span><span id="timerTime_' + pid + '">00:00</span>';
+          cardTop.appendChild(timerChip);
+          card.appendChild(cardTop);
 
           const phone = document.createElement('div');
           phone.className = 'route-card-detail';
@@ -7955,6 +7973,31 @@
                 : (Math.round(row._dist / 100) / 10) + ' كم');
             card.appendChild(distEl);
           }
+
+          // حالة الزبون + السبب — تظهر بس بعد "بدء الزيارة" (راجع startActiveVisitCardUI)
+          const statusField = document.createElement('div');
+          statusField.id = 'statusField_' + pid;
+          statusField.style.cssText = 'display:none;margin-top:10px;';
+          statusField.innerHTML =
+            '<label for="cardStatus_' + pid + '" style="margin:0 0 6px;">حالة الزبون</label>' +
+            '<select id="cardStatus_' + pid + '" onchange="cardStatusChanged(\'' + pid + '\')">' +
+              '<option value="" disabled selected>اختر الحالة</option>' +
+              '<option value="تم البيع">تم البيع</option>' +
+              '<option value="لديه مخزون">لديه مخزون</option>' +
+              '<option value="لا يريد التعامل معنا">لا يريد التعامل معنا</option>' +
+              '<option value="مسؤول المشتريات غير متواجد">مسؤول المشتريات غير متواجد</option>' +
+            '</select>' +
+            '<div id="cardReasonWrap_' + pid + '" style="display:none;margin-top:10px;">' +
+              '<label for="cardReason_' + pid + '" style="margin:0 0 6px;">سبب عدم التعامل</label>' +
+              '<select id="cardReason_' + pid + '">' +
+                '<option value="" disabled selected>اختر السبب</option>' +
+                '<option value="بسبب السعر">بسبب السعر</option>' +
+                '<option value="منتج غير معروف">منتج غير معروف</option>' +
+                '<option value="يتعامل فقط بالستندر">يتعامل فقط بالستندر</option>' +
+                '<option value="يشتري من جملة">يشتري من جملة</option>' +
+              '</select>' +
+            '</div>';
+          card.appendChild(statusField);
 
           if (lat && lng) {
             const actions = document.createElement('div');
@@ -7994,7 +8037,7 @@
           if (lat && lng) {
             const visitBtn = document.createElement('button');
             visitBtn.type = 'button';
-            visitBtn.className = 'submit-btn';
+            visitBtn.className = 'submit-btn route-visit-start-btn';
             visitBtn.style.marginTop = '10px';
             if (alreadyVisited) {
               visitBtn.textContent = '▶️ بدء الزيارة (تسجيل مرة أخرى)';
@@ -8009,7 +8052,7 @@
 
             const visitStatus = document.createElement('div');
             visitStatus.className = 'geo-status';
-            visitStatus.id = 'visitStatus_' + encodeURIComponent(pointName);
+            visitStatus.id = 'visitStatus_' + pid;
             card.appendChild(visitStatus);
           }
 
@@ -8119,14 +8162,18 @@
   const GEOFENCE_MESSAGE_RADIUS_M = 20; // shown to the rep — never changes
   const GEOFENCE_EFFECTIVE_RADIUS_M = 80; // actual tolerance used for the check (GPS drift buffer)
   let activeVisit = null; // { pointName, area, lat, lng, startTime }
+  let activeVisitTimerInterval = null;
+  let activeVisitPid = null;
 
   function startPointVisit(pointName, area, pLat, pLng, btn, phone) {
-    const statusEl = document.getElementById('visitStatus_' + encodeURIComponent(pointName));
+    const pid = encodeURIComponent(pointName);
+    const statusEl = document.getElementById('visitStatus_' + pid);
     if (!navigator.geolocation) {
       statusEl.textContent = 'المتصفح لا يدعم تحديد الموقع';
       return;
     }
     statusEl.textContent = 'جارٍ التحقق من موقعك...';
+    btn.disabled = true;
 
     navigator.geolocation.getCurrentPosition(function (position) {
       const myLat = position.coords.latitude;
@@ -8139,16 +8186,17 @@
       // ما تغيّر شي بمنطق الجيوفنس نفسه ولا بنطاقه).
       if (dist > GEOFENCE_EFFECTIVE_RADIUS_M && !isManagement()) {
         statusEl.textContent = 'أنت بعيد عن النقطة. يجب أن تكون ضمن ' + GEOFENCE_MESSAGE_RADIUS_M + ' متر لتسجيل الزيارة.';
+        btn.disabled = false;
         return;
       }
 
       if (dist > GEOFENCE_EFFECTIVE_RADIUS_M && isManagement()) {
-        statusEl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M12 4l9.5 16.5H2.5L12 4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 10.5v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17.3" r=".95" fill="currentColor"/></svg> خارج النطاق المحدد — تم تجاوزه بصلاحية الإدارة. جارٍ فتح الزيارة...';
+        statusEl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M12 4l9.5 16.5H2.5L12 4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 10.5v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17.3" r=".95" fill="currentColor"/></svg> خارج النطاق المحدد — تم تجاوزه بصلاحية الإدارة. تم بدء تسجيل الوقت.';
       } else {
         statusEl.textContent = 'أنت داخل النطاق. تم بدء تسجيل الوقت.';
       }
 
-      // Within range: start the timer and open the visit form pre-filled.
+      // يضل بخط السير — ما نفتح فورمة التفاصيل إلا لما يضغط "إنهاء الزيارة".
       activeVisit = {
         pointName: pointName,
         area: area,
@@ -8161,10 +8209,84 @@
         rep: document.getElementById('routeRep').value,
         date: document.getElementById('routeDate').value || getTodayDateStr()
       };
-      openVisitFormForPoint(pointName, area, myLat, myLng, phone, myAccuracy);
+      startActiveVisitCardUI(pid, btn, pointName, area, phone, myAccuracy);
     }, function () {
       statusEl.textContent = 'تعذر تحديد موقعك، تأكد من تفعيل صلاحية الموقع.';
+      btn.disabled = false;
     }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+  }
+
+  // يبني حالة "الزيارة شغّالة" على نفس بطاقة خط السير — مؤقت حي +
+  // مربّع حالة الزبون يظهر + الزر يتحول لـ"إنهاء الزيارة". يمنع بدء
+  // زيارة ثانية بنفس الوقت (activeVisit واحد بس بكل لحظة).
+  function startActiveVisitCardUI(pid, btn, pointName, area, phone, myAccuracy) {
+    activeVisitPid = pid;
+    const chip = document.getElementById('timerChip_' + pid);
+    if (chip) chip.style.display = 'inline-flex';
+    clearInterval(activeVisitTimerInterval);
+    activeVisitTimerInterval = setInterval(function () {
+      const timeEl = document.getElementById('timerTime_' + pid);
+      if (!timeEl || !activeVisit) return;
+      const sec = Math.floor((Date.now() - activeVisit.startTime) / 1000);
+      const m = Math.floor(sec / 60), s = sec % 60;
+      timeEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }, 1000);
+
+    const statusField = document.getElementById('statusField_' + pid);
+    if (statusField) statusField.style.display = 'block';
+
+    btn.disabled = false;
+    btn.textContent = '⏹️ إنهاء الزيارة';
+    btn.onclick = function () { endPointVisitFromCard(pid, pointName, area, phone, myAccuracy); };
+
+    document.querySelectorAll('.route-visit-start-btn').forEach(function (b) {
+      if (b !== btn) b.disabled = true;
+    });
+  }
+
+  // "إنهاء الزيارة" من البطاقة: ينقل حالة الزبون/السبب اللي اختارهم
+  // المندوب على البطاقة مباشرة لفورمة التفاصيل (بدل ما يعيد اختيارهم)،
+  // ويفتحها لإكمال باقي الحقول (ملاحظات، منافسين...) وتسجيل الزيارة فعليًا.
+  function endPointVisitFromCard(pid, pointName, area, phone, myAccuracy) {
+    clearInterval(activeVisitTimerInterval);
+    const cardStatus = document.getElementById('cardStatus_' + pid);
+    const cardReason = document.getElementById('cardReason_' + pid);
+    const chosenStatus = cardStatus ? cardStatus.value : '';
+    const chosenReason = cardReason ? cardReason.value : '';
+
+    openVisitFormForPoint(pointName, area, activeVisit.lat, activeVisit.lng, phone, myAccuracy);
+
+    if (chosenStatus) {
+      const statusSelect = document.getElementById('status');
+      statusSelect.value = chosenStatus;
+      statusSelect.dispatchEvent(new Event('change'));
+      if (chosenReason) document.getElementById('reason').value = chosenReason;
+    }
+  }
+
+  function cardStatusChanged(pid) {
+    const sel = document.getElementById('cardStatus_' + pid);
+    const wrap = document.getElementById('cardReasonWrap_' + pid);
+    if (!sel || !wrap) return;
+    const isNoDeal = sel.value === 'لا يريد التعامل معنا';
+    wrap.style.display = isNoDeal ? 'block' : 'none';
+    if (!isNoDeal) {
+      const reasonSel = document.getElementById('cardReason_' + pid);
+      if (reasonSel) reasonSel.value = '';
+    }
+  }
+
+  // "آخر زيارة" بشكل مقروء: نسبي (قبل كم يوم) + التاريخ، أو "لم يُزر
+  // إطلاقًا" لو فاضي.
+  function formatLastVisitLine(dateStr) {
+    dateStr = String(dateStr || '').trim();
+    if (!dateStr) return '🕐 لم يُزر إطلاقًا';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '🕐 لم يُزر إطلاقًا';
+    const days = Math.max(0, Math.floor((Date.now() - d.getTime()) / 86400000));
+    const displayDate = String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+    const rel = days === 0 ? 'اليوم' : days === 1 ? 'قبل يوم' : 'قبل ' + days + ' يوم';
+    return '🕐 آخر زيارة: ' + displayDate + ' — ' + rel;
   }
 
   // المندوب يقدر يفعّلها بس (مرة وحدة تكفي) — ما يقدر يلغيها من هذي الفورمة إطلاقًا.
@@ -8961,6 +9083,16 @@
     fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body, mode: 'no-cors' })
       .catch(function () { queueSubmission(formDataToObject(body)); });
     activeVisit = null;
+    // احتياطي: لو المندوب يرجع لخط السير بدون ما يكون فيه إعادة تحميل
+    // كاملة، نرجّع أزرار البطاقات الثانية شغّالة (كانت معطّلة أثناء الزيارة
+    // النشطة) بدل ما تضل متجمّدة.
+    clearInterval(activeVisitTimerInterval);
+    if (activeVisitPid) {
+      const chip = document.getElementById('timerChip_' + activeVisitPid);
+      if (chip) chip.style.display = 'none';
+    }
+    activeVisitPid = null;
+    document.querySelectorAll('.route-visit-start-btn').forEach(function (b) { b.disabled = false; });
   }
 </script>
   <div class="top-app-bar">
