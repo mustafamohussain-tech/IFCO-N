@@ -1573,7 +1573,8 @@
         items: [
           isRep() && { id: 'p-leaveRequest', label: 'طلب إجازة', fn: goPanel(buildLeaveRequestPanel) },
           canPlan() && { id: 'p-leaveReview', label: 'طلبات الإجازات', fn: goPanel(buildLeaveReviewPanel) },
-          (canPlan() || isManagement() || isOwner()) && { id: 'p-leavesToday', label: 'إجازات اليوم', fn: goPanel(buildLeavesTodayPanel) }
+          (canPlan() || isManagement() || isOwner()) && { id: 'p-leavesToday', label: 'إجازات اليوم', fn: goPanel(buildLeavesTodayPanel) },
+          (isHR() || canPlan() || isManagement() || isOwner()) && { id: 'p-repAreasToday', label: 'مناطق المندوبين اليوم', fn: goPanel(buildRepAreasTodayPanel) }
         ].filter(Boolean)
       },
       {
@@ -2165,6 +2166,9 @@
     } else if (isWarehouseKeeper()) {
       buildWarehouseKeeperPanel();
       showView('admin');
+    } else if (isHR()) {
+      buildRepAreasTodayPanel();
+      showView('admin');
     } else {
       buildDashboard();
       showView('admin');
@@ -2189,6 +2193,8 @@
       buildPromoterRouteView();
     } else if (isWarehouseKeeper()) {
       buildWarehouseKeeperPanel();
+    } else if (isHR()) {
+      buildRepAreasTodayPanel();
     } else {
       buildDashboard();
     }
@@ -2483,6 +2489,10 @@
     if (!currentAdmin) return false;
     return String(currentAdmin.role || '').trim() === 'امين المخزن';
   }
+  function isHR() {
+    if (!currentAdmin) return false;
+    return String(currentAdmin.role || '').trim() === 'موارد بشرية';
+  }
 
   // Field-work screens (route + new-point submission): reps + supervisor/management only
   function canDoFieldWork() {
@@ -2490,8 +2500,12 @@
   }
 
   // Route planning and neglected-points scheduling: supervisor + management
+  // تصحيح أمني: canPlan() denylist (يسمح لأي دور ما مستثنى صراحة) — دور
+  // "موارد بشرية" الجديد لازم يُستثنى هنا صراحة، وإلا يرث تلقائيًا كل
+  // صلاحيات التخطيط (خطوط سير، تقارير، إجازات، سيارات...) بالغلط، رغم إن
+  // وصوله المفروض يكون شاشة وحدة بس.
   function canPlan() {
-    return !!currentAdmin && !isOwner() && !isMarketingManager() && !isPromoter() && !isRep() && !isWarehouseKeeper();
+    return !!currentAdmin && !isOwner() && !isMarketingManager() && !isPromoter() && !isRep() && !isWarehouseKeeper() && !isHR();
   }
 
   // --- One-time backfill: assign IDs to existing customers without one ---
@@ -5874,6 +5888,71 @@
         });
       })
       .catch(function () { document.getElementById('leavesTodayList').innerHTML = '<div class="geo-status">تعذر الاتصال بالخادم</div>'; });
+  }
+
+  // شاشة "الموارد البشرية": كل مندوب + كل المناطق المحددة له اليوم بخط
+  // سيره (لو عنده أكثر من منطقة بنفس اليوم، تطلع كلهن). هذي الشاشة
+  // الرئيسية لحساب HR (يدخلها مباشرة بعد تسجيل الدخول، بدون لوحة مؤشرات
+  // عامة ما تخصه) — والإدارة تقدر تشوفها كمان من "الموارد البشرية" بالقائمة.
+  function buildRepAreasTodayPanel() {
+    const content = document.getElementById('adminContent');
+    if (!isHR() && !canPlan() && !isManagement() && !isOwner()) {
+      notAllowedPanel('هذه الصفحة غير متاحة لحسابك');
+      return;
+    }
+    content.innerHTML =
+      (isHR() ? '' : '<button type="button" class="back-btn" onclick="buildAdminMenu()"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;vertical-align:-3px"><path d="M9 6l6 6-6 6"/></svg> قائمة الإدارة</button>') +
+      '<h2 style="font-size:16px;margin-bottom:4px;"><svg viewBox="0 0 24 24" fill="none" width="18" height="18" style="vertical-align:-4px;display:inline-block;color:var(--accent-dark);"><path d="M9 20l-6-2V4l6 2 6-2 6 2v14l-6-2-6 2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 4v14M15 6v14" stroke="currentColor" stroke-width="1.8"/></svg> مناطق المندوبين اليوم</h2>' +
+      '<p class="field-hint" style="margin-bottom:10px;">مين رايح وين حسب خط السير المحدد له اليوم.</p>' +
+      '<label for="repAreasDate">التاريخ</label>' +
+      '<input type="date" id="repAreasDate" value="' + getTodayDateStr() + '" onchange="loadRepAreasToday()">' +
+      '<div class="geo-status" id="repAreasStatus"></div>' +
+      '<div id="repAreasList"></div>';
+
+    loadRepAreasToday();
+  }
+
+  function loadRepAreasToday() {
+    const status = document.getElementById('repAreasStatus');
+    const list = document.getElementById('repAreasList');
+    const date = document.getElementById('repAreasDate').value || getTodayDateStr();
+    if (!status || !list) return;
+    status.textContent = 'جارٍ التحميل...';
+    list.innerHTML = '';
+
+    fetchWithTimeout(WEB_APP_URL + '?action=getTodayRepAreas&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || '') + '&date=' + encodeURIComponent(date))
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.result !== 'success') {
+          status.textContent = 'تعذّر تحميل القائمة';
+          return;
+        }
+        if (!data.reps || !data.reps.length) {
+          status.textContent = 'ما فيه خط سير محدد لأي مندوب بهذا اليوم';
+          return;
+        }
+        status.textContent = 'عدد المندوبين: ' + data.reps.length;
+        data.reps.forEach(function (r) {
+          const card = document.createElement('div');
+          card.className = 'route-card';
+          const title = document.createElement('div');
+          title.className = 'route-card-title';
+          title.innerHTML = '<svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="7" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> ' + esc(r.rep);
+          card.appendChild(title);
+          const areasLine = document.createElement('div');
+          areasLine.style.marginTop = '6px';
+          r.areas.forEach(function (a) {
+            const pill = document.createElement('span');
+            pill.className = 'pill p-green';
+            pill.style.marginLeft = '4px';
+            pill.textContent = a;
+            areasLine.appendChild(pill);
+          });
+          card.appendChild(areasLine);
+          list.appendChild(card);
+        });
+      })
+      .catch(function () { status.textContent = 'تعذّر الاتصال بالخادم'; });
   }
 
   // لوحة مؤشرات تنفيذية — الشاشة الافتراضية بعد تسجيل الدخول (بدل قائمة
