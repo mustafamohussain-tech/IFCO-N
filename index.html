@@ -7137,11 +7137,13 @@
   // (لعرض خط سيره أو تسجيل نقطة بالنيابة عنه) ما يلقاه، رغم إنه مضاف صح
   // بالنظام. (ملاحظة: المندوب نفسه ما يتأثر — عنده منطق تعبئة تلقائي
   // لاسمه هو بس، منفصل عن هالقائمة). نعيد بناء القائمتين هنا من نفس البيانات.
-  function rebuildStaticRepSelect(selectId) {
+  function rebuildStaticRepSelect(selectId, allowEmpty) {
     const sel = document.getElementById(selectId);
     if (!sel) return;
     const currentVal = sel.value;
-    let html = '<option value="" disabled' + (currentVal ? '' : ' selected') + '>اختر المندوب</option>';
+    let html = allowEmpty
+      ? '<option value="">بدون فلترة</option>'
+      : ('<option value="" disabled' + (currentVal ? '' : ' selected') + '>اختر المندوب</option>');
     REP_NAMES.forEach(function (name) {
       html += '<option value="' + esc(name) + '">' + esc(name) + '</option>';
     });
@@ -7159,6 +7161,7 @@
         REP_NAMES = data.reps.filter(function (r) { return !r.disabled; }).map(function (r) { return r.name; });
         rebuildStaticRepSelect('routeRep');
         rebuildStaticRepSelect('rep');
+        rebuildStaticRepSelect('filterByRepSelect', true);
       })
       .catch(function () { /* نضل على القائمة الاحتياطية لو فشل الطلب */ });
   }
@@ -7200,6 +7203,9 @@
       '<select id="adminRep">' + repOptions + '</select>' +
       '<label>المناطق (اكتب للبحث واختر منطقة أو أكثر)</label>' +
       '<div id="areaPickerRoute"></div>' +
+      '<label for="filterByRepSelect" style="margin-top:16px;">فلترة حسب مندوب (اختياري) — يعرض زبائن زارهم هذا المندوب من قبل</label>' +
+      '<select id="filterByRepSelect"><option value="">بدون فلترة</option></select>' +
+      '<div class="field-hint">اختر مندوب هنا لعرض زبائنه (بدل أو بالإضافة للمناطق أعلاه) وتبني خط سير لمندوب ثاني اعتمادًا عليهم.</div>' +
       '<label style="margin-top:16px;">حالة الزبون (أشّر الحالات التي تريد إضافتها لخط السير)</label>' +
       '<div class="checkbox-group" id="statusFilterBox">' +
       '<label class="checkbox-item"><input type="checkbox" class="status-f" value="تم البيع" checked> تم البيع</label>' +
@@ -7225,23 +7231,30 @@
 
     // Initialize the searchable area picker
     initAreaPicker('areaPickerRoute', 'اكتب اسم المنطقة للبحث...');
+    rebuildStaticRepSelect('filterByRepSelect', true);
   }
 
   function loadAreaPoints() {
     const areas = getPickerAreas('areaPickerRoute');
+    const repFilterEl = document.getElementById('filterByRepSelect');
+    const repFilter = repFilterEl ? repFilterEl.value.trim() : '';
     const status = document.getElementById('adminStatus');
     const list = document.getElementById('adminPointsList');
     list.innerHTML = '';
     // NOTE: we do NOT clear selectedPoints here, so the supervisor can
     // accumulate points across loads into one route.
 
-    if (areas.length === 0) {
-      status.textContent = 'الرجاء اختيار منطقة واحدة على الأقل من شريط المناطق';
+    if (areas.length === 0 && !repFilter) {
+      status.textContent = 'الرجاء اختيار منطقة واحدة على الأقل، أو فلترة حسب مندوب';
       return;
     }
     status.textContent = 'جارٍ التحميل...';
 
-    fetchWithTimeout(WEB_APP_URL + '?action=points&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || '') + '&areas=' + encodeURIComponent(areas.join(',')))
+    let url = WEB_APP_URL + '?action=points&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || '');
+    if (areas.length) url += '&areas=' + encodeURIComponent(areas.join(','));
+    if (repFilter) url += '&rep=' + encodeURIComponent(repFilter);
+
+    fetchWithTimeout(url)
       .then(function (res) { return res.json(); })
       .then(function (data) {
         if (data.result !== 'success') {
@@ -7249,7 +7262,7 @@
           return;
         }
         if (!data.points || data.points.length === 0) {
-          status.textContent = 'لا توجد نقاط مسجلة في المناطق المختارة';
+          status.textContent = repFilter ? ('لا توجد زيارات مسجلة للمندوب ' + repFilter) : 'لا توجد نقاط مسجلة في المناطق المختارة';
           return;
         }
         // --- Filter by the selected customer statuses ---
@@ -7270,7 +7283,10 @@
           status.textContent = 'لا توجد نقاط مطابقة للحالات المختارة (تم استبعاد ' + excluded + ' نقطة)';
           return;
         }
-        status.textContent = 'المناطق: ' + areas.join('، ') + ' — معروضة: ' + filtered.length +
+        const sourceLabel = (areas.length ? ('المناطق: ' + areas.join('، ')) : '') +
+          (areas.length && repFilter ? ' — ' : '') +
+          (repFilter ? ('زبائن المندوب: ' + repFilter) : '');
+        status.textContent = sourceLabel + ' — معروضة: ' + filtered.length +
           ' من ' + allPoints.length + (excluded > 0 ? ' (مستبعدة ' + excluded + ' حسب الحالة)' : '');
 
         // "Select all shown points' button
