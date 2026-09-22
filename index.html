@@ -1135,7 +1135,20 @@
 
       <button type="button" class="submit-btn" id="loadRouteBtn" onclick="loadRoute()">عرض خط السير</button>
       <div class="geo-status" id="routeStatus"></div>
+      <div class="repeat-mode-tabs" id="routeViewModeTabs" style="display:none;margin-top:10px;">
+        <button type="button" id="routeViewListBtn" class="repeat-mode-tab on" onclick="setRouteViewMode_('list')">📋 القائمة</button>
+        <button type="button" id="routeViewMapBtn" class="repeat-mode-tab" onclick="setRouteViewMode_('map')">🗺️ خريطة خط سيري</button>
+      </div>
       <div id="routeList"></div>
+      <div id="routeMapWrap" style="display:none;">
+        <div class="geo-status" id="routeMapStatus"></div>
+        <div id="routeMapContainer" style="height:440px;border-radius:14px;overflow:hidden;margin-top:8px;border:1px solid var(--line);"></div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--text-mute);">
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#56633f;vertical-align:1px;"></span> تمت الزيارة اليوم</span>
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#8c491a;vertical-align:1px;"></span> لم تُزر بعد</span>
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#2f6fed;vertical-align:1px;"></span> موقعك الحالي</span>
+        </div>
+      </div>
     </div>
 
     <!-- FORM VIEW -->
@@ -1356,6 +1369,10 @@
       __pushNavState(function () { showView(__prevView); });
     }
     __lastShownView = view;
+
+    // يوقف تتبع الموقع الحي لخريطة خط السير لو المستخدم طلّع من شاشة خط
+    // السير — ما داعي نستهلك بطارية/GPS وهو بشاشة ثانية.
+    if (view !== 'route' && typeof stopRepLiveLocation === 'function') stopRepLiveLocation();
 
     document.getElementById('homeView').style.display = (view === 'home') ? 'block' : 'none';
     document.getElementById('routeView').style.display = (view === 'route') ? 'block' : 'none';
@@ -8016,6 +8033,122 @@
     } catch (e) { return null; }
   }
 
+  // --- خريطة خط سيري: خريطة حية تفاعلية لنقاط اليوم + موقع المندوب ---
+  // تستخدم نفس بيانات "القائمة" (lastLoadedRouteRowsForMap)، بدون طلب
+  // إضافي للسيرفر — راجع renderRouteRows أعلاه اللي يعبّيها.
+  let lastLoadedRouteRowsForMap = [];
+  let routeViewMode_ = 'list';
+  let repRouteMapInstance = null;
+  let repRouteMapMarkersLayer = null;
+  let repRouteMyLocMarker = null;
+  let repRouteMyLocAccuracyCircle = null;
+  let repRouteWatchId = null;
+
+  function setRouteViewMode_(mode) {
+    routeViewMode_ = mode;
+    document.getElementById('routeViewListBtn').classList.toggle('on', mode === 'list');
+    document.getElementById('routeViewMapBtn').classList.toggle('on', mode === 'map');
+    document.getElementById('routeList').style.display = (mode === 'list') ? 'block' : 'none';
+    document.getElementById('routeMapWrap').style.display = (mode === 'map') ? 'block' : 'none';
+    if (mode === 'map') {
+      renderRouteMap(lastLoadedRouteRowsForMap);
+      startRepLiveLocation();
+    } else {
+      stopRepLiveLocation();
+    }
+  }
+
+  function renderRouteMap(rows) {
+    const mapStatus = document.getElementById('routeMapStatus');
+    if (!repRouteMapInstance) {
+      repRouteMapInstance = L.map('routeMapContainer');
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap', maxZoom: 19
+      }).addTo(repRouteMapInstance);
+    } else {
+      // الحاوية كانت مخفية (display:none) وقت الإنشاء لو أول مرة كانت
+      // بوضع القائمة — لازم نعيد حساب المقاس قبل أي fitBounds.
+      setTimeout(function () { repRouteMapInstance.invalidateSize(); }, 50);
+    }
+    if (repRouteMapMarkersLayer) repRouteMapInstance.removeLayer(repRouteMapMarkersLayer);
+    repRouteMapMarkersLayer = L.layerGroup().addTo(repRouteMapInstance);
+
+    const bounds = [];
+    let visitedCount = 0;
+    rows.forEach(function (row) {
+      const lat = parseFloat(row['Latitude']);
+      const lng = parseFloat(row['Longitude']);
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      const visited = !!row.visited;
+      if (visited) visitedCount++;
+      const pointName = row['اسم نقطة البيع'] || '';
+
+      let phoneNum = String(row['رقم الهاتف'] || '').replace(/[^0-9]/g, '');
+      if (phoneNum.length === 10 && phoneNum.charAt(0) === '7') phoneNum = '0' + phoneNum;
+
+      const marker = L.circleMarker([lat, lng], {
+        radius: 9, fillColor: visited ? '#56633f' : '#8c491a', color: '#fff',
+        weight: 2, opacity: 1, fillOpacity: 0.9
+      });
+
+      marker.bindPopup(
+        '<div style="direction:rtl;font-family:Cairo,Tahoma;min-width:190px;">' +
+        '<b>' + (visited ? '✅ ' : '') + esc(pointName) + '</b><br>' +
+        '<svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M12 21s7-6.5 7-11.5A7 7 0 105 9.5C5 14.5 12 21 12 21z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.3" stroke="currentColor" stroke-width="1.6"/></svg> ' + esc(row['المنطقة'] || '') + '<br>' +
+        (phoneNum ? '<svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M6.5 4.5c.5 2 1.3 3.9 2.5 5.6-1 1-1 1.5-1.5 2 1.3 2.6 3.4 4.7 6 6 .5-.5 1-.5 2-1.5 1.7 1.2 3.6 2 5.6 2.5.5-3.5-.5-4.5-2.5-6-.5.5-1 1.5-1.5 2-2-1-3.6-2.6-4.6-4.6.5-.5 1.5-1 2-1.5-1.5-2-2.5-3-6-2.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg> <a href="tel:' + esc(phoneNum) + '">' + esc(phoneNum) + '</a><br>' : '') +
+        '<span style="font-size:11.5px;color:#8a8272;">' + esc(formatLastVisitLine(row['آخر زيارة'])) + '</span>' +
+        '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">' +
+        (phoneNum ? '<a href="tel:' + esc(phoneNum) + '" class="nav-btn call-btn">اتصال</a>' : '') +
+        '<a href="https://waze.com/ul?ll=' + lat + ',' + lng + '&navigate=yes" target="_blank" rel="noopener" class="nav-btn waze-btn">Waze</a>' +
+        '<a href="https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng + '" target="_blank" rel="noopener" class="nav-btn gmaps-btn">Google Maps</a>' +
+        '</div></div>'
+      );
+      repRouteMapMarkersLayer.addLayer(marker);
+      bounds.push([lat, lng]);
+    });
+
+    if (bounds.length) {
+      setTimeout(function () { repRouteMapInstance.fitBounds(bounds, { padding: [30, 30] }); }, 60);
+    } else {
+      repRouteMapInstance.setView([33.3, 44.4], 11);
+    }
+    mapStatus.textContent = 'نقاط اليوم على الخريطة: ' + bounds.length + ' — تمت زيارة ' + visitedCount + ' منها';
+  }
+
+  function startRepLiveLocation() {
+    if (repRouteWatchId !== null || !navigator.geolocation) return;
+    repRouteWatchId = navigator.geolocation.watchPosition(
+      function (pos) { updateMyLocationOnRouteMap(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy); },
+      function () { /* الموقع مو متاح — الخريطة تضل شغالة بدون نقطة "موقعك" بس */ },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+    );
+  }
+  function stopRepLiveLocation() {
+    if (repRouteWatchId !== null) {
+      navigator.geolocation.clearWatch(repRouteWatchId);
+      repRouteWatchId = null;
+    }
+    if (repRouteMyLocMarker && repRouteMapInstance) { repRouteMapInstance.removeLayer(repRouteMyLocMarker); repRouteMyLocMarker = null; }
+    if (repRouteMyLocAccuracyCircle && repRouteMapInstance) { repRouteMapInstance.removeLayer(repRouteMyLocAccuracyCircle); repRouteMyLocAccuracyCircle = null; }
+  }
+  function updateMyLocationOnRouteMap(lat, lng, accuracy) {
+    if (!repRouteMapInstance) return;
+    if (!repRouteMyLocMarker) {
+      repRouteMyLocMarker = L.circleMarker([lat, lng], {
+        radius: 8, fillColor: '#2f6fed', color: '#fff', weight: 3, opacity: 1, fillOpacity: 1
+      }).addTo(repRouteMapInstance).bindPopup('📍 موقعك الحالي');
+      repRouteMyLocAccuracyCircle = L.circle([lat, lng], {
+        radius: accuracy || 20, color: '#2f6fed', weight: 1, opacity: 0.3, fillColor: '#2f6fed', fillOpacity: 0.08
+      }).addTo(repRouteMapInstance);
+    } else {
+      repRouteMyLocMarker.setLatLng([lat, lng]);
+      if (repRouteMyLocAccuracyCircle) {
+        repRouteMyLocAccuracyCircle.setLatLng([lat, lng]);
+        repRouteMyLocAccuracyCircle.setRadius(accuracy || 20);
+      }
+    }
+  }
+
   function loadRoute() {
     const rep = document.getElementById('routeRep').value;
     const status = document.getElementById('routeStatus');
@@ -8037,6 +8170,13 @@
           list.innerHTML = '';
           status.innerHTML = 'عدد النقاط المطلوبة اليوم: ' + rows.length +
             (sortedByDistance ? ' — مرتبة من الأقرب إليك <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><rect x="3" y="8" width="18" height="8" rx="1" transform="rotate(-8 12 12)" stroke="currentColor" stroke-width="1.6"/></svg>' : '');
+
+          // النقاط اللي حملناها هسة — تبويب "خريطة خط سيري" يستخدمها بدون
+          // طلب ثاني للسيرفر (راجع setRouteViewMode_/renderRouteMap تحت).
+          lastLoadedRouteRowsForMap = rows;
+          const modeTabs = document.getElementById('routeViewModeTabs');
+          if (modeTabs) modeTabs.style.display = rows.length ? 'flex' : 'none';
+          if (routeViewMode_ === 'map') renderRouteMap(rows);
 
           // Compute how many are already visited for the progress bar
           // (يعتمد الحين على بيانات السيرفر الحقيقية — يشتغل صح من أي جهاز)
