@@ -7488,14 +7488,17 @@
         saveBtn.disabled = false;
         saveBtn.textContent = 'حفظ خط السير لهذا المندوب';
         if (data.result === 'success') {
-          saveMsg.className = 'msg success';
+          const linkFailed = (data.totalLinkFailed || data.linkFailed || 0);
+          saveMsg.className = linkFailed > 0 ? 'msg error' : 'msg success';
           if (repeatOn) {
             saveMsg.textContent = 'تم حفظ خط السير لـ' + data.daysCount + ' يوم (' + data.totalAdded + ' نقطة بالمجموع)' +
-              (data.totalSkipped > 0 ? ' — تم تجاهل ' + data.totalSkipped + ' نقطة مكررة' : '') + ' <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+              (data.totalSkipped > 0 ? ' — تم تجاهل ' + data.totalSkipped + ' نقطة مكررة' : '') +
+              (linkFailed > 0 ? ' — تحذير: فشل ربط ' + linkFailed + ' نقطة بالمندوب، حاول تحفظ مرة ثانية' : '') + ' <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
           } else {
             saveMsg.textContent = 'تمت إضافة ' + data.added + ' نقطة لخط سير هذا اليوم بنجاح' +
               (data.skippedDuplicates > 0 ? ' (تم تجاهل ' + data.skippedDuplicates + ' نقطة موجودة أصلًا بنفس اليوم)' : '') +
-              (data.repaired > 0 ? ' (تم إصلاح ربط ' + data.repaired + ' نقطة)' : '') + ' <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+              (data.repaired > 0 ? ' (تم إصلاح ربط ' + data.repaired + ' نقطة)' : '') +
+              (linkFailed > 0 ? ' — تحذير: فشل ربط ' + linkFailed + ' نقطة بالمندوب، حاول تحفظ مرة ثانية' : '') + ' <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
           }
           saveMsg.style.display = 'block';
           buildSupervisorPanel();
