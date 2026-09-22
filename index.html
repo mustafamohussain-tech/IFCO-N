@@ -7220,6 +7220,10 @@
       '<div id="adminPointsList"></div>' +
       '<div id="adminSelectedCount" class="visit-counter" style="display:none;"></div>' +
       '<button type="button" class="submit-btn" id="saveRouteBtn" style="display:none;" onclick="saveRoute()">حفظ خط السير لهذا المندوب</button>' +
+      '<div id="saveRouteProgressWrap" style="display:none;margin-top:8px;">' +
+      '<div class="rp-head"><span id="saveRouteProgressLabel"><span class="spinner-el" style="border-color:rgba(198,113,57,0.25);border-top-color:var(--accent);"></span> جارٍ الحفظ...</span></div>' +
+      '<div class="rp-bar"><div class="rp-fill" id="saveRouteProgressFill"></div></div>' +
+      '</div>' +
       '<div class="msg success" id="adminSaveMsg"></div>' +
       '<hr style="margin:22px 0;border:none;border-top:1px solid var(--line);">' +
       '<button type="button" class="home-btn secondary" onclick="loadCurrentRoute()"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><rect x="6" y="4" width="12" height="17" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M9 3.5h6a1 1 0 011 1V6H8V4.5a1 1 0 011-1z" stroke="currentColor" stroke-width="1.8"/><path d="M9 11h6M9 14.5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> عرض خط السير المحفوظ (للتعديل / الحذف)</button>' +
@@ -7476,6 +7480,10 @@
 
     saveBtn.disabled = true;
     saveBtn.textContent = 'جارٍ الحفظ...';
+    let dayCount = 1;
+    if (isDaysMode) dayCount = Math.max(1, specificDays.length);
+    else if (repeatOn && dateTo) dayCount = Math.max(1, Math.round((new Date(dateTo) - new Date(date)) / 86400000) + 1);
+    startSaveProgress(points.length * dayCount);
 
     const body = new FormData();
     if (isDaysMode) {
@@ -7503,6 +7511,7 @@
       .then(function (data) {
         saveBtn.disabled = false;
         saveBtn.textContent = 'حفظ خط السير لهذا المندوب';
+        stopSaveProgress();
         if (data.result === 'success') {
           const linkFailed = (data.totalLinkFailed || data.linkFailed || 0);
           saveMsg.className = linkFailed > 0 ? 'msg error' : 'msg success';
@@ -7529,10 +7538,39 @@
       .catch(function () {
         saveBtn.disabled = false;
         saveBtn.textContent = 'حفظ خط السير لهذا المندوب';
+        stopSaveProgress();
         saveMsg.className = 'msg error';
         saveMsg.textContent = 'تعذر الاتصال بالخادم';
         saveMsg.style.display = 'block';
       });
+  }
+
+  // شريط تقدّم تقديري وقت الحفظ — الحفظ طلب واحد بدون أحداث تقدّم حقيقية
+  // من السيرفر، فنقدّر المدة من عدد النقاط (مبني على أزمنة حقيقية قيسّت:
+  // ~2.4s لـ25 نقطة، ~3.2s لـ200) ونحرّك الشريط لهدف تقريبي (92%) بمدة
+  // الانتقال نفسها، حتى المستخدم ما يضل صافن بدون أي إشارة.
+  function startSaveProgress(pointCount) {
+    const wrap = document.getElementById('saveRouteProgressWrap');
+    const fill = document.getElementById('saveRouteProgressFill');
+    const label = document.getElementById('saveRouteProgressLabel');
+    if (!wrap || !fill || !label) return;
+    const estMs = Math.min(6000, 2200 + pointCount * 8);
+    const estSec = Math.round(estMs / 1000);
+    label.innerHTML = '<span class="spinner-el" style="border-color:rgba(198,113,57,0.25);border-top-color:var(--accent);"></span> جارٍ الحفظ... (قد يستغرق حتى ' + estSec + ' ثانية)';
+    fill.style.transition = 'none';
+    fill.style.width = '0%';
+    wrap.style.display = 'block';
+    void fill.offsetWidth; // force reflow so the width transition below actually animates
+    fill.style.transition = 'width ' + estMs + 'ms linear';
+    fill.style.width = '92%';
+  }
+  function stopSaveProgress() {
+    const wrap = document.getElementById('saveRouteProgressWrap');
+    const fill = document.getElementById('saveRouteProgressFill');
+    if (!wrap || !fill) return;
+    fill.style.transition = 'width 0.3s ease';
+    fill.style.width = '100%';
+    setTimeout(function () { wrap.style.display = 'none'; }, 350);
   }
 
   // --- View & edit the currently saved route (delete individual points) ---
