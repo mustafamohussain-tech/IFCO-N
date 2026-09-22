@@ -8070,10 +8070,6 @@
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap', maxZoom: 19
       }).addTo(repRouteMapInstance);
-    } else {
-      // الحاوية كانت مخفية (display:none) وقت الإنشاء لو أول مرة كانت
-      // بوضع القائمة — لازم نعيد حساب المقاس قبل أي fitBounds.
-      setTimeout(function () { repRouteMapInstance.invalidateSize(); }, 50);
     }
     if (repRouteMapMarkersLayer) repRouteMapInstance.removeLayer(repRouteMapMarkersLayer);
     repRouteMapMarkersLayer = L.layerGroup().addTo(repRouteMapInstance);
@@ -8112,11 +8108,19 @@
       bounds.push([lat, lng]);
     });
 
-    if (bounds.length) {
-      setTimeout(function () { repRouteMapInstance.fitBounds(bounds, { padding: [30, 30] }); }, 60);
-    } else {
-      repRouteMapInstance.setView([33.3, 44.4], 11);
-    }
+    // تصحيح باگ حقيقي: مقاس الحاوية يظل صفر (أو غير محدّث) لحظة إنشاء
+    // الخريطة أول مرة — لو ناديت fitBounds بدون invalidateSize قبلها
+    // مباشرة، Leaflet يحسب أقصى زوم ممكن (كأن الحاوية بلا عرض إطلاقًا)،
+    // فتضل الخريطة عالقة مكبّرة جدًا على نقطة وحدة وكل النقاط الثانية
+    // برّه الإطار المرئي (تبدو فاضية رغم إن الماركرات موجودة فعليًا).
+    setTimeout(function () {
+      repRouteMapInstance.invalidateSize();
+      if (bounds.length) {
+        repRouteMapInstance.fitBounds(bounds, { padding: [30, 30] });
+      } else {
+        repRouteMapInstance.setView([33.3, 44.4], 11);
+      }
+    }, 80);
     mapStatus.textContent = 'نقاط اليوم على الخريطة: ' + bounds.length + ' — تمت زيارة ' + visitedCount + ' منها';
   }
 
