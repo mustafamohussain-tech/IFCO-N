@@ -8061,7 +8061,12 @@
   function renderRouteMap(rows) {
     const mapStatus = document.getElementById('routeMapStatus');
     if (!repRouteMapInstance) {
-      repRouteMapInstance = L.map('routeMapContainer');
+      // تصحيح باگ: بدون setView صريح هنا، أول طبقة تنضاف (سواء نقطة أو
+      // موقعك الحي، أيهم يوصل أول) تخلي Leaflet يحدد المنظور تلقائيًا
+      // عليها لحالها بزوم قريب جدًا (~19) — فلو موقعك الحي وصل قبل
+      // fitBounds المفروض يرتب على كل النقاط، الخريطة تضل عالقة مكبّرة
+      // على نقطة وحدة وكل النقاط الثانية برّه الإطار المرئي (تبدو فاضية).
+      repRouteMapInstance = L.map('routeMapContainer').setView([33.3, 44.4], 11);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap', maxZoom: 19
       }).addTo(repRouteMapInstance);
