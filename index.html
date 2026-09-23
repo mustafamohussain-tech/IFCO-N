@@ -812,8 +812,9 @@
     /* حالات الزبائن (بار + شارات التغطية) بألوان متفارقة عمدًا — ألوان
        --green/--amber/--danger الأصلية قريبة كلش من بعض (نفس درجة
        تراكوتا غامقة تقريبًا) وصعب تمييزها جنب بعض بمخطط بيانات. */
-    --dbv2-good: #2f7d4f; --dbv2-warn: #a97517; --dbv2-bad: #b3261e;
+    --dbv2-good: #2f7d4f; --dbv2-warn: #a97517; --dbv2-bad: #b3261e; --dbv2-neutral: #6b4c9a;
   }
+  .dbv2-status-trend { border-top: 1px solid var(--line-soft); margin-top: 14px; padding-top: 4px; }
   .dbv2-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:12px; }
   @media (max-width:560px) { .dbv2-kpis { grid-template-columns:repeat(2,1fr); } }
   .dbv2-tile {
@@ -6342,6 +6343,17 @@
 
   function dbv2CovClass(c) { return c >= 50 ? 'dbv2-cov-good' : c >= 25 ? 'dbv2-cov-warn' : 'dbv2-cov-bad'; }
 
+  // لون موحّد لكل قيمة "حالة الزبون" — نفس المنطق يستخدمه بار حالات
+  // الزبائن ومخطط اتجاهها عبر الوقت، حتى لون كل حالة يبقى نفسه بكل
+  // مكان تظهر فيه باللوحة (راجع مبدأ "اللون يتبع الفئة، مو ترتيبها").
+  function dbv2StatusColor(name) {
+    if (name === 'تم البيع') return 'var(--dbv2-good)';
+    if (name === 'لا يريد التعامل معنا') return 'var(--dbv2-bad)';
+    if (name === 'لديه مخزون') return 'var(--dbv2-warn)';
+    if (name === 'أخرى') return 'var(--text-mute)';
+    return 'var(--dbv2-neutral)';
+  }
+
   let dbv2Chart = null;
   function dbv2ToggleSeries(i, btn) {
     if (!dbv2Chart) return;
@@ -6351,11 +6363,23 @@
     dbv2Chart.update();
   }
 
+  let dbv2StatusChart = null;
+  function dbv2ToggleStatusSeries(i, btn) {
+    if (!dbv2StatusChart) return;
+    const meta = dbv2StatusChart.getDatasetMeta(i);
+    meta.hidden = meta.hidden === null ? !dbv2StatusChart.data.datasets[i].hidden : !meta.hidden;
+    btn.classList.toggle('off', meta.hidden === true);
+    dbv2StatusChart.update();
+  }
+
   function renderDashDataArea(d) {
     const area = document.getElementById('dashDataArea');
     if (!area) return;
     refreshDashAlertBox();
     if (dbv2Chart) { dbv2Chart.destroy(); dbv2Chart = null; }
+    if (dbv2StatusChart) { dbv2StatusChart.destroy(); dbv2StatusChart = null; }
+    let hasStatusChart = false;
+    let statusTrendData = null;
 
     if (!d || (d.totalVisits === 0 && d.newPoints === 0)) {
       area.innerHTML = '<div class="route-card"><div class="route-card-detail">لا يوجد نشاط مسجّل بهذي الفترة</div></div>';
@@ -6413,23 +6437,32 @@
     const statusEntries = Object.keys(statusTotals).map(function (k) { return { name: k, count: statusTotals[k] }; }).sort(function (a, b) { return b.count - a.count; });
     const statusTotal = statusEntries.reduce(function (s, e) { return s + e.count; }, 0);
     if (w.kpis !== false && statusEntries.length) {
-      const statusColor = function (name) {
-        if (name === 'تم البيع') return 'var(--dbv2-good)';
-        if (name === 'لا يريد التعامل معنا') return 'var(--dbv2-bad)';
-        if (name === 'لديه مخزون') return 'var(--dbv2-warn)';
-        return 'var(--text-mute)';
-      };
       html += '<div class="dbv2-card">' +
         '<div class="dbv2-head"><h3>حالات الزبائن بالفترة</h3><span class="meta">' + statusTotal + ' زيارة</span></div>' +
         '<div class="dbv2-status-bar">' + statusEntries.map(function (e) {
           const pct = statusTotal ? Math.round(e.count / statusTotal * 100) : 0;
-          return '<div class="dbv2-status-seg" style="width:' + pct + '%;background:' + statusColor(e.name) + ';"></div>';
+          return '<div class="dbv2-status-seg" style="width:' + pct + '%;background:' + dbv2StatusColor(e.name) + ';"></div>';
         }).join('') + '</div>' +
         '<div class="dbv2-status-legend">' + statusEntries.map(function (e) {
           const pct = statusTotal ? Math.round(e.count / statusTotal * 100) : 0;
-          return '<span><span class="dbv2-dot" style="background:' + statusColor(e.name) + ';display:inline-block;vertical-align:-1px;margin-left:4px;"></span>' + esc(e.name) + ' · ' + e.count + ' (' + pct + '٪)</span>';
-        }).join('') + '</div>' +
-        '</div>';
+          return '<span><span class="dbv2-dot" style="background:' + dbv2StatusColor(e.name) + ';display:inline-block;vertical-align:-1px;margin-left:4px;"></span>' + esc(e.name) + ' · ' + e.count + ' (' + pct + '٪)</span>';
+        }).join('') + '</div>';
+
+      const st = d.statusTrend || {};
+      statusTrendData = st;
+      hasStatusChart = st.labels && st.labels.length && st.series && st.series.length > 1;
+      if (hasStatusChart) {
+        html += '<div class="dbv2-status-trend">' +
+          '<div class="dbv2-head" style="margin-bottom:10px;"><h3 style="font-size:13px;">حالات الزبائن عبر الوقت</h3>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+          st.labels.map(function (name, i) {
+            return '<button type="button" class="dbv2-legend-toggle" onclick="dbv2ToggleStatusSeries(' + i + ',this)"><span class="dbv2-dot" style="background:' + dbv2StatusColor(name) + ';"></span>' + esc(name) + '</button>';
+          }).join('') +
+          '</div></div>' +
+          '<div class="dbv2-chart-box" style="height:200px;"><canvas id="dbv2StatusTrendCanvas"></canvas></div>' +
+          '</div>';
+      }
+      html += '</div>';
     }
 
     // ---- reps leaderboard (top 5) ----
@@ -6477,6 +6510,7 @@
     area.innerHTML = html;
 
     if (hasChart) dbv2InitChart(d.dailySeries);
+    if (hasStatusChart) dbv2InitStatusChart(statusTrendData.labels, statusTrendData.series);
   }
 
   function dbv2InitChart(series) {
@@ -6510,6 +6544,51 @@
         scales: {
           x: { grid: { display: false }, ticks: { color: inkColor, font: { family: "'Cairo'", size: 10.5 } } },
           y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: inkColor, font: { family: "'Cairo'", size: 10.5 }, precision: 0, maxTicksLimit: 5 } }
+        }
+      }
+    });
+  }
+
+  function dbv2ResolveColor(varExpr) {
+    const m = /var\((--[\w-]+)\)/.exec(varExpr);
+    if (!m) return varExpr;
+    return getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim();
+  }
+  function dbv2HexToRgba(hex, alpha) {
+    const h = hex.replace('#', '');
+    const r = parseInt(h.substring(0, 2), 16), g = parseInt(h.substring(2, 4), 16), b = parseInt(h.substring(4, 6), 16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+  }
+
+  function dbv2InitStatusChart(labels, series) {
+    const canvas = document.getElementById('dbv2StatusTrendCanvas');
+    if (!canvas || typeof Chart === 'undefined') return;
+    const css = getComputedStyle(document.documentElement);
+    const inkColor = css.getPropertyValue('--text-dim').trim();
+    const gridColor = css.getPropertyValue('--line-soft').trim();
+    const chartLabels = series.map(function (s) { return (s.date || '').slice(5); });
+    const datasets = labels.map(function (name, i) {
+      const hex = dbv2ResolveColor(dbv2StatusColor(name));
+      return {
+        label: name, data: series.map(function (s) { return (s.values && s.values[i]) || 0; }),
+        borderColor: hex, backgroundColor: dbv2HexToRgba(hex, 0.1), fill: false, tension: 0.38,
+        pointRadius: 2.5, pointHoverRadius: 4.5, pointBackgroundColor: hex, pointBorderColor: '#fff', pointBorderWidth: 1.5, borderWidth: 2
+      };
+    });
+    dbv2StatusChart = new Chart(canvas, {
+      type: 'line',
+      data: { labels: chartLabels, datasets: datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        layout: { padding: { top: 12, left: 4, right: 4, bottom: 2 } },
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: { rtl: true, titleFont: { family: "'Cairo'" }, bodyFont: { family: "'Cairo'" }, backgroundColor: '#201e1d', padding: 10, cornerRadius: 8 }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: inkColor, font: { family: "'Cairo'", size: 10 } } },
+          y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: inkColor, font: { family: "'Cairo'", size: 10 }, precision: 0, maxTicksLimit: 5 } }
         }
       }
     });
