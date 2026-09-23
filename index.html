@@ -8947,12 +8947,18 @@
 
   function incrementVisit(repName) {
     if (!repName) return;
-    const data = getVisitData();
-    data.reps[repName] = (data.reps[repName] || 0) + 1;
-    try { localStorage.setItem(VISITS_KEY, JSON.stringify(data)); } catch (err) { /* ignore */ }
+    // تصحيح: كانت تزيد عدّاد "الزيارات" (VISITS_KEY) دايمًا بغض النظر عن
+    // النوع، وبعدها كمان تزيد عدّاد "النقاط الجديدة" لو نقطة جديدة —
+    // يعني نقطة جديدة تنعد مرتين (مرة بعدّاد الزيارات بالغلط، ومرة
+    // بعدّاد النقاط الجديدة). الحين كل عملية تروح لعدّادها الصحيح بس.
+    if (isRouteVisit) {
+      const data = getVisitData();
+      data.reps[repName] = (data.reps[repName] || 0) + 1;
+      try { localStorage.setItem(VISITS_KEY, JSON.stringify(data)); } catch (err) { /* ignore */ }
+    } else {
+      incrementUpload(repName);
+    }
     updateVisitCounter();
-    // Count new-point uploads separately (route visits excluded)
-    if (!isRouteVisit) incrementUpload(repName);
   }
 
   function updateVisitCounter() {
