@@ -417,18 +417,20 @@
      فتبقى نفسها بكل مرة يفتح فيها لوحته. */
   .dash-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 16px; }
   .dash-toolbar select#dashPeriodSel {
-    width: auto; flex: 0 0 auto; padding: 9px 12px; font-size: 13px; border-radius: 10px;
+    width: auto; flex: 0 0 auto; padding: 9px 14px; font-size: 12.5px; font-weight: 700;
+    border-radius: 10px; background: var(--bg-1); border: 1px solid var(--line); color: var(--text-dim);
   }
   #dashCustomizeBtn {
-    margin-inline-start: auto; background: var(--bg-1); border: 1px solid var(--line);
+    background: var(--bg-1); border: 1px solid var(--line);
     color: var(--text-dim); font-size: 12.5px; font-weight: 700; padding: 9px 14px;
     border-radius: 10px; cursor: pointer; font-family: inherit; transition: 0.18s;
   }
   #dashCustomizeBtn:hover { border-color: var(--accent); color: var(--accent); }
   .dash-widgets-panel {
-    background: var(--bg-1); border: 1px solid var(--line); border-radius: 14px;
-    padding: 8px 12px 12px; margin-top: 8px; flex-direction: column; gap: 2px;
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg);
+    padding: 14px; margin-top: 8px;
   }
+  .dash-widgets-panel-title { font-size: 12px; font-weight: 700; color: var(--text-mute); margin-bottom: 8px; }
 
   .route-card {
     border: 1px solid var(--line);
@@ -879,9 +881,13 @@
     display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; flex-shrink:0;
   }
   .dbv2-rank-num.top { background:linear-gradient(135deg,var(--accent-vivid),var(--accent)); color:#fff; }
+  .dbv2-mini-bar-wrap { display:flex; align-items:center; gap:8px; }
+  .dbv2-mini-bar-wrap .dbv2-mini-bar-track { flex:1; }
+  .dbv2-mini-bar-num { font-size:11.5px; font-weight:800; color:var(--text-dim); font-variant-numeric:tabular-nums; min-width:18px; text-align:left; flex-shrink:0; }
   .dbv2-mini-bar-track { background:var(--card-hi); border-radius:999px; height:6px; width:100%; min-width:50px; overflow:hidden; }
   .dbv2-mini-bar-fill { height:100%; border-radius:999px; background:linear-gradient(90deg,var(--accent-2),var(--accent-vivid)); transition:width .5s ease; }
   .dbv2-mini-bar-fill.info { background:linear-gradient(90deg,var(--info-blue),#6b93f2); }
+  .dbv2-foot-note { font-size:11px; color:var(--text-mute); margin-top:10px; line-height:1.5; }
   .dbv2-num-cell { font-variant-numeric:tabular-nums; font-weight:700; white-space:nowrap; }
   .dbv2-cov-chip {
     display:inline-flex; align-items:center; justify-content:center; min-width:36px;
@@ -6187,12 +6193,14 @@
       '<button type="button" id="dashCustomizeBtn" onclick="toggleDashCustomize()">⚙ تخصيص اللوحة</button>' +
       '</div>' +
       '<div class="dash-widgets-panel" id="dashWidgetsPanel" style="display:none;">' +
+      '<div class="dash-widgets-panel-title">الأقسام الظاهرة باللوحة</div>' +
+      '<div class="checkbox-group">' +
       dashWidgetCheckbox('kpis', 'المؤشرات الرئيسية') +
       dashWidgetCheckbox('best', 'أفضل مندوب') +
       dashWidgetCheckbox('chart', 'الرسم البياني الأسبوعي') +
       dashWidgetCheckbox('reps', 'ترتيب المندوبين') +
       dashWidgetCheckbox('areas', 'ترتيب المناطق') +
-      '</div>';
+      '</div></div>';
 
     content.innerHTML =
       '<div class="home-hero" style="margin-top:4px;">' +
@@ -6243,7 +6251,7 @@
 
   function toggleDashCustomize() {
     const panel = document.getElementById('dashWidgetsPanel');
-    if (panel) panel.style.display = (panel.style.display === 'none') ? 'flex' : 'none';
+    if (panel) panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
   }
 
   function toggleDashWidget(key, val) {
@@ -6289,8 +6297,9 @@
     const box = document.getElementById('dashAlertBox');
     if (!box) return;
     if (notifList && notifList.length && (canPlan() || isManagement())) {
-      box.innerHTML = '<button type="button" onclick="toggleNotifPanel()" style="width:100%;display:flex;align-items:center;gap:10px;background:rgba(211,59,44,0.08);border:1px solid rgba(211,59,44,0.3);border-radius:14px;padding:12px 14px;margin-top:12px;cursor:pointer;font-family:inherit;text-align:right;">' +
-        '<span style="font-size:18px;">🔔</span><span style="flex:1;font-size:13px;font-weight:700;color:var(--danger);">' + notifList.length + ' تنبيه' + (notifList.length > 1 ? 'ات' : '') + ' يحتاج انتباهك</span><span style="color:var(--danger);">‹</span></button>';
+      box.innerHTML = '<button type="button" onclick="toggleNotifPanel()" style="width:100%;display:flex;align-items:center;gap:10px;background:rgba(100,51,18,0.1);border:1px solid rgba(100,51,18,0.3);border-radius:14px;padding:12px 14px;margin-top:12px;cursor:pointer;font-family:inherit;text-align:right;">' +
+        '<span style="width:30px;height:30px;border-radius:999px;background:rgba(100,51,18,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--danger);"><svg viewBox="0 0 24 24" fill="none" width="15" height="15"><path d="M6 9a6 6 0 1112 0c0 5 2 6 2 6H4s2-1 2-6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 19a2 2 0 004 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>' +
+        '<span style="flex:1;font-size:13px;font-weight:700;color:var(--danger);">' + notifList.length + ' تنبيه' + (notifList.length > 1 ? 'ات' : '') + ' يحتاج انتباهك</span><span style="color:var(--danger);font-size:16px;">‹</span></button>';
     } else {
       box.innerHTML = '';
     }
@@ -6429,14 +6438,17 @@
       const repMax = Math.max.apply(null, topReps.map(function (r) { return r.visits; })) || 1;
       html += '<div class="dbv2-card">' +
         '<div class="dbv2-head"><h3>أفضل المندوبين</h3><span class="meta">مرتّبة حسب الزيارات</span></div>' +
-        '<div class="dbv2-tablewrap"><table class="dbv2-rank"><thead><tr><th style="width:28px;"></th><th>المندوب</th><th style="width:110px;">الزيارات</th><th class="num">نقطة جديدة</th></tr></thead><tbody>' +
+        '<div class="dbv2-tablewrap"><table class="dbv2-rank"><thead><tr><th style="width:28px;"></th><th>المندوب</th><th style="width:120px;">الزيارات</th><th class="num">نقطة جديدة</th><th class="num">خط السير</th></tr></thead><tbody>' +
         topReps.map(function (r, i) {
           const pct = Math.round(r.visits / repMax * 100);
+          const routeCell = r.routeTotal ? (r.routeVisited + '/' + r.routeTotal) : '—';
           return '<tr><td><div class="dbv2-rank-num' + (i === 0 ? ' top' : '') + '">' + (i + 1) + '</div></td>' +
             '<td class="dbv2-rank-name">' + esc(r.rep) + '</td>' +
-            '<td><div class="dbv2-mini-bar-track"><div class="dbv2-mini-bar-fill" style="width:' + pct + '%"></div></div></td>' +
-            '<td class="num dbv2-num-cell">' + r.newPoints + '</td></tr>';
-        }).join('') + '</tbody></table></div></div>';
+            '<td><div class="dbv2-mini-bar-wrap"><div class="dbv2-mini-bar-track"><div class="dbv2-mini-bar-fill" style="width:' + pct + '%"></div></div><span class="dbv2-mini-bar-num">' + r.visits + '</span></div></td>' +
+            '<td class="num dbv2-num-cell">' + r.newPoints + '</td>' +
+            '<td class="num dbv2-num-cell">' + routeCell + '</td></tr>';
+        }).join('') + '</tbody></table></div>' +
+        '<div class="dbv2-foot-note">خط السير: كم نقطة زارها المندوب من أصل النقاط المحدّدة له بخط سيره بنفس الفترة</div></div>';
     }
 
     // ---- areas leaderboard (top 5) ----
@@ -6445,12 +6457,12 @@
       const areaMax = Math.max.apply(null, topAreas.map(function (a) { return a.visits; })) || 1;
       html += '<div class="dbv2-card">' +
         '<div class="dbv2-head"><h3>أنشط المناطق</h3><span class="meta">مرتّبة حسب الزيارات</span></div>' +
-        '<div class="dbv2-tablewrap"><table class="dbv2-rank"><thead><tr><th style="width:28px;"></th><th>المنطقة</th><th style="width:110px;">الزيارات</th><th class="num">تغطية</th></tr></thead><tbody>' +
+        '<div class="dbv2-tablewrap"><table class="dbv2-rank"><thead><tr><th style="width:28px;"></th><th>المنطقة</th><th style="width:120px;">الزيارات</th><th class="num">تغطية</th></tr></thead><tbody>' +
         topAreas.map(function (a, i) {
           const pct = Math.round(a.visits / areaMax * 100);
           return '<tr><td><div class="dbv2-rank-num' + (i === 0 ? ' top' : '') + '">' + (i + 1) + '</div></td>' +
             '<td class="dbv2-rank-name">' + esc(a.area) + '</td>' +
-            '<td><div class="dbv2-mini-bar-track"><div class="dbv2-mini-bar-fill info" style="width:' + pct + '%"></div></div></td>' +
+            '<td><div class="dbv2-mini-bar-wrap"><div class="dbv2-mini-bar-track"><div class="dbv2-mini-bar-fill info" style="width:' + pct + '%"></div></div><span class="dbv2-mini-bar-num">' + a.visits + '</span></div></td>' +
             '<td class="num"><span class="dbv2-cov-chip ' + dbv2CovClass(a.coverage) + '">' + a.coverage + '٪</span></td></tr>';
         }).join('') + '</tbody></table></div></div>';
     }
@@ -7026,7 +7038,7 @@
         const c = document.createElement('div');
         c.className = 'route-card';
         let routeHtml = '';
-        if (d.isSingleDay && r.routeTotal !== undefined) {
+        if (r.routeTotal !== undefined && r.routeTotal > 0) {
           const pct = r.routeTotal > 0 ? Math.round((r.routeVisited / r.routeTotal) * 100) : 0;
           routeHtml = '<div class="route-card-detail"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M9 20l-6-2V4l6 2 6-2 6 2v14l-6-2-6 2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 4v14M15 6v14" stroke="currentColor" stroke-width="1.8"/></svg> خط السير: زار <b>' + r.routeVisited + '</b> من <b>' + r.routeTotal +
             '</b> — باقي <b>' + r.routeRemaining + '</b></div>' +
