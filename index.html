@@ -952,6 +952,10 @@
   }
   .stand-switch.on::before { transform: translateX(-22px); }
   .stand-switch:disabled { cursor: default; opacity: 0.85; }
+  .stand-switch.sm { width: 34px; height: 20px; }
+  .stand-switch.sm::before { width: 14px; height: 14px; top: 3px; right: 3px; }
+  .stand-switch.sm.on::before { transform: translateX(-14px); }
+  .route-mode-row { display: flex; align-items: center; gap: 8px; margin-top: 5px; font-size: 12px; color: var(--text-mute); }
 
   /* صف مضغوط لقائمة "إدارة المندوبين" — بديل الـ route-card الكبير، شريط
      واحد لكل مندوب (اسم + اسم مستخدم) مع مفتاح تبديل صغير بنفس أسلوب
@@ -2651,16 +2655,16 @@
           // خط سير تلقائي — إدارة فقط (هذي الشاشة كلها محصورة بـisManagement()
           // أصلًا)، يخلي خط سير هذا المندوب يتولّد وحده يوميًا من كل زبائنه
           // بدل تخطيط يدوي. راجع setRepRouteMode/autoGenerateRouteForRep.
-          const modeLabel = document.createElement('label');
-          modeLabel.className = 'checkbox-item';
-          modeLabel.style.cssText = 'margin-top:4px;font-size:12.5px;';
-          const modeCb = document.createElement('input');
-          modeCb.type = 'checkbox';
-          modeCb.checked = r.routeMode === 'تلقائي';
-          modeCb.onchange = function () { toggleRepRouteMode(r.username, modeCb.checked, modeCb); };
-          modeLabel.appendChild(modeCb);
-          modeLabel.appendChild(document.createTextNode(' خط سير تلقائي (كل زبائنه، بدون تخطيط يدوي)'));
-          info.appendChild(modeLabel);
+          const modeRow = document.createElement('div');
+          modeRow.className = 'route-mode-row';
+          const modeBtn = document.createElement('button');
+          modeBtn.type = 'button';
+          modeBtn.className = 'stand-switch sm' + (r.routeMode === 'تلقائي' ? ' on' : '');
+          modeBtn.title = r.routeMode === 'تلقائي' ? 'تلقائي — اضغط للرجوع لمخطط يدويًا' : 'مخطط يدويًا — اضغط لتفعيل التلقائي';
+          modeBtn.onclick = function () { toggleRepRouteMode(r.username, !(r.routeMode === 'تلقائي'), modeBtn, r); };
+          modeRow.appendChild(modeBtn);
+          modeRow.appendChild(document.createTextNode('خط سير تلقائي (كل زبائنه، بدون تخطيط يدوي)'));
+          info.appendChild(modeRow);
           row.appendChild(info);
           const btn = document.createElement('button');
           btn.type = 'button';
@@ -2700,8 +2704,8 @@
       });
   }
 
-  function toggleRepRouteMode(username, isAuto, cb) {
-    if (cb) cb.disabled = true;
+  function toggleRepRouteMode(username, isAuto, btn, repObj) {
+    if (btn) btn.disabled = true;
     const body = new FormData();
     body.append('action', 'setRepRouteMode');
     body.append('username', (currentAdmin && currentAdmin.username) || '');
@@ -2711,17 +2715,21 @@
     fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body })
       .then(function (res) { return res.json(); })
       .then(function (data) {
-        if (cb) cb.disabled = false;
+        if (btn) btn.disabled = false;
         if (data.result === 'success') {
+          if (repObj) repObj.routeMode = isAuto ? 'تلقائي' : 'مخطط';
+          if (btn) {
+            btn.classList.toggle('on', isAuto);
+            btn.title = isAuto ? 'تلقائي — اضغط للرجوع لمخطط يدويًا' : 'مخطط يدويًا — اضغط لتفعيل التلقائي';
+          }
           showToast(isAuto ? 'صار خط سيره تلقائي' : 'رجع خط سيره مخطط يدويًا', 'success');
         } else {
           showToast('حدث خطأ، حاول مرة ثانية', 'error');
-          if (cb) cb.checked = !isAuto;
         }
       })
       .catch(function () {
+        if (btn) btn.disabled = false;
         showToast('تعذّر الاتصال بالخادم', 'error');
-        if (cb) { cb.disabled = false; cb.checked = !isAuto; }
       });
   }
 
