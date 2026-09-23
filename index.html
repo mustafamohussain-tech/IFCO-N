@@ -6840,6 +6840,7 @@
         '<div class="route-card-title"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M12 21s7-6.5 7-11.5A7 7 0 105 9.5C5 14.5 12 21 12 21z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.3" stroke="currentColor" stroke-width="1.6"/></svg> ' + esc(a.area) + '</div>' +
         kpiRow([
           { n: a.visits, l: 'زيارة' },
+          { n: a.newPoints, l: 'نقطة جديدة' },
           { n: a.uniquePoints, l: 'نقطة فريدة' },
           { n: a.coverage + '%', l: 'تغطية' }
         ]) +
@@ -6882,10 +6883,10 @@
       });
     } else {
       fileTag = 'المناطق';
-      rows.push(['المنطقة', 'الزيارات', 'نقاط فريدة', 'إجمالي نقاط المنطقة', 'نسبة التغطية %', 'المندوبون', 'الحالات']);
+      rows.push(['المنطقة', 'الزيارات', 'نقاط جديدة', 'نقاط فريدة', 'إجمالي نقاط المنطقة', 'نسبة التغطية %', 'المندوبون', 'الحالات']);
       d.areaList.forEach(function (a) {
         rows.push([
-          a.area, a.visits, a.uniquePoints, a.totalPoints, a.coverage,
+          a.area, a.visits, a.newPoints, a.uniquePoints, a.totalPoints, a.coverage,
           a.reps.map(function (x) { return x.name + '(' + x.count + ')'; }).join(' | '),
           a.statuses.map(function (x) { return x.name + '(' + x.count + ')'; }).join(' | ')
         ]);
