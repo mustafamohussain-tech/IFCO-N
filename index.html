@@ -6456,13 +6456,14 @@
       const topAreas = d.areaList.slice(0, 5);
       const areaMax = Math.max.apply(null, topAreas.map(function (a) { return a.visits; })) || 1;
       html += '<div class="dbv2-card">' +
-        '<div class="dbv2-head"><h3>أنشط المناطق</h3><span class="meta">مرتّبة حسب الزيارات</span></div>' +
-        '<div class="dbv2-tablewrap"><table class="dbv2-rank"><thead><tr><th style="width:28px;"></th><th>المنطقة</th><th style="width:120px;">الزيارات</th><th class="num">تغطية</th></tr></thead><tbody>' +
+        '<div class="dbv2-head"><h3>أنشط المناطق</h3><span class="meta">مرتّبة حسب الزيارات + النقاط الجديدة</span></div>' +
+        '<div class="dbv2-tablewrap"><table class="dbv2-rank"><thead><tr><th style="width:28px;"></th><th>المنطقة</th><th style="width:120px;">الزيارات</th><th class="num">نقطة جديدة</th><th class="num">تغطية</th></tr></thead><tbody>' +
         topAreas.map(function (a, i) {
           const pct = Math.round(a.visits / areaMax * 100);
           return '<tr><td><div class="dbv2-rank-num' + (i === 0 ? ' top' : '') + '">' + (i + 1) + '</div></td>' +
             '<td class="dbv2-rank-name">' + esc(a.area) + '</td>' +
             '<td><div class="dbv2-mini-bar-wrap"><div class="dbv2-mini-bar-track"><div class="dbv2-mini-bar-fill info" style="width:' + pct + '%"></div></div><span class="dbv2-mini-bar-num">' + a.visits + '</span></div></td>' +
+            '<td class="num dbv2-num-cell">' + a.newPoints + '</td>' +
             '<td class="num"><span class="dbv2-cov-chip ' + dbv2CovClass(a.coverage) + '">' + a.coverage + '٪</span></td></tr>';
         }).join('') + '</tbody></table></div></div>';
     }
