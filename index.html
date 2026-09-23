@@ -805,7 +805,13 @@
      لوحة الإدارة (نسخة ٢) — إعادة تصميم renderDashDataArea. مسمّاة
      dbv2- عمدًا حتى ما تصطدم بـ.card (غلاف التطبيق نفسه) ولا بأي كلاس
      مشترك ثاني (kpiRow/barListHtml تستخدمها شاشات ثانية، ما نلمسها). */
-  :root { --info-blue: #2f6fed; --info-blue-glow: rgba(47,111,237,0.14); }
+  :root {
+    --info-blue: #2f6fed; --info-blue-glow: rgba(47,111,237,0.14);
+    /* حالات الزبائن (بار + شارات التغطية) بألوان متفارقة عمدًا — ألوان
+       --green/--amber/--danger الأصلية قريبة كلش من بعض (نفس درجة
+       تراكوتا غامقة تقريبًا) وصعب تمييزها جنب بعض بمخطط بيانات. */
+    --dbv2-good: #2f7d4f; --dbv2-warn: #a97517; --dbv2-bad: #b3261e;
+  }
   .dbv2-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:12px; }
   @media (max-width:560px) { .dbv2-kpis { grid-template-columns:repeat(2,1fr); } }
   .dbv2-tile {
@@ -881,9 +887,9 @@
     display:inline-flex; align-items:center; justify-content:center; min-width:36px;
     padding:2px 6px; border-radius:7px; font-size:11px; font-weight:800; font-variant-numeric:tabular-nums;
   }
-  .dbv2-cov-good { background:rgba(86,99,63,0.12); color:var(--green); }
-  .dbv2-cov-warn { background:rgba(140,73,26,0.12); color:var(--amber); }
-  .dbv2-cov-bad { background:rgba(100,51,18,0.1); color:var(--danger); }
+  .dbv2-cov-good { background:rgba(47,125,79,0.12); color:var(--dbv2-good); }
+  .dbv2-cov-warn { background:rgba(169,117,23,0.12); color:var(--dbv2-warn); }
+  .dbv2-cov-bad { background:rgba(179,38,30,0.1); color:var(--dbv2-bad); }
 
   /* ── القائمة الجانبية درج منسدل (Drawer) بكل المقاسات — حاسوب وهاتف
      على حد سواء، حسب الطلب: زر ☰ يفتحها، ونفس الزر (أو الخلفية
@@ -6399,9 +6405,9 @@
     const statusTotal = statusEntries.reduce(function (s, e) { return s + e.count; }, 0);
     if (w.kpis !== false && statusEntries.length) {
       const statusColor = function (name) {
-        if (name === 'تم البيع') return 'var(--green)';
-        if (name === 'لا يريد التعامل معنا') return 'var(--danger)';
-        if (name === 'لديه مخزون') return 'var(--amber)';
+        if (name === 'تم البيع') return 'var(--dbv2-good)';
+        if (name === 'لا يريد التعامل معنا') return 'var(--dbv2-bad)';
+        if (name === 'لديه مخزون') return 'var(--dbv2-warn)';
         return 'var(--text-mute)';
       };
       html += '<div class="dbv2-card">' +
