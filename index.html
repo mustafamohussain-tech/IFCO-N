@@ -2595,6 +2595,9 @@
       '<button type="button" class="back-btn" onclick="buildAdminMenu()"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;vertical-align:-3px"><path d="M9 6l6 6-6 6"/></svg> قائمة الإدارة</button>' +
       '<h2 style="font-size:16px;margin-bottom:4px;"><svg viewBox="0 0 24 24" fill="none" width="18" height="18" style="vertical-align:-4px;display:inline-block;color:var(--accent-dark);"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16 4.5a3.2 3.2 0 010 6.4M19 20c0-3-1.8-5.2-4.3-5.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> إدارة المندوبين</h2>' +
       '<p class="field-hint" style="margin-bottom:10px;">موظف طلع من الشركة؟ عطّل حسابه بس (لا تحذف ولا تغيّر اسمه) — بيانات زياراته القديمة تضل صحيحة. الموظف الجديد ياخذ حساب جديد لحاله.</p>' +
+      '<p class="field-hint">"خط سير تلقائي" (تحت اسم كل مندوب): يتولّد خط سيره وحده يوميًا من كل زبائنه، بدل تخطيط يدوي — يتولد تلقائي الساعة ٨ صباحًا، أو فورًا لو ضغطت الزر تحت.</p>' +
+      '<button type="button" class="home-btn secondary" id="runAutoRouteBtn" onclick="runAutoRouteNow()" style="margin-bottom:6px;">شغّل التعبئة التلقائية الآن</button>' +
+      '<div class="msg success" id="runAutoRouteMsg" style="display:none;"></div>' +
       '<div class="geo-status" id="repMgmtStatus">جارٍ التحميل...</div>' +
       '<div id="repMgmtList"></div>' +
       '<div style="border-top:1px solid var(--line-soft);margin:22px 0 14px;padding-top:16px;">' +
@@ -2645,6 +2648,19 @@
           userEl.textContent = r.username;
           info.appendChild(nameEl);
           info.appendChild(userEl);
+          // خط سير تلقائي — إدارة فقط (هذي الشاشة كلها محصورة بـisManagement()
+          // أصلًا)، يخلي خط سير هذا المندوب يتولّد وحده يوميًا من كل زبائنه
+          // بدل تخطيط يدوي. راجع setRepRouteMode/autoGenerateRouteForRep.
+          const modeLabel = document.createElement('label');
+          modeLabel.className = 'checkbox-item';
+          modeLabel.style.cssText = 'margin-top:4px;font-size:12.5px;';
+          const modeCb = document.createElement('input');
+          modeCb.type = 'checkbox';
+          modeCb.checked = r.routeMode === 'تلقائي';
+          modeCb.onchange = function () { toggleRepRouteMode(r.username, modeCb.checked, modeCb); };
+          modeLabel.appendChild(modeCb);
+          modeLabel.appendChild(document.createTextNode(' خط سير تلقائي (كل زبائنه، بدون تخطيط يدوي)'));
+          info.appendChild(modeLabel);
           row.appendChild(info);
           const btn = document.createElement('button');
           btn.type = 'button';
@@ -2681,6 +2697,62 @@
       .catch(function () {
         showToast('تعذّر الاتصال بالخادم', 'error');
         if (btn) btn.disabled = false;
+      });
+  }
+
+  function toggleRepRouteMode(username, isAuto, cb) {
+    if (cb) cb.disabled = true;
+    const body = new FormData();
+    body.append('action', 'setRepRouteMode');
+    body.append('username', (currentAdmin && currentAdmin.username) || '');
+    body.append('password', (currentAdmin && currentAdmin.pass) || '');
+    body.append('targetUsername', username);
+    body.append('mode', isAuto ? 'تلقائي' : 'مخطط');
+    fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (cb) cb.disabled = false;
+        if (data.result === 'success') {
+          showToast(isAuto ? 'صار خط سيره تلقائي' : 'رجع خط سيره مخطط يدويًا', 'success');
+        } else {
+          showToast('حدث خطأ، حاول مرة ثانية', 'error');
+          if (cb) cb.checked = !isAuto;
+        }
+      })
+      .catch(function () {
+        showToast('تعذّر الاتصال بالخادم', 'error');
+        if (cb) { cb.disabled = false; cb.checked = !isAuto; }
+      });
+  }
+
+  function runAutoRouteNow() {
+    const btn = document.getElementById('runAutoRouteBtn');
+    const msg = document.getElementById('runAutoRouteMsg');
+    if (btn) { btn.disabled = true; btn.textContent = 'جارٍ التنفيذ...'; }
+    if (msg) msg.style.display = 'none';
+    const body = new FormData();
+    body.append('action', 'runAutoRouteNow');
+    body.append('username', (currentAdmin && currentAdmin.username) || '');
+    body.append('password', (currentAdmin && currentAdmin.pass) || '');
+    fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (btn) { btn.disabled = false; btn.textContent = 'شغّل التعبئة التلقائية الآن'; }
+        if (msg) {
+          if (data.result === 'success') {
+            const total = (data.results || []).reduce(function (s, r) { return s + (r.added || 0) + (r.repaired || 0); }, 0);
+            msg.className = 'msg success';
+            msg.textContent = 'تم — ' + (data.results || []).length + ' مندوب "تلقائي"، ' + total + ' نقطة أُضيفت/أُصلحت لخط سير ' + data.date;
+          } else {
+            msg.className = 'msg error';
+            msg.textContent = 'حدث خطأ أثناء التنفيذ';
+          }
+          msg.style.display = 'block';
+        }
+      })
+      .catch(function () {
+        if (btn) { btn.disabled = false; btn.textContent = 'شغّل التعبئة التلقائية الآن'; }
+        if (msg) { msg.className = 'msg error'; msg.textContent = 'تعذّر الاتصال بالخادم'; msg.style.display = 'block'; }
       });
   }
 
