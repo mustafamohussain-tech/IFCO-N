@@ -1025,9 +1025,14 @@
     display: inline-block; font-size: 11px; font-weight: 600;
     padding: 3px 9px; border-radius: 20px; margin: 3px 3px 0 0;
   }
-  .p-green { background: rgba(86,99,63,0.13); color: var(--green); }
-  .p-amber { background: rgba(140,73,26,0.13); color: var(--amber); }
-  .p-red { background: rgba(100,51,18,0.13); color: var(--danger); }
+  /* تصحيح: --green/--amber/--danger قريبين كلش من بعض (نفس درجة تراكوتا
+     غامقة تقريبًا، فشلت بأداة فحص التباين — راجع --dbv2-good/warn/bad)
+     — نفس الألوان المتفارقة المستخدمة بلوحة الإدارة، حتى حالة الزبون
+     تضل نفس اللون بكل شاشة تظهر فيها (تقارير مفصّلة، سجل الزبون...). */
+  .p-green { background: rgba(47,125,79,0.13); color: var(--dbv2-good); }
+  .p-amber { background: rgba(169,117,23,0.13); color: var(--dbv2-warn); }
+  .p-red { background: rgba(179,38,30,0.13); color: var(--dbv2-bad); }
+  .p-purple { background: rgba(107,76,154,0.13); color: var(--dbv2-neutral); }
   .warn-line { color: var(--danger); font-weight: 600; font-size: 12.5px; margin-top: 5px; }
 
   /* زر "لديه عارضة" — تبديل دائري مخصص */
@@ -1084,10 +1089,13 @@
     background: var(--card); border: 1px solid var(--line); border-inline-start: 4px solid var(--text-mute);
     border-radius: 13px; padding: 12px 14px; margin-top: 8px;
   }
-  .hist-card.hist-green { border-inline-start-color: var(--green); }
-  .hist-card.hist-amber { border-inline-start-color: var(--amber); }
-  .hist-card.hist-red { border-inline-start-color: var(--danger); }
-  .hist-card.hist-purple { border-inline-start-color: var(--violet); }
+  /* تصحيح: --green/--violet قريبين كلش من بعض (نفس درجة زيتوني غامق —
+     فشلت بأداة فحص التباين)، فما ينميّز "تم البيع" عن "زيارة مروّج"
+     بسرعة بسجل الزبون. نفس الألوان المتفارقة المستخدمة بلوحة الإدارة. */
+  .hist-card.hist-green { border-inline-start-color: var(--dbv2-good); }
+  .hist-card.hist-amber { border-inline-start-color: var(--dbv2-warn); }
+  .hist-card.hist-red { border-inline-start-color: var(--dbv2-bad); }
+  .hist-card.hist-purple { border-inline-start-color: var(--dbv2-neutral); }
   .hist-top { display: flex; justify-content: space-between; align-items: center; }
   .hist-title { font-size: 13.5px; font-weight: 700; }
   .hist-time { font-size: 11px; color: var(--text-mute); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
@@ -1095,10 +1103,10 @@
     display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px;
     border-radius: 20px; margin-top: 6px;
   }
-  .hist-status-green { background: rgba(86,99,63,0.13); color: var(--green); }
-  .hist-status-amber { background: rgba(140,73,26,0.13); color: var(--amber); }
-  .hist-status-red { background: rgba(100,51,18,0.13); color: var(--danger); }
-  .hist-status-purple { background: rgba(61,71,43,0.13); color: var(--violet); }
+  .hist-status-green { background: rgba(47,125,79,0.13); color: var(--dbv2-good); }
+  .hist-status-amber { background: rgba(169,117,23,0.13); color: var(--dbv2-warn); }
+  .hist-status-red { background: rgba(179,38,30,0.13); color: var(--dbv2-bad); }
+  .hist-status-purple { background: rgba(107,76,154,0.13); color: var(--dbv2-neutral); }
   .hist-status-gray { background: var(--bg-1); color: var(--text-dim); }
   .hist-detail { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
   .hist-note {
@@ -4651,8 +4659,11 @@
     renderLeaveCalendar();
   }
 
-  const LEAVE_COLOR = { 'إجازة': 'var(--accent)', 'مرض': 'var(--amber)', 'غياب بدون عذر': 'var(--danger)' };
-  function leaveColorFor(type) { return LEAVE_COLOR[type] || 'var(--purple, #8b5cf6)'; }
+  // تصحيح: --accent و--amber نفس القيمة بالضبط (#8c491a) — "إجازة" و"مرض"
+  // كانوا يطلعون بنفس اللون تمامًا بالتقويم. نفس الألوان المتفارقة
+  // المستخدمة بلوحة الإدارة وحالة الزبون.
+  const LEAVE_COLOR = { 'إجازة': 'var(--dbv2-good)', 'مرض': 'var(--dbv2-warn)', 'غياب بدون عذر': 'var(--dbv2-bad)' };
+  function leaveColorFor(type) { return LEAVE_COLOR[type] || 'var(--dbv2-neutral)'; }
 
   function renderLeaveCalendar() {
     const label = document.getElementById('leaveMonthLabel');
@@ -5534,9 +5545,9 @@
       '<div style="flex:1;background:var(--bg-1);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;">' +
       '<div style="font-size:18px;font-weight:800;color:var(--accent);">' + total + '</div><div style="font-size:10px;color:var(--text-dim);">إجمالي</div></div>' +
       '<div style="flex:1;background:var(--bg-1);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;">' +
-      '<div style="font-size:18px;font-weight:800;color:var(--green);">' + ready + '</div><div style="font-size:10px;color:var(--text-dim);">محدّدة</div></div>' +
+      '<div style="font-size:18px;font-weight:800;color:var(--dbv2-good);">' + ready + '</div><div style="font-size:10px;color:var(--text-dim);">محدّدة</div></div>' +
       '<div style="flex:1;background:var(--bg-1);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;">' +
-      '<div style="font-size:18px;font-weight:800;color:var(--amber);">' + need + '</div><div style="font-size:10px;color:var(--text-dim);">تحتاج تحديد</div></div>' +
+      '<div style="font-size:18px;font-weight:800;color:var(--dbv2-warn);">' + need + '</div><div style="font-size:10px;color:var(--text-dim);">تحتاج تحديد</div></div>' +
       '</div>';
   }
 
@@ -7036,9 +7047,10 @@
     if (!list || !list.length) return '';
     let h = '<div class="route-card-detail"><svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><path d="M6 3h12v18l-2-1.3L14 21l-2-1.3L10 21l-2-1.3L6 21V3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 8h6M9 12h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> الحالات: ';
     list.forEach(function (s) {
-      let cls = 'p-amber';
+      let cls = 'p-purple';
       if (s.name === 'تم البيع') cls = 'p-green';
       else if (s.name === 'لا يريد التعامل معنا') cls = 'p-red';
+      else if (s.name === 'لديه مخزون') cls = 'p-amber';
       h += '<span class="pill ' + cls + '">' + esc(s.name) + ' ' + s.count + '</span> ';
     });
     return h + '</div>';
@@ -7312,8 +7324,8 @@
         const s = data.summary || {};
         kpis.style.display = 'flex';
         kpis.innerHTML =
-          '<div class="kpi"><div class="kpi-n" style="color:var(--danger)">' + (s.high || 0) + '</div><div class="kpi-l">عالية</div></div>' +
-          '<div class="kpi"><div class="kpi-n" style="color:var(--amber)">' + (s.medium || 0) + '</div><div class="kpi-l">متوسطة</div></div>' +
+          '<div class="kpi"><div class="kpi-n" style="color:var(--dbv2-bad)">' + (s.high || 0) + '</div><div class="kpi-l">عالية</div></div>' +
+          '<div class="kpi"><div class="kpi-n" style="color:var(--dbv2-warn)">' + (s.medium || 0) + '</div><div class="kpi-l">متوسطة</div></div>' +
           '<div class="kpi"><div class="kpi-n" style="color:var(--text-mute)">' + (s.neglected || 0) + '</div><div class="kpi-l">مهملة</div></div>';
 
         let lastPriority = null;
@@ -7768,9 +7780,10 @@
       const st = String(p['حالة الزبون'] || '').trim();
       if (st) {
         const stEl = document.createElement('span');
-        let pillClass = 'p-amber';
+        let pillClass = 'p-purple';
         if (st === 'تم البيع') pillClass = 'p-green';
         else if (st === 'لا يريد التعامل معنا') pillClass = 'p-red';
+        else if (st === 'لديه مخزون') pillClass = 'p-amber';
         stEl.className = 'pill ' + pillClass;
         stEl.style.width = 'fit-content';
         stEl.textContent = st;
