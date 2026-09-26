@@ -8398,6 +8398,8 @@
   let custGroups = [];
   let custPick = {};       // رقم المجموعة → { keep: id, merge: {id: true} }
   let custConfirm = -1;
+  let custRetired = 0;
+  let purgeConfirm = false;
   function buildDataToolsHub() {
     const content = document.getElementById('adminContent');
     if (!isManagement()) { notAllowedPanel('هذه الصفحة متاحة للإدارة فقط'); return; }
@@ -8456,6 +8458,7 @@
       .then(function (data) {
         if (data.result !== 'success') { list.innerHTML = '<div class="x-alert bad">حدث خطأ أثناء الفحص</div>'; return; }
         custGroups = data.groups || [];
+        custRetired = data.retired || 0;
         custGroups.forEach(function (g, gi) {
           const merge = {};
           g.slice(1).forEach(function (c) { merge[c.id] = true; });
@@ -8472,8 +8475,11 @@
     if (!list) return;
     const extra = custGroups.reduce(function (n, g) { return n + g.length - 1; }, 0);
     if (meta) meta.textContent = custGroups.length ? custGroups.length + ' مجموعة · ' + extra + ' زبون مكرر' : 'نفس المحل منسجل بأكثر من ID';
-    if (!custGroups.length) { list.innerHTML = '<div class="x-alert good">' + ic('checkCircle2', 18) + 'ما أكو زبائن مكررين حاليًا</div>'; return; }
-    list.innerHTML = custGroups.map(function (g, gi) {
+    const purge = custRetired ? '<div class="x-alert warn" style="flex-wrap:wrap;"><span class="x-grow">' + custRetired + ' زبون مدموج (صفوف فاضية، كل زياراتها انتقلت للأساسي) بانتظار الحذف النهائي</span>' +
+      (purgeConfirm ? '<button type="button" class="x-btn ghost sm" onclick="purgeConfirm=false;renderDuplicateCustomers()">إلغاء</button><button type="button" class="x-btn danger sm" id="purgeBtn" onclick="purgeMergedCustomers()">تأكيد الحذف</button>' :
+        '<button type="button" class="x-btn danger sm" onclick="purgeConfirm=true;renderDuplicateCustomers()">' + ic('trash', 16) + 'حذف نهائي</button>') + '</div>' : '';
+    if (!custGroups.length) { list.innerHTML = purge + '<div class="x-alert good">' + ic('checkCircle2', 18) + 'ما أكو زبائن مكررين حاليًا</div>'; return; }
+    list.innerHTML = purge + custGroups.map(function (g, gi) {
       const pick = custPick[gi];
       const n = Object.keys(pick.merge).filter(function (id) { return pick.merge[id] && id !== pick.keep; }).length;
       return '<div class="dt-group"><div class="dt-group-h"><b>' + esc(g[0].name) + '</b><span class="x-small">' + esc(g[0].area || '') + ' · ' + g.length + ' IDs</span></div>' +
@@ -8492,6 +8498,22 @@
           '<b style="font-size:13px;color:var(--bad-fg);">دمج ' + n + ' بالأساسي ' + esc(pick.keep) + '؟ ما يرجع.</b><span class="x-row-flex" style="gap:8px;"><button type="button" class="x-btn ghost sm" onclick="custConfirm=-1;renderDuplicateCustomers()">إلغاء</button><button type="button" class="x-btn danger sm" id="custMergeBtn' + gi + '" onclick="mergeCustomerGroup(' + gi + ')">تأكيد الدمج</button></span>' :
           '<span class="x-small">' + (n ? n + ' للدمج' : 'ما مأشّر شي للدمج') + '</span><button type="button" class="x-btn sm"' + (n ? '' : ' disabled') + ' onclick="custConfirm=' + gi + ';renderDuplicateCustomers()">دمج</button>') + '</div></div>';
     }).join('');
+  }
+  function purgeMergedCustomers() {
+    const btn = document.getElementById('purgeBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'جارٍ الحذف...'; }
+    const body = new FormData();
+    body.append('action', 'purgeMergedCustomers');
+    body.append('username', (currentAdmin && currentAdmin.username) || '');
+    body.append('password', (currentAdmin && currentAdmin.pass) || '');
+    fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        purgeConfirm = false;
+        if (data.result === 'success') { custRetired = 0; showToast('انحذف ' + data.deleted + ' صف مدموج', 'success'); renderDuplicateCustomers(); }
+        else { showToast(data.error === 'still_referenced' ? 'بعد أكو سجلات مرتبطة، ما انحذف شي' : 'حدث خطأ', 'error'); renderDuplicateCustomers(); }
+      })
+      .catch(function (err) { purgeConfirm = false; showToast(getErrorMessage(err), 'error'); renderDuplicateCustomers(); });
   }
   function custSetKeep(gi, id) {
     const pick = custPick[gi];
