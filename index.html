@@ -892,6 +892,22 @@
   .dt-group-h { padding: 10px 14px; background: var(--soft); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .dt-group-h b { font-size: 14px; }
   .dt-row { border-radius: 0; border-top: 1px solid var(--row-line); padding: 10px 14px; }
+  @media (min-width: 1024px) { .dt-cols2 { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: start; } }
+  .dt-bar { padding: 0 14px 14px; }
+  .dt-bar:empty { display: none; }
+  .mg-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--row-line); }
+  .mg-row.keep { background: var(--good-tint); }
+  .mg-keep { width: 30px; height: 30px; flex-shrink: 0; border: none; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  .mg-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--line-2); background: #fff; box-sizing: border-box; }
+  .mg-keep[aria-checked="true"] .mg-dot { border: 6px solid var(--good); }
+  .mg-row .mg-merge { width: auto; flex: 0 0 auto; flex-shrink: 0; align-items: center; padding: 6px 10px; border: 1px solid var(--line-2); border-radius: 10px; }
+  .mg-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-top: 1px solid var(--line-3); background: var(--soft); }
+  .dup-prompt { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 14px; background: var(--warn-tint); border: 1px solid var(--warn-line); color: var(--ink); text-align: right; }
+  .dup-prompt .dp-t { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--warn-fg); }
+  .dup-prompt .dp-row { display: flex; align-items: center; gap: 10px; background: #fff; border-radius: 12px; padding: 8px 10px; }
+  .dup-prompt .dp-info { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; }
+  .dup-prompt .dp-info b { font-size: 13.5px; }
+  .dup-prompt .x-btn.sm { height: 36px; flex-shrink: 0; }
 
   /* تقرير الأداء */
   .per-filters { flex-direction: column; }
@@ -3605,12 +3621,16 @@
 
   function objectToFormData(obj) {
     const fd = new FormData();
-    Object.keys(obj).forEach(function (k) { fd.append(k, obj[k]); });
+    // الحقول اللي تبدي بـ"_" (_qid، _failCount) داخلية للطابور — ما تنرسل للسيرفر
+    Object.keys(obj).forEach(function (k) { if (k.charAt(0) !== '_') fd.append(k, obj[k]); });
     return fd;
   }
 
+  function newQueueId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
   function queueSubmission(dataObj) {
     const queue = getQueue();
+    if (!dataObj._qid) dataObj._qid = newQueueId();
+    if (queue.some(function (q) { return q._qid === dataObj._qid; })) return;
     queue.push(dataObj);
     saveQueue(queue);
   }
@@ -3627,18 +3647,33 @@
     }
   }
 
+  // قفل: كان ممكن يشتغل مرتين بنفس اللحظة (فتح الصفحة + رجوع النت)، فنفس
+  // العملية تنرسل مرتين وتنسجل مكررة. هسه تشغيلة وحدة بس بأي وقت.
+  let queueSending = false;
   function sendQueuedSubmissions() {
+    if (queueSending) return;
     const queue = getQueue();
     if (queue.length === 0) return;
+    queueSending = true;
+    queue.forEach(function (q) { if (!q._qid) q._qid = newQueueId(); });
+    const sentIds = {};
+    queue.forEach(function (q) { sentIds[q._qid] = true; });
     const remaining = [];
     let index = 0;
     function sendNext() {
       if (index >= queue.length) {
-        saveQueue(remaining);
+        // عمليات انضافت للطابور أثناء الإرسال — كانت تنمسح بالغلط هنا
+        const added = getQueue().filter(function (q) { return !q._qid || !sentIds[q._qid]; });
+        saveQueue(remaining.concat(added));
+        queueSending = false;
         return;
       }
       const item = queue[index];
-      fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: objectToFormData(item) })
+      const fd = objectToFormData(item);
+      // نقطة جديدة من الطابور: المندوب شاف "تم الإرسال" وهو بدون نت وما نقدر
+      // نسأله هسه — تنرسل مباشرة، والسيرفر يرجّع نجاح لو انسجلت قبل.
+      if (!item.action && item.isRouteVisit !== '1' && !item.useCustomerId) fd.append('confirmNew', '1');
+      fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: fd })
         .then(function (res) { return res.json(); })
         .then(function (data) {
           if (data && data.result === 'error' && data.error === 'duplicate_point') {
@@ -3974,8 +4009,47 @@
     alert('⛔ هذا الرقم مسجّل مسبقًا بالنظام' + (storeName ? ' باسم "' + storeName + '"' : '') + '.');
   }
 
+  // تنبيه "يمكن هاي النقطة مسجّلة من قبل" — السيرفر لقى زبون قريب باسم متشابه
+  // أو رقم يختلف بخانة. المندوب يختار: هي نفسها (تنسجل زيارة للزبون الموجود)،
+  // أو نقطة جديدة فعلًا (تنسجل مثل ما هي).
+  function hideDupPrompt() { const el = document.getElementById('dupPrompt'); if (el) el.remove(); }
+  function showPossibleDuplicate(cands) {
+    hideDupPrompt();
+    const err = document.getElementById('errorMsg');
+    if (!err || !cands.length) return;
+    const box = document.createElement('div');
+    box.id = 'dupPrompt';
+    box.className = 'dup-prompt';
+    box.setAttribute('role', 'alert');
+    box.innerHTML = '<b class="dp-t">' + ic('warn', 18) + 'يمكن هاي النقطة مسجّلة من قبل</b>' +
+      '<span class="x-small">راجعها قبل الإرسال حتى ما تتكرر:</span>' +
+      cands.map(function (c, i) {
+        const why = c.why === 'phone' ? 'رقم متقارب' : c.why === 'name+phone' ? 'نفس الاسم والرقم تقريبًا' : 'اسم متشابه';
+        return '<div class="dp-row"><span class="dp-info"><b>' + esc(c.name) + '</b><span class="x-small">' + esc([c.area, c.phone, 'تبعد ' + c.distance + ' م', why].filter(Boolean).join(' · ')) + '</span></span>' +
+          '<button type="button" class="x-btn sm" onclick="useExistingPoint(' + i + ')">هي نفسها</button></div>';
+      }).join('') +
+      '<button type="button" class="x-btn ghost block sm" onclick="confirmNewPoint()">لا، هاي نقطة جديدة</button>';
+    window._dupCandidates = cands;
+    err.parentNode.insertBefore(box, err);
+    showToast('راجع النقاط القريبة قبل الإرسال', 'info');
+  }
+  function useExistingPoint(i) {
+    const c = (window._dupCandidates || [])[i];
+    if (!c) return;
+    window._submitOverride = { useCustomerId: c.id };
+    hideDupPrompt();
+    proceedWithSubmit();
+  }
+  function confirmNewPoint() {
+    window._submitOverride = { confirmNew: '1' };
+    hideDupPrompt();
+    proceedWithSubmit();
+  }
+
   function proceedWithSubmit() {
     const submitBtn = document.getElementById('submitBtn');
+    hideDupPrompt();
+    const usedExisting = !!(window._submitOverride && window._submitOverride.useCustomerId);
     const successMsg = document.getElementById('successMsg');
     const errorMsg = document.getElementById('errorMsg');
 
@@ -4010,6 +4084,18 @@
     formData.append('Latitude', document.getElementById('lat').value);
     formData.append('Longitude', document.getElementById('lng').value);
     formData.append('isRouteVisit', isRouteVisit ? '1' : '0');
+    formData.append('dupCheck', '1');
+    // زيارة خط سير: نرسل ID الزبون وموقعه الأصلي — السيرفر ما يعتمد على GPS المندوب للمطابقة
+    if (isRouteVisit && activeVisit) {
+      formData.append('customerId', activeVisit.customerId || '');
+      formData.append('officialLat', activeVisit.officialLat != null ? activeVisit.officialLat : '');
+      formData.append('officialLng', activeVisit.officialLng != null ? activeVisit.officialLng : '');
+    }
+    // بعد تنبيه "يمكن هاي النقطة مسجّلة": المندوب اختار (نفسها / نقطة جديدة)
+    if (window._submitOverride) {
+      Object.keys(window._submitOverride).forEach(function (k) { formData.append(k, window._submitOverride[k]); });
+      window._submitOverride = null;
+    }
 
     // Append any management-defined custom fields (auto-added columns)
     const customValues = collectCustomFieldValues();
@@ -4038,6 +4124,12 @@
       .then(function (data) {
         // حاجز السيرفر رفض العملية (نقطة مكررة) — نوقف هنا، ما نعتبرها نجاح،
         // وما نحفظها بطابور الإرسال (لأنه رفض متعمّد، مو فشل اتصال).
+        if (data && data.result === 'error' && data.error === 'possible_duplicate') {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'إرسال النقطة';
+          showPossibleDuplicate(data.candidates || []);
+          return;
+        }
         if (data && data.result === 'error' && data.error === 'duplicate_point') {
           submitBtn.disabled = false;
           submitBtn.textContent = isRouteVisit ? 'إنهاء الزيارة' : 'إرسال النقطة';
@@ -4055,7 +4147,7 @@
         if (isRouteVisit) {
           logActivePointVisit(repToSave, visitDetails);
         } else {
-          logNewPointVisit(repToSave, visitDetails, storeNameToSave, areaToSave, latToSave, lngToSave);
+          logNewPointVisit(repToSave, visitDetails, storeNameToSave, areaToSave, latToSave, lngToSave, data.customerId || '', usedExisting ? 'زيارة' : 'نقطة جديدة');
         }
         // عدادات الشاشة الرئيسية (زيارات/نقاط اليوم) تتحدّث فورًا بعد أي
         // إرسال ناجح — بدون ما ننتظر المندوب يرجع للشاشة الرئيسية بنفسه.
@@ -4121,7 +4213,7 @@
   // جديدة" بشاشة التقارير كان موجود وجاهز بالواجهة، بس ما يرجّع نتائج
   // إطلاقًا بسبب هذا. هذي الدالة تسجّل نقطة جديدة بنفس الجدول، بدون مؤقت
   // (ما فيه "بدء/إنهاء" لنقطة جديدة، فالمدة صفر دايمًا).
-  function logNewPointVisit(repName, details, storeName, area, lat, lng) {
+  function logNewPointVisit(repName, details, storeName, area, lat, lng, customerId, visitType) {
     details = details || {};
     const body = new FormData();
     body.append('action', 'logVisit');
@@ -4130,8 +4222,9 @@
     body.append('rep', repName || '');
     body.append('pointName', storeName || '');
     body.append('area', area || '');
-    body.append('visitType', 'نقطة جديدة');
+    body.append('visitType', visitType || 'نقطة جديدة');
     body.append('durationSeconds', '0');
+    body.append('customerId', customerId || '');
     body.append('phone', details.phone || '');
     body.append('customerStatus', details.customerStatus || '');
     body.append('reason', details.reason || '');
@@ -5031,9 +5124,9 @@
   function startPointVisitIdx(idx, btn) {
     const row = routeState.rows[idx];
     if (!row) return;
-    startPointVisit(row['اسم نقطة البيع'] || '', row['المنطقة'], parseFloat(row['Latitude']), parseFloat(row['Longitude']), btn, row['رقم الهاتف'] || '');
+    startPointVisit(row['اسم نقطة البيع'] || '', row['المنطقة'], parseFloat(row['Latitude']), parseFloat(row['Longitude']), btn, row['رقم الهاتف'] || '', row['ID الزبون'] || '');
   }
-  function startPointVisit(pointName, area, pLat, pLng, btn, phone) {
+  function startPointVisit(pointName, area, pLat, pLng, btn, phone, customerId) {
     const pid = encodeURIComponent(pointName);
     let statusEl = document.getElementById('visitStatus_' + pid);
     if (!statusEl) { statusEl = document.getElementById('routeStatus'); }
@@ -5056,10 +5149,11 @@
         rep: document.getElementById('routeRep').value,
         date: document.getElementById('routeDate').value || getTodayDateStr(),
         phone: phone, accuracy: position.coords.accuracy,
+        customerId: customerId || '',
         cardStatus: '', cardReason: '',
         overridden: dist > GEOFENCE_EFFECTIVE_RADIUS_M
       };
-      activeVisitResetArgs = { pointName: pointName, area: area, pLat: pLat, pLng: pLng, phone: phone };
+      activeVisitResetArgs = { pointName: pointName, area: area, pLat: pLat, pLng: pLng, phone: phone, customerId: customerId || '' };
       startActiveVisitCardUI(pid);
       if (activeVisit.overridden) showToast('خارج النطاق — تم تجاوزه بصلاحية الإدارة', 'info');
     }, function () {
@@ -5149,6 +5243,7 @@
     body.append('officialLat', activeVisit.officialLat != null ? activeVisit.officialLat : '');
     body.append('officialLng', activeVisit.officialLng != null ? activeVisit.officialLng : '');
     body.append('distanceAtCheckin', activeVisit.distanceAtCheckin != null ? activeVisit.distanceAtCheckin : '');
+    body.append('customerId', activeVisit.customerId || '');
     if (details.custom) Object.keys(details.custom).forEach(function (label) { body.append(label, details.custom[label]); });
     fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body, mode: 'no-cors' })
       .catch(function () { queueSubmission(formDataToObject(body)); });
@@ -8300,22 +8395,30 @@
   let dupSelectedRows = {};
   let dupGroups = [];
   let dupConfirm = false;
+  let custGroups = [];
+  let custPick = {};       // رقم المجموعة → { keep: id, merge: {id: true} }
+  let custConfirm = -1;
   function buildDataToolsHub() {
     const content = document.getElementById('adminContent');
     if (!isManagement()) { notAllowedPanel('هذه الصفحة متاحة للإدارة فقط'); return; }
-    dupSelectedRows = {}; dupGroups = []; dupConfirm = false;
+    dupSelectedRows = {}; dupGroups = []; dupConfirm = false; custGroups = []; custPick = {}; custConfirm = -1;
     setPage('أدوات البيانات', 'صيانة بيانات الزبائن. هاي الأدوات للإدارة فقط');
     content.innerHTML =
-      '<div class="x-cols dt-cols">' +
+      '<div class="x-cols dt-cols2">' +
+      '<section class="x-card flush" aria-labelledby="dtCustT"><div class="x-card-head"><div class="x-titles" style="display:flex;flex-direction:column;"><h2 id="dtCustT">زبائن مكررين</h2><span class="meta" id="custMeta">نفس المحل منسجل بأكثر من ID</span></div>' +
+      '<button type="button" class="x-btn ghost sm" onclick="loadDuplicateCustomers()">' + ic('refresh', 16) + 'فحص</button></div>' +
+      '<div class="x-note soft" style="margin:14px 14px 0;">اختار الزبون الأساسي بكل مجموعة (الافتراضي: اللي عنده رقم وأكثر زيارات). الدمج ينقل كل زيارات وخطوط سير المكرر للأساسي، ويكمّل رقمه أو موقعه لو ناقص، وبعدين يحذف صف المكرر. إذا طلعوا محلين مختلفين، شيل التأشير عنهم.</div>' +
+      '<div id="custList" class="x-stack" style="padding:14px;gap:12px;"></div><div class="msg success" id="custMsg" style="margin:0 14px 14px;"></div></section>' +
+      '<section class="x-card flush" aria-labelledby="dtDupT"><div class="x-card-head"><div class="x-titles" style="display:flex;flex-direction:column;"><h2 id="dtDupT">زيارات انرسلت أكثر من مرة</h2><span class="meta" id="dupMeta">نفس الزبون والمندوب والحالة، وبينهم أقل من ساعة</span></div>' +
+      '<button type="button" class="x-btn ghost sm" id="dupScanBtn" onclick="loadDuplicateGroups()">' + ic('refresh', 16) + 'فحص</button></div>' +
+      '<div class="x-note soft" style="margin:14px 14px 0;">أول صف بكل مجموعة هو الأصل. النسخ الزايدة مأشّرة للحذف، راجعها قبل ما تحذف.</div>' +
+      '<div id="dupGroupsList" class="x-stack" style="padding:14px;gap:12px;"></div><div class="geo-status" id="dupStatus" style="padding:0 14px;"></div>' +
+      '<div id="dupBar" class="dt-bar"></div><div class="msg success" id="dupMsg" style="margin:0 14px 14px;"></div></section></div>' +
       '<section class="x-card" aria-labelledby="dtIdT"><h2 class="x-h2" id="dtIdT">معرّفات الزبائن (ID)</h2>' +
       '<span style="font-size:13px;color:var(--ink-2);line-height:1.7;">كل زبون جديد ياخذ ID وحده. هاي الأداة تعطي ID للنقاط القديمة اللي ما عندها، وما تكرر أي ID موجود.</span>' +
       '<div class="x-note soft" id="backfillStatus" style="font-weight:700;">شغّلها مرة وحدة بس إذا لاحظت نقاط قديمة بدون ID</div>' +
-      '<button type="button" class="x-btn" id="backfillBtn" onclick="runCustomerIdBackfill()">توليد IDs للنقاط القديمة</button><div class="msg success" id="backfillMsg" style="margin:0;"></div></section>' +
-      '<section class="x-card flush" aria-labelledby="dtDupT"><div class="x-card-head"><div class="x-titles" style="display:flex;flex-direction:column;"><h2 id="dtDupT">تنظيف النقاط المكررة</h2><span class="meta">صفوف مرتبطة بنفس ID الزبون. راجعها وأشّر اللي تريد تحذفه</span></div>' +
-      '<button type="button" class="x-btn ghost sm" id="dupScanBtn" onclick="loadDuplicateGroups()">' + ic('search', 16) + 'فحص من جديد</button></div>' +
-      '<div class="x-alert warn" style="margin:14px 14px 0;font-weight:600;font-size:12.5px;">زيارات خط السير المتكررة لنفس الزبون طبيعية (كل زيارة صف). احذف بس الصفوف اللي انرفعت مرتين بالغلط.</div>' +
-      '<div id="dupGroupsList" class="x-stack" style="padding:14px;gap:12px;"></div><div class="geo-status" id="dupStatus" style="padding:0 14px;"></div>' +
-      '<div id="dupBar" style="padding:0 14px 14px;"></div><div class="msg success" id="dupMsg" style="margin:0 14px 14px;"></div></section></div>';
+      '<button type="button" class="x-btn" id="backfillBtn" style="align-self:flex-start;" onclick="runCustomerIdBackfill()">توليد IDs للنقاط القديمة</button><div class="msg success" id="backfillMsg" style="margin:0;"></div></section>';
+    loadDuplicateCustomers();
     loadDuplicateGroups();
   }
   function buildCustomerIdPanel() { navTo('p-dataTools'); }
@@ -8342,9 +8445,112 @@
       })
       .catch(function (err) { btn.disabled = false; status.textContent = ''; msg.className = 'msg error'; msg.textContent = getErrorMessage(err); msg.style.display = 'block'; });
   }
+  // ── زبائن مكررين (دمج) ──
+  function loadDuplicateCustomers() {
+    const list = document.getElementById('custList');
+    if (!list) return;
+    custPick = {}; custConfirm = -1;
+    list.innerHTML = '<div class="x-loading">جارٍ الفحص...</div>';
+    fetchWithTimeout(WEB_APP_URL + '?action=findDuplicateCustomers&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || ''))
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.result !== 'success') { list.innerHTML = '<div class="x-alert bad">حدث خطأ أثناء الفحص</div>'; return; }
+        custGroups = data.groups || [];
+        custGroups.forEach(function (g, gi) {
+          const merge = {};
+          g.slice(1).forEach(function (c) { merge[c.id] = true; });
+          custPick[gi] = { keep: g[0].id, merge: merge };
+        });
+        renderDuplicateCustomers();
+      })
+      .catch(function (err) { list.innerHTML = '<div class="x-alert bad">' + esc(getErrorMessage(err)) + '</div>'; });
+  }
+  function custIdArg(id) { return String(id).replace(/[^a-zA-Z0-9_-]/g, ''); }
+  function renderDuplicateCustomers() {
+    const list = document.getElementById('custList');
+    const meta = document.getElementById('custMeta');
+    if (!list) return;
+    const extra = custGroups.reduce(function (n, g) { return n + g.length - 1; }, 0);
+    if (meta) meta.textContent = custGroups.length ? custGroups.length + ' مجموعة · ' + extra + ' زبون مكرر' : 'نفس المحل منسجل بأكثر من ID';
+    if (!custGroups.length) { list.innerHTML = '<div class="x-alert good">' + ic('checkCircle2', 18) + 'ما أكو زبائن مكررين حاليًا</div>'; return; }
+    list.innerHTML = custGroups.map(function (g, gi) {
+      const pick = custPick[gi];
+      const n = Object.keys(pick.merge).filter(function (id) { return pick.merge[id] && id !== pick.keep; }).length;
+      return '<div class="dt-group"><div class="dt-group-h"><b>' + esc(g[0].name) + '</b><span class="x-small">' + esc(g[0].area || '') + ' · ' + g.length + ' IDs</span></div>' +
+        g.map(function (c) {
+          const isKeep = pick.keep === c.id;
+          const on = !isKeep && !!pick.merge[c.id];
+          const idArg = "'" + custIdArg(c.id) + "'";
+          return '<div class="mg-row' + (isKeep ? ' keep' : '') + '">' +
+            '<button type="button" class="mg-keep" role="radio" aria-checked="' + isKeep + '" aria-label="اعتماد ' + esc(c.id) + ' كأساسي" onclick="custSetKeep(' + gi + ',' + idArg + ')"><span class="mg-dot"></span></button>' +
+            '<span class="x-grow" style="display:flex;flex-direction:column;gap:2px;min-width:0;"><span class="x-row-flex" style="gap:6px;"><b class="tnum" style="font-size:13px;">' + esc(c.id) + '</b><span style="font-size:13px;">' + esc(c.name) + '</span>' + (isKeep ? '<span class="x-pill good">الأساسي</span>' : '') + '</span>' +
+            '<span class="x-small">' + esc([c.phone || 'بدون رقم', c.visits + ' زيارة', c.lastVisit ? 'آخر زيارة ' + c.lastVisit : '', c.distance ? 'يبعد ' + c.distance + ' م' : '', c.rep].filter(Boolean).join(' · ')) + '</span></span>' +
+            (isKeep ? '' : '<button type="button" class="x-check-row danger mg-merge' + (on ? ' on' : '') + '" role="checkbox" aria-checked="' + on + '" onclick="custToggleMerge(' + gi + ',' + idArg + ')"><span class="x-box">' + ic('checkBold', 13) + '</span><span style="font-size:12.5px;font-weight:700;">دمج</span></button>') +
+            '</div>';
+        }).join('') +
+        '<div class="mg-foot">' + (custConfirm === gi ?
+          '<b style="font-size:13px;color:var(--bad-fg);">دمج ' + n + ' بالأساسي ' + esc(pick.keep) + '؟ ما يرجع.</b><span class="x-row-flex" style="gap:8px;"><button type="button" class="x-btn ghost sm" onclick="custConfirm=-1;renderDuplicateCustomers()">إلغاء</button><button type="button" class="x-btn danger sm" id="custMergeBtn' + gi + '" onclick="mergeCustomerGroup(' + gi + ')">تأكيد الدمج</button></span>' :
+          '<span class="x-small">' + (n ? n + ' للدمج' : 'ما مأشّر شي للدمج') + '</span><button type="button" class="x-btn sm"' + (n ? '' : ' disabled') + ' onclick="custConfirm=' + gi + ';renderDuplicateCustomers()">دمج</button>') + '</div></div>';
+    }).join('');
+  }
+  function custSetKeep(gi, id) {
+    const pick = custPick[gi];
+    if (!pick) return;
+    pick.merge[pick.keep] = true;
+    pick.keep = id;
+    delete pick.merge[id];
+    custConfirm = -1;
+    renderDuplicateCustomers();
+  }
+  function custToggleMerge(gi, id) {
+    const pick = custPick[gi];
+    if (!pick) return;
+    pick.merge[id] = !pick.merge[id];
+    custConfirm = -1;
+    renderDuplicateCustomers();
+  }
+  function mergeCustomerGroup(gi) {
+    const pick = custPick[gi];
+    const ids = Object.keys(pick.merge).filter(function (id) { return pick.merge[id] && id !== pick.keep; });
+    if (!ids.length) return;
+    const btn = document.getElementById('custMergeBtn' + gi);
+    if (btn) { btn.disabled = true; btn.textContent = 'جارٍ الدمج...'; }
+    const msg = document.getElementById('custMsg');
+    msg.style.display = 'none';
+    const body = new FormData();
+    body.append('action', 'mergeCustomers');
+    body.append('username', (currentAdmin && currentAdmin.username) || '');
+    body.append('password', (currentAdmin && currentAdmin.pass) || '');
+    body.append('keepId', pick.keep);
+    body.append('mergeIds', JSON.stringify(ids));
+    fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.result === 'success') {
+          const mv = data.moved || {};
+          showToast('تم الدمج بـ ' + data.keepId, 'success');
+          msg.className = 'msg success';
+          msg.textContent = 'انضمّ ' + data.merged + ' زبون لـ ' + data.keepId + ' (' + (mv.Visits || 0) + ' زيارة، ' + (mv.Route || 0) + ' صف خط سير، ' + (mv.FieldVisitLog || 0) + ' سجل)';
+          msg.style.display = 'block';
+          // نشيل المجموعة من القائمة بدل إعادة الفحص كامل
+          const np = {};
+          custGroups.splice(gi, 1);
+          custGroups.forEach(function (g, i) { np[i] = custPick[i < gi ? i : i + 1]; });
+          custPick = np; custConfirm = -1;
+          renderDuplicateCustomers();
+        } else {
+          custConfirm = -1; renderDuplicateCustomers();
+          msg.className = 'msg error'; msg.textContent = 'ما تم الدمج: ' + (data.error || 'خطأ'); msg.style.display = 'block';
+        }
+      })
+      .catch(function (err) { custConfirm = -1; renderDuplicateCustomers(); msg.className = 'msg error'; msg.textContent = getErrorMessage(err); msg.style.display = 'block'; });
+  }
+
+  // ── زيارات انرسلت أكثر من مرة ──
   function loadDuplicateGroups() {
     const status = document.getElementById('dupStatus');
     const list = document.getElementById('dupGroupsList');
+    if (!list) return;
     dupSelectedRows = {}; dupConfirm = false;
     list.innerHTML = '<div class="x-loading">جارٍ الفحص...</div>';
     status.textContent = '';
@@ -8354,22 +8560,27 @@
       .then(function (data) {
         if (data.result !== 'success') { list.innerHTML = '<div class="x-alert bad">حدث خطأ أثناء الفحص</div>'; return; }
         dupGroups = data.groups || [];
+        // النسخ الزايدة (مو أول صف) مأشّرة جاهزة للحذف
+        dupGroups.forEach(function (g) { g.forEach(function (r) { if (r.suspect) dupSelectedRows[r.rowNumber] = true; }); });
         renderDupGroups();
       })
       .catch(function (err) { list.innerHTML = ''; showError(status, err); });
   }
   function renderDupGroups() {
     const list = document.getElementById('dupGroupsList');
-    if (!dupGroups.length) { list.innerHTML = '<div class="x-alert good">' + ic('checkCircle2', 18) + 'ما أكو نقاط مكررة حاليًا</div>'; renderDupBar(); return; }
+    const meta = document.getElementById('dupMeta');
+    const extra = dupGroups.reduce(function (n, g) { return n + g.length - 1; }, 0);
+    if (meta) meta.textContent = dupGroups.length ? dupGroups.length + ' مجموعة · ' + extra + ' نسخة زايدة' : 'نفس الزبون والمندوب والحالة، وبينهم أقل من ساعة';
+    if (!dupGroups.length) { list.innerHTML = '<div class="x-alert good">' + ic('checkCircle2', 18) + 'ما أكو زيارات مكررة حاليًا</div>'; renderDupBar(); return; }
     list.innerHTML = dupGroups.map(function (group) {
-      return '<div class="dt-group"><div class="dt-group-h"><b>' + esc(group[0].name || '') + '</b><span class="x-small tnum">ID ' + esc(group[0].customerId) + ' · ' + group.length + ' صفوف</span></div>' +
+      return '<div class="dt-group"><div class="dt-group-h"><b>' + esc(group[0].name || '') + '</b><span class="x-small tnum">' + esc(group[0].customerId) + ' · ' + group.length + ' صفوف</span></div>' +
         group.map(function (row) {
           const on = !!dupSelectedRows[row.rowNumber];
           const ts = parseTs(row.timestamp);
           const when = ts ? arDate(ts) + ' ' + arTime(ts) : (row.timestamp || ('صف #' + row.rowNumber));
           return '<button type="button" class="x-check-row danger dt-row' + (on ? ' on' : '') + '" role="checkbox" aria-checked="' + on + '" onclick="toggleDupRow(' + row.rowNumber + ')">' +
             '<span class="x-box">' + ic('checkBold', 13) + '</span><span class="x-grow" style="display:flex;flex-direction:column;gap:3px;min-width:0;">' +
-            '<span class="x-between"><b class="tnum" style="font-size:13px;">' + esc(when) + '</b>' + (row.status ? statusPill(row.status) : '') + '</span>' +
+            '<span class="x-between"><b class="tnum" style="font-size:13px;">' + esc(when) + (row.suspect ? '' : ' <span class="x-pill good" style="margin-inline-start:4px;">الأصل</span>') + '</b>' + (row.status ? statusPill(row.status) : '') + '</span>' +
             '<span class="x-small">' + esc([row.rep, row.area, row.phone].filter(Boolean).join(' · ')) + '</span></span></button>';
         }).join('') + '</div>';
     }).join('');
@@ -8385,7 +8596,7 @@
     if (!bar) return;
     const n = Object.keys(dupSelectedRows).length;
     if (!n) { bar.innerHTML = dupGroups.length ? '<span class="x-small">أشّر الصفوف اللي تريد تحذفها</span>' : ''; return; }
-    bar.innerHTML = '<div class="x-row-flex" style="justify-content:space-between;"><span style="font-size:13px;color:var(--ink-2);">' + n + ' صف مختار</span>' +
+    bar.innerHTML = '<div class="x-row-flex" style="justify-content:space-between;"><span style="font-size:13px;color:var(--ink-2);">' + n + ' صف مختار للحذف</span>' +
       (dupConfirm ? '<span class="x-row-flex" style="gap:8px;"><b style="font-size:13px;color:var(--bad-fg);">الحذف نهائي. متأكد؟</b><button type="button" class="x-btn ghost sm" onclick="dupConfirm=false;renderDupBar()">إلغاء</button><button type="button" class="x-btn danger sm" onclick="deleteDuplicateSelected()">حذف نهائي</button></span>' :
         '<button type="button" class="x-btn danger sm" onclick="dupConfirm=true;renderDupBar()">' + ic('trash', 16) + 'حذف الصفوف المأشّرة</button>') + '</div>';
   }
