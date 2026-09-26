@@ -256,6 +256,21 @@
   .side-link .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: none; }
   .side-link.on { background: rgba(246,241,232,.12); color: #fff; font-weight: 700; }
   .side-link.on .dot { display: block; }
+  .side-link.in { color: #fff; font-weight: 700; }
+  .side-link.in .dot { display: block; }
+  .side-link .chev { display: flex; opacity: .6; transition: transform .2s ease; }
+  .side-group.open > .side-link .chev { transform: rotate(180deg); }
+  .side-subs { display: none; flex-direction: column; gap: 2px; margin: 2px 0 6px; position: relative; }
+  .side-group.open > .side-subs { display: flex; }
+  .side-subs::before { content: ''; position: absolute; top: 4px; bottom: 4px; right: 21px; width: 1.5px; border-radius: 2px; background: rgba(246,241,232,.14); }
+  .side-sub { position: relative; min-height: 38px; padding: 6px 12px; padding-inline-start: 42px; border: none; border-radius: 10px; background: transparent; color: var(--pine-muted); font-family: inherit; font-size: 13.5px; font-weight: 600; text-align: right; width: 100%; cursor: pointer; transition: background .15s, color .15s; }
+  .side-sub:hover { background: rgba(246,241,232,.06); color: var(--pine-fg); }
+  .side-sub.on { background: rgba(246,241,232,.12); color: #fff; font-weight: 700; }
+  .side-sub.on::before { content: ''; position: absolute; top: 50%; right: 18px; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: var(--accent); }
+  .side-sub:focus-visible, .side-link:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .subnav { display: none !important; }
+  /* الخريطة (Leaflet) طبقاتها z-index 400+ — نحصرها داخلها حتى ما تطلع فوق القائمة */
+  .leaflet-container { isolation: isolate; }
   .side-link .cnt { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
   .side-user { margin-top: auto; background: rgba(246,241,232,.06); border-radius: 16px; padding: 12px; display: flex; align-items: center; gap: 10px; }
   .side-user .av { width: 38px; height: 38px; border-radius: 12px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-size: 17px; font-weight: 700; flex-shrink: 0; }
@@ -292,8 +307,10 @@
 
   @media (min-width: 1024px) {
     .side { transform: none; box-shadow: none; }
-    .side-close, .side-backdrop, .topbar .menu-btn { display: none !important; }
-    .app-main-wrap { margin-right: var(--side-w); }
+    .side-close, .side-backdrop { display: none !important; }
+    .app-main-wrap { margin-right: var(--side-w); transition: margin-right .28s cubic-bezier(.22,1,.36,1); }
+    body.side-collapsed .side { transform: translateX(105%); }
+    body.side-collapsed .app-main-wrap { margin-right: 0; }
     .main { padding: 26px 32px 32px; gap: 16px; max-width: 1640px; }
     .topbar { gap: 16px; }
     .topbar h1 { font-size: 28px; }
@@ -4393,21 +4410,33 @@
       hit.item.fn();
       showView('admin');
     }
+    // قائمة مرتبة: القسم اللي انتقلت له يبقى مفتوح، والباقي تنطوي
+    Object.keys(sideExpanded).forEach(function (k) { sideExpanded[k] = false; });
+    sideExpanded[hit.group.id] = true;
     renderSubnav();
     closeSidebar();
     try { window.scrollTo(0, 0); } catch (e) {}
     return true;
   }
+  // الأقسام الفرعية صارت تحت كل قسم بالقائمة الجانبية — الشريط الأفقي انلغى.
+  // نخليها تحدّث القائمة بدل الشريط (كل الأماكن القديمة اللي تناديها تضل شغالة).
   function renderSubnav() {
     const nav = document.getElementById('subnav');
-    if (!nav) return;
-    const gid = window._activeGroupId;
+    if (nav) nav.innerHTML = '';
+    buildSidebarMenu();
+  }
+  // الأقسام المفتوحة بالقائمة (القسم النشط ينفتح تلقائيًا)
+  const sideExpanded = {};
+  function isDesktopLayout() { return window.matchMedia('(min-width: 1024px)').matches; }
+  function sideGroupClick(gid) {
     const g = navGroups().find(function (x) { return x.id === gid; });
-    if (!g || g.items.length < 2 || isRep()) { nav.innerHTML = ''; return; }
-    nav.innerHTML = g.items.map(function (it) {
-      const on = it.id === window._activeSideId;
-      return '<button type="button"' + (on ? ' class="on" aria-current="page"' : '') + ' onclick="navTo(\'' + it.id + '\')">' + esc(it.label) + '</button>';
-    }).join('');
+    if (!g) return;
+    if (g.items.length === 1) { navTo(g.items[0].id); return; }
+    if (sideExpanded[gid]) { sideExpanded[gid] = false; buildSidebarMenu(); return; }
+    sideExpanded[gid] = true;
+    // بالحاسوب: فتح قسم غير نشط يفتح أول صفحة بي. بالهاتف: يفتح القائمة الفرعية بس حتى تختار منها.
+    if (isDesktopLayout() && window._activeGroupId !== gid) navTo(g.items[0].id);
+    else buildSidebarMenu();
   }
 
   function buildSidebarMenu() {
@@ -4423,26 +4452,57 @@
     const body = document.getElementById('sidebarBody');
     if (!body) return;
     body.innerHTML = navGroups().map(function (g) {
-      const on = g.id === window._activeGroupId;
-      return '<button type="button" class="side-link' + (on ? ' on' : '') + '"' + (on ? ' aria-current="page"' : '') +
-        ' onclick="navTo(\'' + g.items[0].id + '\')">' + ic(g.icon, 20) + '<span class="t">' + esc(g.label) + '</span><span class="dot"></span></button>';
+      const active = g.id === window._activeGroupId;
+      if (g.items.length === 1) {
+        return '<button type="button" class="side-link' + (active ? ' on' : '') + '"' + (active ? ' aria-current="page"' : '') +
+          ' onclick="sideGroupClick(\'' + g.id + '\')">' + ic(g.icon, 20) + '<span class="t">' + esc(g.label) + '</span><span class="dot"></span></button>';
+      }
+      const open = !!sideExpanded[g.id];
+      return '<div class="side-group' + (open ? ' open' : '') + '">' +
+        '<button type="button" class="side-link' + (active ? ' in' : '') + '" aria-expanded="' + open + '" aria-controls="sideSubs_' + g.id + '" onclick="sideGroupClick(\'' + g.id + '\')">' +
+        ic(g.icon, 20) + '<span class="t">' + esc(g.label) + '</span><span class="dot"></span><span class="chev">' + ic('chevD', 16) + '</span></button>' +
+        '<div class="side-subs" id="sideSubs_' + g.id + '">' + g.items.map(function (it) {
+          const on = it.id === window._activeSideId;
+          return '<button type="button" class="side-sub' + (on ? ' on' : '') + '"' + (on ? ' aria-current="page"' : '') + ' onclick="navTo(\'' + it.id + '\')">' + esc(it.label) + '</button>';
+        }).join('') + '</div></div>';
     }).join('');
   }
 
+  // زر الثلاث خطوط: بالحاسوب يخفي/يظهر القائمة (ويتذكّر اختيارك)، وبالهاتف يفتح القائمة المنزلقة
+  function syncMenuBtn() {
+    const btn = document.getElementById('menuToggle');
+    if (!btn) return;
+    const shown = isDesktopLayout() ? !document.body.classList.contains('side-collapsed') : document.getElementById('sidebar').classList.contains('open');
+    btn.setAttribute('aria-expanded', shown ? 'true' : 'false');
+    btn.setAttribute('aria-label', shown ? 'إخفاء القائمة' : 'إظهار القائمة');
+  }
+  (function () {
+    try { if (localStorage.getItem('ifco:sideCollapsed') === '1') document.body.classList.add('side-collapsed'); } catch (e) {}
+    syncMenuBtn();
+  })();
   function toggleSidebar() {
+    if (isDesktopLayout()) {
+      const collapsed = document.body.classList.toggle('side-collapsed');
+      try { localStorage.setItem('ifco:sideCollapsed', collapsed ? '1' : '0'); } catch (e) {}
+      syncMenuBtn();
+      return;
+    }
     const open = document.getElementById('sidebar').classList.toggle('open');
     document.getElementById('sidebarBackdrop').classList.toggle('open', open);
     if (open) {
       buildSidebarMenu();
       __pushNavState(closeSidebar);
     }
+    syncMenuBtn();
   }
   function closeSidebar() {
     const sb = document.getElementById('sidebar');
     const bd = document.getElementById('sidebarBackdrop');
     if (sb) sb.classList.remove('open');
     if (bd) bd.classList.remove('open');
+    syncMenuBtn();
   }
+  window.addEventListener('resize', function () { syncMenuBtn(); });
 
   function showView(view) {
     if (__lastShownView && __lastShownView !== view) {
