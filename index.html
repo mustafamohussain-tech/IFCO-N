@@ -5076,7 +5076,8 @@
   function applyCustomerPhone(cid, phone) {
     const set = function (r) { if (r && String(r['ID الزبون'] || '').trim() === cid) r['رقم الهاتف'] = phone; };
     routeState.rows.forEach(set);
-    Object.keys(routeSearch.points).forEach(function (a) { (routeSearch.points[a] || []).forEach(set); });
+    (routeSearch.list || []).forEach(set);
+    if (routeSearch.list) { try { localStorage.setItem(RS_MINE_KEY, JSON.stringify({ user: routeSearch.user, list: routeSearch.list.map(function (r) { const c = Object.assign({}, r); delete c._dist; return c; }) })); } catch (e) {} }
     if (activeVisit && String(activeVisit.customerId || '').trim() === cid) {
       activeVisit.phone = phone;
       set(activeVisit.row);
@@ -5329,11 +5330,21 @@
     startPointVisit(row['اسم نقطة البيع'] || '', row['المنطقة'], parseFloat(row['Latitude']), parseFloat(row['Longitude']), btn, row['رقم الهاتف'] || '', row['ID الزبون'] || '');
   }
   // ═════════════ بحث نقطة: زيارة محل خارج خط السير ═════════════
-  // المصدر عمليتين متاحات أصلًا لأي حساب مسجّل: areas (المناطق) وpoints (زبائن منطقة).
-  const RS_AREAS_KEY = 'ifco:rsAreas:v1';
-  const routeSearch = { areas: null, area: '', points: {}, results: [], pos: null };
+  // يطلع للمندوب بس الزبائن المسجّلين باسمه (المندوب المسؤول) — طلب واحد
+  // (points&mine=1) يجيب كلهم، والمناطق تنبني منهم، والفلترة كلها محلية.
+  // الزبون ينتقل تلقائيًا لآخر مندوب زاره (بالخادم)، فالقائمة تتحدّث كل ما يفتح التبويب.
+  const RS_MINE_KEY = 'ifco:rsMine:v1';
+  const routeSearch = { list: null, areas: [], user: '', loadedAt: 0, loading: false, area: '', results: [], pos: null };
   function normAr(s) {
     return String(s || '').replace(/[ً-ْـ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+  function rsSetList(list) {
+    routeSearch.list = list;
+    const count = {};
+    list.forEach(function (p) { const a = String(p['المنطقة'] || '').trim(); if (a) count[a] = (count[a] || 0) + 1; });
+    routeSearch.areas = Object.keys(count).sort(function (a, b) { return count[b] - count[a] || a.localeCompare(b, 'ar'); });
+    routeSearch.areaCount = count;
+    if (routeSearch.area && !count[routeSearch.area]) routeSearch.area = '';
   }
   function openRouteSearch() {
     if (!routeSearch.pos && navigator.geolocation) {
@@ -5342,47 +5353,56 @@
         renderRouteSearch();
       }, function () {}, { enableHighAccuracy: false, timeout: 10000, maximumAge: 120000 });
     }
-    if (routeSearch.areas) { rsAreaInput(); renderRouteSearch(); return; }
+    const user = (currentAdmin && currentAdmin.username) || '';
+    if (routeSearch.user !== user) { routeSearch.list = null; routeSearch.area = ''; routeSearch.user = user; }
+    if (!routeSearch.list) {
+      try {
+        const c = JSON.parse(localStorage.getItem(RS_MINE_KEY) || 'null');
+        if (c && c.user === user && Array.isArray(c.list)) rsSetList(c.list);
+      } catch (e) {}
+    }
+    rsAreaInput(); renderRouteSearch();
+    if (routeSearch.loading || (routeSearch.list && Date.now() - routeSearch.loadedAt < 60000)) return;
     const st = document.getElementById('rsStatus');
-    st.textContent = 'جارٍ تحميل المناطق...';
-    renderRouteSearch();
-    fetchWithTimeout(WEB_APP_URL + '?action=areas&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || ''))
+    if (!routeSearch.list) st.textContent = 'جارٍ تحميل زبائنك...';
+    routeSearch.loading = true;
+    fetchWithTimeout(WEB_APP_URL + '?action=points&mine=1&username=' + encodeURIComponent(user))
       .then(function (res) { return res.json(); })
       .then(function (d) {
-        if (d.result !== 'success') { st.textContent = 'تعذّر تحميل المناطق'; return; }
-        routeSearch.areas = d.areas || [];
-        try { localStorage.setItem(RS_AREAS_KEY, JSON.stringify(routeSearch.areas)); } catch (e) {}
+        routeSearch.loading = false;
+        if (d.result !== 'success') { if (!routeSearch.list) st.textContent = 'تعذّر تحميل زبائنك'; return; }
+        const list = (d.points || []).filter(function (p) {
+          return String(p['اسم نقطة البيع'] || '').trim() && !/^X-/.test(String(p['ID الزبون'] || ''));
+        }).map(function (p) { return Object.assign({}, p, { 'آخر حالة': p['حالة الزبون'] || '' }); });
+        rsSetList(list);
+        routeSearch.loadedAt = Date.now();
+        try { localStorage.setItem(RS_MINE_KEY, JSON.stringify({ user: user, list: list })); } catch (e) {}
         st.textContent = '';
-        rsAreaInput();
+        if (document.activeElement !== document.getElementById('rsArea')) rsAreaInput();
+        renderRouteSearch();
       })
       .catch(function () {
-        let cached = null;
-        try { cached = JSON.parse(localStorage.getItem(RS_AREAS_KEY)); } catch (e) {}
-        if (cached && cached.length) { routeSearch.areas = cached; st.textContent = ''; rsAreaInput(); }
-        else st.textContent = 'تعذّر الاتصال — تأكد من النت وارجع افتح التبويب';
+        routeSearch.loading = false;
+        if (!routeSearch.list) st.textContent = 'تعذّر الاتصال — تأكد من النت وارجع افتح التبويب';
       });
   }
-  // اقتراحات المنطقة: فارغ ← مناطق خط اليوم؛ مكتوب ← كل المناطق المطابقة (اللي تبدي بالنص أولًا)
+  // اقتراحات المنطقة (من مناطق زبائنه بس): فارغ ← مناطقه الأكثر زبائن؛ مكتوب ← المطابقة (اللي تبدي بالنص أولًا)
   function rsAreaInput() {
     const box = document.getElementById('rsAreaSugg');
     const raw = document.getElementById('rsArea').value;
     const q = normAr(raw);
-    if (!routeSearch.areas) { box.innerHTML = ''; return; }
+    if (!routeSearch.list) { box.innerHTML = ''; return; }
     if (routeSearch.area && raw === routeSearch.area) { box.innerHTML = ''; return; }
     if (routeSearch.area) { routeSearch.area = ''; renderRouteSearch(); }
-    let list;
-    if (!q) {
-      const mine = [];
-      routeState.rows.forEach(function (r) { const a = String(r['المنطقة'] || '').trim(); if (a && mine.indexOf(a) === -1 && routeSearch.areas.indexOf(a) !== -1) mine.push(a); });
-      list = mine;
-    } else {
-      list = routeSearch.areas.filter(function (a) { return normAr(a).indexOf(q) !== -1; });
+    let list = routeSearch.areas;
+    if (q) {
+      list = list.filter(function (a) { return normAr(a).indexOf(q) !== -1; });
       list.sort(function (a, b) { return (normAr(a).indexOf(q) === 0 ? 0 : 1) - (normAr(b).indexOf(q) === 0 ? 0 : 1) || a.localeCompare(b, 'ar'); });
     }
-    box.innerHTML = (!q && list.length ? '<span class="x-hint" style="width:100%;">مناطق خط سيرك اليوم:</span>' : '') +
+    box.innerHTML = (!q && list.length ? '<span class="x-hint" style="width:100%;">مناطق زبائنك:</span>' : '') +
       list.slice(0, 12).map(function (a) {
-        return '<button type="button" class="x-chip" onclick="rsPickArea(' + routeSearch.areas.indexOf(a) + ')">' + esc(a) + '</button>';
-      }).join('') + (q && !list.length ? '<span class="x-hint">ما لكينا منطقة بهذا الاسم</span>' : '');
+        return '<button type="button" class="x-chip" onclick="rsPickArea(' + routeSearch.areas.indexOf(a) + ')">' + esc(a) + ' <span style="opacity:.6;font-weight:600;">' + routeSearch.areaCount[a] + '</span></button>';
+      }).join('') + (q && !list.length ? '<span class="x-hint">ما عندك زبائن بمنطقة بهذا الاسم</span>' : '');
   }
   function rsPickFirstArea() {
     const b = document.querySelector('#rsAreaSugg .x-chip');
@@ -5394,20 +5414,7 @@
     routeSearch.area = a;
     document.getElementById('rsArea').value = a;
     document.getElementById('rsAreaSugg').innerHTML = '';
-    if (routeSearch.points[a]) { renderRouteSearch(); return; }
-    const st = document.getElementById('rsStatus');
-    st.textContent = 'جارٍ تحميل محلات ' + a + '...';
     renderRouteSearch();
-    fetchWithTimeout(WEB_APP_URL + '?action=points&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || '') + '&area=' + encodeURIComponent(a))
-      .then(function (res) { return res.json(); })
-      .then(function (d) {
-        if (d.result !== 'success') { if (routeSearch.area === a) st.textContent = 'تعذّر تحميل المحلات'; return; }
-        routeSearch.points[a] = (d.points || []).filter(function (p) {
-          return String(p['اسم نقطة البيع'] || '').trim() && !/^X-/.test(String(p['ID الزبون'] || ''));
-        }).map(function (p) { return Object.assign({}, p, { 'آخر حالة': p['حالة الزبون'] || '' }); });
-        if (routeSearch.area === a) { st.textContent = ''; renderRouteSearch(); }
-      })
-      .catch(function () { if (routeSearch.area === a) st.textContent = 'تعذّر الاتصال — تأكد من النت وحاول مرة ثانية'; });
   }
   function rsInRoute(p) {
     const id = String(p['ID الزبون'] || '');
@@ -5416,12 +5423,14 @@
   function renderRouteSearch() {
     const box = document.getElementById('rsResults');
     if (!box) return;
-    if (!routeSearch.area) { box.innerHTML = routeSearch.areas ? '<div class="x-empty">اكتب اسم المنطقة واختارها، بعدين اكتب اسم المحل</div>' : ''; routeSearch.results = []; return; }
-    const pts = routeSearch.points[routeSearch.area];
-    if (!pts) { box.innerHTML = [1, 2].map(function () { return '<div class="rt-card"><div class="x-skel" style="width:55%;height:14px;"></div><div class="x-skel" style="width:35%;"></div><div class="x-skel" style="height:44px;border-radius:12px;"></div></div>'; }).join(''); return; }
+    if (!routeSearch.list) { box.innerHTML = [1, 2].map(function () { return '<div class="rt-card"><div class="x-skel" style="width:55%;height:14px;"></div><div class="x-skel" style="width:35%;"></div><div class="x-skel" style="height:44px;border-radius:12px;"></div></div>'; }).join(''); routeSearch.results = []; return; }
+    if (!routeSearch.list.length) { box.innerHTML = '<div class="x-empty">ما عندك زبائن مسجّلين باسمك لحد الآن<br><span class="x-small">الزبون يصير باسمك من تزوره، أو من ترفعه كنقطة جديدة</span></div>'; routeSearch.results = []; return; }
     const raw = document.getElementById('rsName').value;
     const q = normAr(raw);
     const qDigits = raw.replace(/[^0-9]/g, '');
+    // بدون منطقة: البحث بالاسم/الرقم يشمل كل زبائنه
+    if (!routeSearch.area && !q && qDigits.length < 4) { box.innerHTML = '<div class="x-empty">اختار المنطقة، أو اكتب اسم المحل حتى تدوّر بكل زبائنك</div>'; routeSearch.results = []; return; }
+    const pts = routeSearch.area ? routeSearch.list.filter(function (p) { return String(p['المنطقة'] || '').trim() === routeSearch.area; }) : routeSearch.list;
     let list = pts.filter(function (p) {
       if (!q) return true;
       if (normAr(p['اسم نقطة البيع']).indexOf(q) !== -1) return true;
@@ -5439,11 +5448,11 @@
     const total = list.length;
     list = list.slice(0, 30);
     routeSearch.results = list;
-    if (!total) { box.innerHTML = '<div class="x-empty">' + (q ? 'ما لكينا محل بهذا الاسم بـ' + esc(routeSearch.area) : 'ماكو محلات مسجّلة بـ' + esc(routeSearch.area)) + '<br><span class="x-small">إذا المحل جديد، ارفعه من «رفع نقطة جديدة»</span></div>'; return; }
+    if (!total) { box.innerHTML = '<div class="x-empty">ما لكينا هذا المحل بزبائنك' + (routeSearch.area ? ' بـ' + esc(routeSearch.area) : '') + '<br><span class="x-small">إذا المحل مو مسجّل باسمك أو جديد، سجّله من «رفع نقطة جديدة» — وإذا طلع مسجّل، أكّد إنه نفس المحل وينتقل باسمك</span></div>'; return; }
     const rep = (document.getElementById('routeRep') || {}).value || '';
     const date = (document.getElementById('routeDate') || {}).value || getTodayDateStr();
     const busy = !!activeVisit;
-    box.innerHTML = '<span class="rt-sec">' + (total > list.length ? 'أقرب ' + list.length + ' من ' + total + ' محل — اكتب جزء من الاسم حتى تلكاه أسرع' : total + (total === 1 ? ' محل' : ' محلات')) + (pos ? ' · الأقرب إليك أولًا' : '') + '</span>' +
+    box.innerHTML = '<span class="rt-sec">' + (total > list.length ? 'أقرب ' + list.length + ' من ' + total + ' زبون — اكتب جزء من الاسم حتى تلكاه أسرع' : total + (total === 1 ? ' زبون' : ' زبائن')) + ' مسجّلين باسمك' + (pos ? ' · الأقرب إليك أولًا' : '') + '</span>' +
       list.map(function (p, i) {
         const name = p['اسم نقطة البيع'];
         const hasLoc = p.Latitude && p.Longitude;
