@@ -694,6 +694,19 @@
   .rt-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
   .rt-actions a { height: 44px; border-radius: 12px; border: 1px solid var(--line-2); background: #fff; color: var(--ink-2); display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; font-size: 13px; font-weight: 700; }
   .rt-actions a.call { color: var(--good); }
+  /* زر «إضافة رقم» — للزبون اللي ما عنده هاتف (مندوب فقط) */
+  .rt-actions .add-ph, .rt-tag.add-ph { border: 1.5px dashed var(--accent); background: var(--accent-tint-2); color: var(--accent); font: inherit; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .rt-actions .add-ph { height: 44px; border-radius: 12px; font-size: 13px; }
+  .rt-tag.add-ph { display: inline-flex; font-size: 12px; padding: 3px 10px; }
+  .ph-strip { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 14px; background: var(--accent-tint-2); border: 1px solid var(--accent-tint); }
+  .ph-strip .x-label { font-size: 12.5px; }
+  .ph-strip .row { display: flex; gap: 8px; align-items: stretch; }
+  .ph-strip input { flex-grow: 1; min-width: 0; height: 46px; border-radius: 12px; border: 1.5px solid var(--line-2); background: #fff; padding: 0 12px; font: inherit; font-size: 16px; font-weight: 700; letter-spacing: .5px; text-align: left; direction: ltr; color: var(--ink); }
+  .ph-strip input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+  .ph-strip .save { height: 46px; padding: 0 16px; border-radius: 12px; border: 0; background: var(--accent); color: #fff; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .ph-strip .save:disabled { opacity: .6; cursor: wait; }
+  .ph-strip .cancel { width: 46px; height: 46px; flex-shrink: 0; border-radius: 12px; border: 1px solid var(--line-2); background: #fff; color: var(--ink-2); font-size: 20px; line-height: 1; cursor: pointer; }
+  .ph-strip .msg-l { font-size: 12.5px; font-weight: 700; color: var(--bad-fg); min-height: 0; }
   .rt-start { height: 50px; border-radius: 14px; border: 1.5px solid var(--accent); background: #fff; color: var(--accent); font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; width: 100%; }
   .rt-start:disabled { opacity: .5; cursor: not-allowed; }
   .rt-timer { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; background: var(--accent-tint); color: var(--accent); font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; padding: 6px 12px; border-radius: 999px; }
@@ -1507,6 +1520,7 @@
           <div class="x-seg full" id="routeViewModeTabs" role="tablist" aria-label="طريقة العرض" style="display:none;">
             <button type="button" role="tab" id="routeViewListBtn" class="on" onclick="setRouteViewMode_('list')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="vertical-align:-4px;margin-left:6px;"><path d="M9 6h11M9 12h11M9 18h11" stroke-width="1.9" stroke-linecap="round"/><circle cx="4.5" cy="6" r="1.3" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1.3" fill="currentColor" stroke="none"/></svg>القائمة</button>
             <button type="button" role="tab" id="routeViewMapBtn" onclick="setRouteViewMode_('map')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="vertical-align:-4px;margin-left:6px;"><path d="M9 20l-6-2V4l6 2 6-2 6 2v14l-6-2-6 2z" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 6v14M15 4v14" stroke-width="1.8"/></svg>الخريطة</button>
+            <button type="button" role="tab" id="routeViewSearchBtn" onclick="setRouteViewMode_('search')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="vertical-align:-4px;margin-left:6px;"><circle cx="11" cy="11" r="6.5" stroke-width="1.9"/><path d="M16 16l4 4" stroke-width="1.9" stroke-linecap="round"/></svg>بحث نقطة</button>
           </div>
           <div id="routeProgressBox"></div>
           <div class="geo-status" id="routeStatus"></div>
@@ -1522,6 +1536,22 @@
               </div>
             </div>
             <div class="geo-status" id="routeMapStatus"></div>
+          </div>
+          <!-- بحث نقطة: زيارة محل خارج خط السير -->
+          <div id="routeSearchWrap" class="x-stack" style="display:none;">
+            <div class="x-card x-stack" style="gap:10px;">
+              <div class="x-field">
+                <label for="rsArea">المنطقة</label>
+                <div class="x-search"><input type="search" id="rsArea" class="x-input" placeholder="اكتب اسم المنطقة..." autocomplete="off" oninput="rsAreaInput()" onkeydown="if(event.key==='Enter'){event.preventDefault();rsPickFirstArea();}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 21s7-6.5 7-11.5A7 7 0 105 9.5C5 14.5 12 21 12 21z" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.3" stroke-width="1.7"/></svg></div>
+                <div class="x-chips wrap" id="rsAreaSugg" style="gap:6px;"></div>
+              </div>
+              <div class="x-field">
+                <label for="rsName">اسم الماركت</label>
+                <div class="x-search"><input type="search" id="rsName" class="x-input" placeholder="اكتب اسم المحل..." autocomplete="off" oninput="renderRouteSearch()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke-width="1.9"/><path d="M16 16l4 4" stroke-width="1.9" stroke-linecap="round"/></svg></div>
+              </div>
+            </div>
+            <div class="geo-status" id="rsStatus" aria-live="polite"></div>
+            <div id="rsResults" class="x-stack"></div>
           </div>
         </div>
 
@@ -4915,12 +4945,16 @@
   }
   function setRouteViewMode_(mode) {
     routeViewMode_ = mode;
-    document.getElementById('routeViewListBtn').classList.toggle('on', mode === 'list');
-    document.getElementById('routeViewMapBtn').classList.toggle('on', mode === 'map');
-    document.getElementById('routeViewListBtn').setAttribute('aria-selected', mode === 'list' ? 'true' : 'false');
-    document.getElementById('routeViewMapBtn').setAttribute('aria-selected', mode === 'map' ? 'true' : 'false');
+    [['list', 'routeViewListBtn'], ['map', 'routeViewMapBtn'], ['search', 'routeViewSearchBtn']].forEach(function (t) {
+      const b = document.getElementById(t[1]);
+      b.classList.toggle('on', mode === t[0]);
+      b.setAttribute('aria-selected', mode === t[0] ? 'true' : 'false');
+    });
     document.getElementById('routeList').style.display = (mode === 'list') ? '' : 'none';
     document.getElementById('routeMapWrap').style.display = (mode === 'map') ? '' : 'none';
+    document.getElementById('routeSearchWrap').style.display = (mode === 'search') ? '' : 'none';
+    document.getElementById('routeProgressBox').style.display = (mode === 'search') ? 'none' : '';
+    if (mode === 'search') openRouteSearch();
     if (mode === 'map') {
       renderRouteMap(lastLoadedRouteRowsForMap);
       startRepLiveLocation();
@@ -5002,14 +5036,114 @@
     if (row['آخر حالة']) s += ' · ' + row['آخر حالة'];
     return s;
   }
-  function routeActionsHtml(row) {
+  // ── إضافة رقم هاتف لزبون ما عنده رقم (المندوب بس) ─────────────────────
+  // phoneDraft: الشريط المفتوح حاليًا (زبون + مكان الكارت) — يبقى مفتوح حتى
+  // لو الكارت انرسم من جديد (اختيار حالة، تحديث المسافة...).
+  let phoneDraft = null;
+  function canAddPhone(row) {
+    const cid = String(row['ID الزبون'] || '').trim();
+    return isRep() && cid && cid.indexOf('X-') !== 0 && !normPhone(row['رقم الهاتف']);
+  }
+  function addPhoneBtnHtml(row, ctx, asTag) {
+    return '<button type="button" class="' + (asTag ? 'rt-tag ' : '') + 'add-ph" data-cid="' + esc(row['ID الزبون']) + '" data-name="' + esc(row['اسم نقطة البيع'] || '') + '" onclick="openAddPhone(this, \'' + ctx + '\')">' + ic('plus', asTag ? 14 : 16) + 'إضافة رقم</button>';
+  }
+  function addPhoneStripHtml(row, ctx) {
+    if (!phoneDraft || phoneDraft.ctx !== ctx || phoneDraft.cid !== String(row['ID الزبون'] || '').trim()) return '';
+    return '<div class="ph-strip"><label class="x-label" for="phInput">رقم هاتف «' + esc(row['اسم نقطة البيع'] || '') + '»</label>' +
+      '<div class="row"><input type="tel" id="phInput" inputmode="tel" maxlength="16" autocomplete="off" placeholder="07XXXXXXXXX" value="' + esc(phoneDraft.value || '') + '"' +
+      ' oninput="if (phoneDraft) phoneDraft.value = this.value" onkeydown="if (event.key === \'Enter\') { event.preventDefault(); saveAddPhone(); }">' +
+      '<button type="button" class="save" id="phSaveBtn" onclick="saveAddPhone()">حفظ</button>' +
+      '<button type="button" class="cancel" aria-label="إلغاء" onclick="closeAddPhone()">×</button></div>' +
+      '<span class="msg-l" id="phMsg" role="alert">' + esc(phoneDraft.msg || '') + '</span></div>';
+  }
+  function rerenderPhoneCtx(ctx) {
+    if (ctx === 'rs') renderRouteSearch(); else renderRouteList();
+  }
+  function openAddPhone(btn, ctx) {
+    const prevCtx = phoneDraft && phoneDraft.ctx;
+    phoneDraft = { cid: btn.getAttribute('data-cid'), name: btn.getAttribute('data-name'), ctx: ctx, value: '', msg: '' };
+    if (prevCtx && prevCtx !== ctx) rerenderPhoneCtx(prevCtx);
+    rerenderPhoneCtx(ctx);
+    const inp = document.getElementById('phInput');
+    if (inp) { inp.focus(); inp.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+  }
+  function closeAddPhone() {
+    const ctx = phoneDraft && phoneDraft.ctx;
+    phoneDraft = null;
+    if (ctx) rerenderPhoneCtx(ctx);
+  }
+  // يحدّث الرقم بكل نسخ هذا الزبون المعروضة (خط السير، نتائج البحث، الزيارة الحالية، النسخة المحفوظة)
+  function applyCustomerPhone(cid, phone) {
+    const set = function (r) { if (r && String(r['ID الزبون'] || '').trim() === cid) r['رقم الهاتف'] = phone; };
+    routeState.rows.forEach(set);
+    Object.keys(routeSearch.points).forEach(function (a) { (routeSearch.points[a] || []).forEach(set); });
+    if (activeVisit && String(activeVisit.customerId || '').trim() === cid) {
+      activeVisit.phone = phone;
+      set(activeVisit.row);
+      if (activeVisitResetArgs) activeVisitResetArgs.phone = phone;
+    }
+    if (routeState.rep && routeState.date && routeState.rows.length) {
+      saveRouteCache(routeState.rep, routeState.date, routeState.rows.map(function (r) { const c = Object.assign({}, r); delete c._dist; return c; }));
+    }
+  }
+  function saveAddPhone() {
+    if (!phoneDraft) return;
+    const d = phoneDraft;
+    const inp = document.getElementById('phInput');
+    const msg = document.getElementById('phMsg');
+    const btn = document.getElementById('phSaveBtn');
+    let digits = String((inp && inp.value) || d.value || '')
+      .replace(/[٠-٩]/g, function (c) { return String('٠١٢٣٤٥٦٧٨٩'.indexOf(c)); })
+      .replace(/[۰-۹]/g, function (c) { return String('۰۱۲۳۴۵۶۷۸۹'.indexOf(c)); })
+      .replace(/[^0-9]/g, '');
+    if (digits.indexOf('00964') === 0) digits = digits.slice(5);
+    else if (digits.indexOf('964') === 0 && digits.length > 11) digits = digits.slice(3);
+    digits = digits.replace(/^0+/, '');
+    const say = function (t) { d.msg = t; if (msg) msg.textContent = t; };
+    if (!/^7\d{9}$/.test(digits)) { say('اكتب رقم موبايل صحيح من 11 رقم، مثل 07701234567'); if (inp) inp.focus(); return; }
+    say('');
+    if (btn) { btn.disabled = true; btn.textContent = 'لحظة...'; }
+    const body = new FormData();
+    body.append('action', 'addCustomerPhone');
+    body.append('username', (currentAdmin && currentAdmin.username) || '');
+    body.append('password', (currentAdmin && currentAdmin.pass) || '');
+    body.append('customerId', d.cid);
+    body.append('pointName', d.name || '');
+    body.append('phone', '0' + digits);
+    const done = function () { if (btn) { btn.disabled = false; btn.textContent = 'حفظ'; } };
+    fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (phoneDraft !== d) return;
+        if (data.result === 'success' || data.error === 'has_phone') {
+          applyCustomerPhone(d.cid, normPhone(data.phone || ('0' + digits)));
+          phoneDraft = null;
+          rerenderPhoneCtx(d.ctx);
+          if (d.ctx === 'rs') renderRouteList(); else if (document.getElementById('rsResults')) renderRouteSearch();
+          showToast(data.result === 'success' ? 'انحفظ رقم الهاتف' : 'هذا المحل صار عنده رقم مسجّل', data.result === 'success' ? 'success' : 'info');
+          return;
+        }
+        done();
+        if (data.error === 'phone_taken') say('هذا الرقم مسجّل لمحل ثاني' + (data.storeName ? ' («' + data.storeName + '»)' : '') + ' — تأكد منه');
+        else if (data.error === 'invalid_phone') say('اكتب رقم موبايل صحيح من 11 رقم، مثل 07701234567');
+        else if (data.error === 'customer not found') say('ما لكينا هذا الزبون بالسستم — حدّث الصفحة وجرّب مرة ثانية');
+        else if (data.error === 'unauthorized') say('ما عندك صلاحية تضيف رقم');
+        else say('صار خطأ، حاول مرة ثانية');
+      })
+      .catch(function () { done(); say('تعذّر الاتصال — تأكد من النت وحاول مرة ثانية'); });
+  }
+
+  function routeActionsHtml(row, ctx) {
     const lat = row['Latitude'], lng = row['Longitude'];
     if (!lat || !lng) return '';
     const phone = normPhone(row['رقم الهاتف']);
-    return '<div class="rt-actions">' +
-      (phone ? '<a class="call" href="tel:' + esc(phone) + '">' + ic('call', 16) + 'اتصال</a>' : '<a aria-disabled="true" style="opacity:.45;pointer-events:none;">' + ic('call', 16) + 'اتصال</a>') +
+    const callHtml = phone ? '<a class="call" href="tel:' + esc(phone) + '">' + ic('call', 16) + 'اتصال</a>'
+      : (ctx && canAddPhone(row)) ? addPhoneBtnHtml(row, ctx, false)
+      : '<a aria-disabled="true" style="opacity:.45;pointer-events:none;">' + ic('call', 16) + 'اتصال</a>';
+    return '<div class="rt-actions">' + callHtml +
       '<a href="https://waze.com/ul?ll=' + esc(lat) + ',' + esc(lng) + '&navigate=yes" target="_blank" rel="noopener">Waze</a>' +
-      '<a href="https://www.google.com/maps/dir/?api=1&destination=' + esc(lat) + ',' + esc(lng) + '" target="_blank" rel="noopener">Google Maps</a></div>';
+      '<a href="https://www.google.com/maps/dir/?api=1&destination=' + esc(lat) + ',' + esc(lng) + '" target="_blank" rel="noopener">Google Maps</a></div>' +
+      (ctx ? addPhoneStripHtml(row, ctx) : '');
   }
   function routeCardHtml(row, idx) {
     const name = row['اسم نقطة البيع'] || '';
@@ -5021,7 +5155,7 @@
       '<div class="x-between" style="align-items:flex-start;"><div class="x-titles" style="display:flex;flex-direction:column;gap:2px;min-width:0;">' +
       '<span class="rt-name">' + esc(name) + '</span><span class="x-small">' + esc(routeLastLine(row)) + '</span></div>' + dist + '</div>' +
       '<div class="rt-tags">' + (row['المنطقة'] ? '<span class="rt-tag">' + ic('pin', 14) + esc(row['المنطقة']) + '</span>' : '') + '</div>' +
-      routeActionsHtml(row) +
+      routeActionsHtml(row, 'route') +
       (hasLoc ? '<button type="button" class="rt-start route-visit-start-btn"' + (busy ? ' disabled' : '') + ' onclick="startPointVisitIdx(' + idx + ', this)">' + ic('play', 18) + '<span>بدء الزيارة</span></button>' +
         '<div class="geo-status" id="visitStatus_' + pid + '"></div>' : '<span class="x-small" style="color:var(--warn-fg);">النقطة ما عندها موقع مسجّل</span>') +
       '</div>';
@@ -5041,7 +5175,8 @@
       '<span class="rt-name">' + esc(name) + '</span><span class="x-small">' + esc(routeLastLine(row)) + '</span></div>' +
       '<span class="rt-timer" role="timer" aria-label="مدة الزيارة"><i></i><span id="timerTime_' + pid + '">' + timer + '</span></span></div>' +
       '<div class="rt-tags">' + (row['المنطقة'] ? '<span class="rt-tag">' + ic('pin', 14) + esc(row['المنطقة']) + '</span>' : '') +
-      (phone ? '<span class="rt-tag" style="direction:ltr;">' + esc(phone) + '</span>' : '') + '</div>' +
+      (phone ? '<span class="rt-tag" style="direction:ltr;">' + esc(phone) + '</span>' : canAddPhone(row) ? addPhoneBtnHtml(row, 'act', true) : '') + '</div>' +
+      addPhoneStripHtml(row, 'act') +
       '<div class="rt-divider"></div>' +
       '<div class="x-field"><span class="x-label">حالة الزبون</span><div class="status-chips">' +
       STATUS_LIST.map(function (s) {
@@ -5051,6 +5186,8 @@
         REASON_LIST.map(function (r) {
           return '<button type="button" class="rs-chip' + (rs === r ? ' on' : '') + '" aria-pressed="' + (rs === r) + '" onclick="cardPickReason(\'' + r + '\')">' + r + '</button>';
         }).join('') + '</div></div>' : '') +
+      '<div class="x-field"><label class="x-label" for="cardNotes">ملاحظات <span class="x-small" style="color:var(--muted-2);font-weight:600;">(اختياري)</span></label>' +
+      '<textarea id="cardNotes" class="x-textarea" rows="2" maxlength="500" placeholder="أي تفاصيل إضافية عن الزيارة..." oninput="if (activeVisit) activeVisit.cardNotes = this.value">' + esc(activeVisit.cardNotes || '') + '</textarea></div>' +
       '<div class="rt-end-row">' + (phone ? '<a class="call" href="tel:' + esc(phone) + '" aria-label="اتصال بالزبون">' + ic('call', 20) + '</a>' : '') +
       '<button type="button" class="x-btn" id="endVisitBtn"' + (ready ? '' : ' aria-disabled="true"') + ' onclick="endPointVisitFromCard()">' + ic('stop', 18) + '<span>إنهاء الزيارة</span></button></div>' +
       (ready ? '' : '<span class="x-small" style="text-align:center;color:var(--muted-2);margin-top:-4px;">' + (st ? 'اختار سبب عدم التعامل حتى تنهي الزيارة' : 'اختار حالة الزبون حتى تنهي الزيارة') + '</span>') +
@@ -5074,14 +5211,19 @@
     const list = document.getElementById('routeList');
     const rows = routeState.rows;
     lastLoadedRouteRowsForMap = rows;
+    // التبويبات تبقى ظاهرة حتى لو ماكو خط سير — «بحث نقطة» يفيد بهاي الحالة بالذات
     const tabs = document.getElementById('routeViewModeTabs');
-    if (tabs) tabs.style.display = rows.length ? '' : 'none';
+    if (tabs) tabs.style.display = '';
+    document.getElementById('routeViewMapBtn').style.display = rows.length ? '' : 'none';
+    if (!rows.length && routeViewMode_ === 'map') setRouteViewMode_('list');
     document.getElementById('routeProgressBox').innerHTML = rows.length ? routeProgressHtml(rows, routeState.sorted) : '';
     updateRouteHeader();
     if (routeViewMode_ === 'map') renderRouteMap(rows);
-    if (!rows.length) { list.innerHTML = ''; return; }
-    let html = '';
     const activeIdx = activeVisit ? rows.findIndex(function (r) { return (r['اسم نقطة البيع'] || '') === activeVisit.pointName; }) : -1;
+    // زيارة نقطة من «بحث نقطة» (مو بخط السير): كارتها ينرسم من بيانات الزيارة نفسها
+    const offRouteActive = activeVisit && activeIdx < 0 && activeVisit.row ? '<span class="rt-sec">زيارة خارج خط السير</span>' + routeActiveCardHtml(activeVisit.row) : '';
+    if (!rows.length) { list.innerHTML = offRouteActive + (routeState.loadedAt ? ROUTE_EMPTY_HTML : ''); return; }
+    let html = offRouteActive;
     if (activeIdx >= 0) html += '<span class="rt-sec">الزيارة الحالية</span>' + routeActiveCardHtml(rows[activeIdx]);
     const remaining = [], done = [];
     rows.forEach(function (r, i) { if (i === activeIdx) return; (r.visited ? done : remaining).push(i); });
@@ -5096,6 +5238,7 @@
     list.innerHTML = html;
   }
 
+  const ROUTE_EMPTY_HTML = '<div class="x-empty">ما أكو نقاط بخط السير لهذا اليوم<br><span class="x-small">تكدر تزور أي محل من تبويب «بحث نقطة»</span></div>';
   function loadRoute() {
     const rep = document.getElementById('routeRep').value;
     const status = document.getElementById('routeStatus');
@@ -5133,7 +5276,6 @@
           if (!rows.length) {
             routeState.rows = []; routeState.loadedAt = Date.now();
             renderRouteList();
-            list.innerHTML = '<div class="x-empty">ما أكو نقاط بخط السير لهذا اليوم</div>';
             status.textContent = '';
             return;
           }
@@ -5155,7 +5297,7 @@
           if (attempt < 2) { setTimeout(doLoad, 2000); return; }
           const cached = getRouteCache(rep, selectedDate);
           if (cached) {
-            if (!cached.rows || !cached.rows.length) { list.innerHTML = '<div class="x-empty">ما أكو نقاط بخط السير لهذا اليوم</div>'; status.textContent = ''; }
+            if (!cached.rows || !cached.rows.length) { routeState.rows = []; routeState.loadedAt = Date.now(); renderRouteList(); status.textContent = ''; }
             else show(cached.rows, false);
             return;
           }
@@ -5186,9 +5328,153 @@
     if (!row) return;
     startPointVisit(row['اسم نقطة البيع'] || '', row['المنطقة'], parseFloat(row['Latitude']), parseFloat(row['Longitude']), btn, row['رقم الهاتف'] || '', row['ID الزبون'] || '');
   }
-  function startPointVisit(pointName, area, pLat, pLng, btn, phone, customerId) {
+  // ═════════════ بحث نقطة: زيارة محل خارج خط السير ═════════════
+  // المصدر عمليتين متاحات أصلًا لأي حساب مسجّل: areas (المناطق) وpoints (زبائن منطقة).
+  const RS_AREAS_KEY = 'ifco:rsAreas:v1';
+  const routeSearch = { areas: null, area: '', points: {}, results: [], pos: null };
+  function normAr(s) {
+    return String(s || '').replace(/[ً-ْـ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+  function openRouteSearch() {
+    if (!routeSearch.pos && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function (p) {
+        routeSearch.pos = { lat: p.coords.latitude, lng: p.coords.longitude };
+        renderRouteSearch();
+      }, function () {}, { enableHighAccuracy: false, timeout: 10000, maximumAge: 120000 });
+    }
+    if (routeSearch.areas) { rsAreaInput(); renderRouteSearch(); return; }
+    const st = document.getElementById('rsStatus');
+    st.textContent = 'جارٍ تحميل المناطق...';
+    renderRouteSearch();
+    fetchWithTimeout(WEB_APP_URL + '?action=areas&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || ''))
+      .then(function (res) { return res.json(); })
+      .then(function (d) {
+        if (d.result !== 'success') { st.textContent = 'تعذّر تحميل المناطق'; return; }
+        routeSearch.areas = d.areas || [];
+        try { localStorage.setItem(RS_AREAS_KEY, JSON.stringify(routeSearch.areas)); } catch (e) {}
+        st.textContent = '';
+        rsAreaInput();
+      })
+      .catch(function () {
+        let cached = null;
+        try { cached = JSON.parse(localStorage.getItem(RS_AREAS_KEY)); } catch (e) {}
+        if (cached && cached.length) { routeSearch.areas = cached; st.textContent = ''; rsAreaInput(); }
+        else st.textContent = 'تعذّر الاتصال — تأكد من النت وارجع افتح التبويب';
+      });
+  }
+  // اقتراحات المنطقة: فارغ ← مناطق خط اليوم؛ مكتوب ← كل المناطق المطابقة (اللي تبدي بالنص أولًا)
+  function rsAreaInput() {
+    const box = document.getElementById('rsAreaSugg');
+    const raw = document.getElementById('rsArea').value;
+    const q = normAr(raw);
+    if (!routeSearch.areas) { box.innerHTML = ''; return; }
+    if (routeSearch.area && raw === routeSearch.area) { box.innerHTML = ''; return; }
+    if (routeSearch.area) { routeSearch.area = ''; renderRouteSearch(); }
+    let list;
+    if (!q) {
+      const mine = [];
+      routeState.rows.forEach(function (r) { const a = String(r['المنطقة'] || '').trim(); if (a && mine.indexOf(a) === -1 && routeSearch.areas.indexOf(a) !== -1) mine.push(a); });
+      list = mine;
+    } else {
+      list = routeSearch.areas.filter(function (a) { return normAr(a).indexOf(q) !== -1; });
+      list.sort(function (a, b) { return (normAr(a).indexOf(q) === 0 ? 0 : 1) - (normAr(b).indexOf(q) === 0 ? 0 : 1) || a.localeCompare(b, 'ar'); });
+    }
+    box.innerHTML = (!q && list.length ? '<span class="x-hint" style="width:100%;">مناطق خط سيرك اليوم:</span>' : '') +
+      list.slice(0, 12).map(function (a) {
+        return '<button type="button" class="x-chip" onclick="rsPickArea(' + routeSearch.areas.indexOf(a) + ')">' + esc(a) + '</button>';
+      }).join('') + (q && !list.length ? '<span class="x-hint">ما لكينا منطقة بهذا الاسم</span>' : '');
+  }
+  function rsPickFirstArea() {
+    const b = document.querySelector('#rsAreaSugg .x-chip');
+    if (b) b.click();
+  }
+  function rsPickArea(i) {
+    const a = routeSearch.areas[i];
+    if (!a) return;
+    routeSearch.area = a;
+    document.getElementById('rsArea').value = a;
+    document.getElementById('rsAreaSugg').innerHTML = '';
+    if (routeSearch.points[a]) { renderRouteSearch(); return; }
+    const st = document.getElementById('rsStatus');
+    st.textContent = 'جارٍ تحميل محلات ' + a + '...';
+    renderRouteSearch();
+    fetchWithTimeout(WEB_APP_URL + '?action=points&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || '') + '&area=' + encodeURIComponent(a))
+      .then(function (res) { return res.json(); })
+      .then(function (d) {
+        if (d.result !== 'success') { if (routeSearch.area === a) st.textContent = 'تعذّر تحميل المحلات'; return; }
+        routeSearch.points[a] = (d.points || []).filter(function (p) {
+          return String(p['اسم نقطة البيع'] || '').trim() && !/^X-/.test(String(p['ID الزبون'] || ''));
+        }).map(function (p) { return Object.assign({}, p, { 'آخر حالة': p['حالة الزبون'] || '' }); });
+        if (routeSearch.area === a) { st.textContent = ''; renderRouteSearch(); }
+      })
+      .catch(function () { if (routeSearch.area === a) st.textContent = 'تعذّر الاتصال — تأكد من النت وحاول مرة ثانية'; });
+  }
+  function rsInRoute(p) {
+    const id = String(p['ID الزبون'] || '');
+    return routeState.rows.some(function (r) { return (id && String(r['ID الزبون'] || '') === id) || (r['اسم نقطة البيع'] || '') === p['اسم نقطة البيع']; });
+  }
+  function renderRouteSearch() {
+    const box = document.getElementById('rsResults');
+    if (!box) return;
+    if (!routeSearch.area) { box.innerHTML = routeSearch.areas ? '<div class="x-empty">اكتب اسم المنطقة واختارها، بعدين اكتب اسم المحل</div>' : ''; routeSearch.results = []; return; }
+    const pts = routeSearch.points[routeSearch.area];
+    if (!pts) { box.innerHTML = [1, 2].map(function () { return '<div class="rt-card"><div class="x-skel" style="width:55%;height:14px;"></div><div class="x-skel" style="width:35%;"></div><div class="x-skel" style="height:44px;border-radius:12px;"></div></div>'; }).join(''); return; }
+    const raw = document.getElementById('rsName').value;
+    const q = normAr(raw);
+    const qDigits = raw.replace(/[^0-9]/g, '');
+    let list = pts.filter(function (p) {
+      if (!q) return true;
+      if (normAr(p['اسم نقطة البيع']).indexOf(q) !== -1) return true;
+      return qDigits.length >= 4 && String(p['رقم الهاتف'] || '').indexOf(qDigits) !== -1;
+    });
+    const pos = routeSearch.pos;
+    list.forEach(function (p) {
+      const la = parseFloat(p.Latitude), ln = parseFloat(p.Longitude);
+      p._dist = (pos && isFinite(la) && isFinite(ln)) ? distanceMeters(pos.lat, pos.lng, la, ln) : undefined;
+    });
+    list.sort(function (a, b) {
+      if (pos) return (a._dist === undefined ? Infinity : a._dist) - (b._dist === undefined ? Infinity : b._dist);
+      return (q ? (normAr(a['اسم نقطة البيع']).indexOf(q) === 0 ? 0 : 1) - (normAr(b['اسم نقطة البيع']).indexOf(q) === 0 ? 0 : 1) : 0) || String(a['اسم نقطة البيع']).localeCompare(String(b['اسم نقطة البيع']), 'ar');
+    });
+    const total = list.length;
+    list = list.slice(0, 30);
+    routeSearch.results = list;
+    if (!total) { box.innerHTML = '<div class="x-empty">' + (q ? 'ما لكينا محل بهذا الاسم بـ' + esc(routeSearch.area) : 'ماكو محلات مسجّلة بـ' + esc(routeSearch.area)) + '<br><span class="x-small">إذا المحل جديد، ارفعه من «رفع نقطة جديدة»</span></div>'; return; }
+    const rep = (document.getElementById('routeRep') || {}).value || '';
+    const date = (document.getElementById('routeDate') || {}).value || getTodayDateStr();
+    const busy = !!activeVisit;
+    box.innerHTML = '<span class="rt-sec">' + (total > list.length ? 'أقرب ' + list.length + ' من ' + total + ' محل — اكتب جزء من الاسم حتى تلكاه أسرع' : total + (total === 1 ? ' محل' : ' محلات')) + (pos ? ' · الأقرب إليك أولًا' : '') + '</span>' +
+      list.map(function (p, i) {
+        const name = p['اسم نقطة البيع'];
+        const hasLoc = p.Latitude && p.Longitude;
+        const inRoute = rsInRoute(p);
+        const visited = rep && isPointVisited(rep, date, name);
+        const dist = p._dist !== undefined ? '<span class="rt-dist">' + fmtDistance(p._dist) + '</span>' : '';
+        return '<div class="rt-card">' +
+          '<div class="x-between" style="align-items:flex-start;"><div class="x-titles" style="display:flex;flex-direction:column;gap:2px;min-width:0;">' +
+          '<span class="rt-name">' + esc(name) + '</span><span class="x-small">' + esc(routeLastLine(p)) + '</span></div>' + dist + '</div>' +
+          '<div class="rt-tags"><span class="rt-tag">' + ic('pin', 14) + esc(p['المنطقة'] || '') + '</span>' +
+          (inRoute ? '<span class="x-pill pine">بخط سيرك اليوم</span>' : '') + (visited ? '<span class="x-pill good">زرتها اليوم</span>' : '') + '</div>' +
+          routeActionsHtml(p, 'rs') +
+          (hasLoc ? '<button type="button" class="rt-start"' + (busy ? ' disabled' : '') + ' onclick="startRsVisit(' + i + ', this)">' + ic('play', 18) + '<span>بدء الزيارة</span></button>' +
+            '<div class="geo-status" id="rsVisitStatus_' + i + '"></div>' : '<span class="x-small" style="color:var(--warn-fg);">النقطة ما عندها موقع مسجّل</span>') +
+          '</div>';
+      }).join('');
+  }
+  function startRsVisit(i, btn) {
+    const p = routeSearch.results[i];
+    if (!p) return;
+    const statusEl = document.getElementById('rsVisitStatus_' + i);
+    if (!(document.getElementById('routeRep').value || '').trim()) { statusEl.textContent = 'اختار المندوب أولًا من زر التقويم فوق'; return; }
+    startPointVisit(p['اسم نقطة البيع'] || '', p['المنطقة'], parseFloat(p.Latitude), parseFloat(p.Longitude), btn, p['رقم الهاتف'] || '', p['ID الزبون'] || '',
+      { statusEl: statusEl, offRoute: !rsInRoute(p), row: p });
+  }
+
+  // opts (من «بحث نقطة»): statusEl مكان رسائل الموقع، row بيانات الكارت، offRoute زيارة خارج خط السير
+  function startPointVisit(pointName, area, pLat, pLng, btn, phone, customerId, opts) {
+    opts = opts || {};
     const pid = encodeURIComponent(pointName);
-    let statusEl = document.getElementById('visitStatus_' + pid);
+    let statusEl = opts.statusEl || document.getElementById('visitStatus_' + pid);
     if (!statusEl) { statusEl = document.getElementById('routeStatus'); }
     if (!navigator.geolocation) { statusEl.textContent = 'المتصفح لا يدعم تحديد الموقع'; return; }
     statusEl.textContent = 'جارٍ التحقق من موقعك...';
@@ -5210,7 +5496,8 @@
         date: document.getElementById('routeDate').value || getTodayDateStr(),
         phone: phone, accuracy: position.coords.accuracy,
         customerId: customerId || '',
-        cardStatus: '', cardReason: '',
+        cardStatus: '', cardReason: '', cardNotes: '',
+        offRoute: !!opts.offRoute, row: opts.row || null,
         overridden: dist > GEOFENCE_EFFECTIVE_RADIUS_M
       };
       activeVisitResetArgs = { pointName: pointName, area: area, pLat: pLat, pLng: pLng, phone: phone, customerId: customerId || '' };
@@ -5223,6 +5510,7 @@
   }
   function startActiveVisitCardUI(pid) {
     activeVisitPid = pid;
+    if (routeViewMode_ !== 'list') setRouteViewMode_('list');
     renderRouteList();
     clearInterval(activeVisitTimerInterval);
     activeVisitTimerInterval = setInterval(function () {
@@ -5259,6 +5547,7 @@
     await openVisitFormForPoint(activeVisit.pointName, activeVisit.area, activeVisit.lat, activeVisit.lng, activeVisit.phone, activeVisit.accuracy, true);
     setFormStatus(chosenStatus);
     if (chosenReason) setFormReason(chosenReason);
+    document.getElementById('notes').value = activeVisit.cardNotes || '';
     const missing = visitFormMissing();
     if (!missing.length) {
       document.getElementById('geoForm').requestSubmit();
@@ -5290,7 +5579,7 @@
     body.append('rep', repName || '');
     body.append('pointName', activeVisit.pointName);
     body.append('area', activeVisit.area || '');
-    body.append('visitType', isRouteVisit ? 'زيارة خط سير' : 'نقطة جديدة');
+    body.append('visitType', isRouteVisit ? (activeVisit.offRoute ? 'زيارة خارج خط السير' : 'زيارة خط سير') : 'نقطة جديدة');
     body.append('durationSeconds', String(durationSec));
     body.append('phone', details.phone || '');
     body.append('customerStatus', details.customerStatus || '');
@@ -5662,6 +5951,9 @@
     document.getElementById('submitBtn').textContent = 'إنهاء الزيارة';
     const customFieldsPromise = loadCustomFormFields('route');
     document.getElementById('store').dispatchEvent(new Event('input'));
+    // الرقم الجاي من السستم (أو اللي المندوب أضافه هسه بزر «إضافة رقم») أدق من
+    // نسخة المحل المحفوظة بالهاتف — حدث input فوق ممكن يرجّع رقم قديم محفوظ.
+    if (phone) document.getElementById('phone').value = normPhone(phone).slice(0, 11);
     syncFormUI();
     return customFieldsPromise.then(function () { syncFormUI(); });
   }
@@ -6578,7 +6870,7 @@
     loadReports();
   }
   function vtSegHtml() {
-    return [['', 'الكل'], ['زيارة خط سير', 'زيارات خط السير'], ['نقطة جديدة', 'نقاط جديدة']].map(function (t) {
+    return [['', 'الكل'], ['زيارة خط سير', 'خط السير'], ['زيارة خارج خط السير', 'خارج الخط'], ['نقطة جديدة', 'نقاط جديدة']].map(function (t) {
       const on = currentVisitTypeFilter === t[0];
       return '<button type="button" role="tab" aria-selected="' + on + '"' + (on ? ' class="on"' : '') + ' onclick="setVisitTypeFilter(\'' + t[0] + '\')">' + t[1] + '</button>';
     }).join('');
@@ -6892,7 +7184,7 @@
         '<b>' + esc(c.name) + '</b><span>' + esc([c.area, c.status || 'بدون حالة', c.lastVisit ? 'آخر زيارة ' + c.lastVisit : ''].filter(Boolean).join(' · ')) + '</span></button>';
     }).join('');
   }
-  const CUST_EVENT_LABEL = { submission: 'تسجيل زيارة', route_visit: 'زيارة خط سير', new_point: 'رفع نقطة جديدة', promoter_visit: 'زيارة مروّج' };
+  const CUST_EVENT_LABEL = { submission: 'تسجيل زيارة', route_visit: 'زيارة خط سير', off_route_visit: 'زيارة خارج خط السير', new_point: 'رفع نقطة جديدة', promoter_visit: 'زيارة مروّج' };
   function unsetDisplayStandFor(id) {
     if (!confirm('هل تريد إلغاء "لديه عارضة" لهذا الزبون؟')) return;
     const body = new FormData();
