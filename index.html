@@ -819,6 +819,166 @@
   .plan-rt-row { display: flex; align-items: center; gap: 10px; padding: 8px 2px; border-bottom: 1px solid var(--row-line); }
   .plan-n { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12.5px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .plan-route-foot { padding: 12px 14px 14px; border-top: 1px solid var(--line-3); }
+
+  /* ─── تعديل خط سير يوم (مندوب + يوم) ─── */
+  .re-main [hidden], .re-selbar[hidden] { display: none !important; }
+  .re-pick { gap: 14px; }
+  .re-pick-row { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); align-items: end; }
+  @media (min-width: 1024px) { .re-pick-row { grid-template-columns: 300px minmax(0, 1fr); } }
+  .re-weekhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; min-width: 0; }
+  .re-month { font-family: var(--font-heading); font-size: 17px; font-weight: 800; color: var(--ink); }
+  .re-wnav { display: flex; align-items: center; gap: 6px; }
+  .re-wnav .icon-btn { width: 38px; height: 38px; }
+  .re-date { width: 150px; height: 38px; padding: 0 10px; font-size: 13px; }
+  .re-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+  .re-day { border: 1.5px solid var(--line-2); background: #fff; border-radius: 14px; padding: 7px 2px 8px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; font-family: inherit; color: var(--ink-2); min-width: 0; transition: border-color .15s, background .15s; }
+  .re-day:hover { border-color: var(--box-idle); }
+  .re-day .dn { font-size: 11px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .re-day .dd { font-family: var(--font-heading); font-size: 20px; font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; }
+  .re-day .dc { font-size: 10.5px; font-weight: 800; min-width: 26px; padding: 1px 6px; border-radius: 999px; background: var(--soft-2); color: var(--faint); text-align: center; font-variant-numeric: tabular-nums; }
+  .re-day .dc.has { background: var(--pine-tint); color: var(--pine-ink); }
+  .re-day.today .dn { color: var(--accent); }
+  .re-day.today .dd::after { content: ''; display: block; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin: 1px auto 0; }
+  .re-day.on { border-color: var(--accent); background: var(--accent-tint); }
+  .re-day.on .dd { color: var(--accent-ink); }
+  .re-day.on .dc.has { background: var(--accent); color: #fff; }
+  .re-day.off { opacity: .55; }
+  @media (min-width: 1024px) { .re-day { padding: 9px 4px 10px; } .re-day .dn { font-size: 12px; } .re-day .dd { font-size: 22px; } }
+
+  .re-main { min-height: 420px; }
+  .re-head { background: var(--pine); color: var(--pine-fg); padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .re-head h2 { font-size: 16px; font-weight: 700; }
+  .re-head #reSub { font-size: 12.5px; color: var(--pine-muted); }
+  .re-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .re-stat { background: rgba(246,241,232,.08); border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; }
+  .re-stat .n { font-family: var(--font-heading); font-size: 22px; font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; }
+  .re-stat .l { font-size: 11.5px; color: var(--pine-muted); font-weight: 700; }
+  .re-stat.good .n { color: #9FD3B0; }
+  .re-prog { height: 6px; border-radius: 999px; background: rgba(246,241,232,.14); overflow: hidden; }
+  .re-prog > span { display: block; height: 100%; background: #9FD3B0; border-radius: 999px; transition: width .5s ease; }
+  .re-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 14px; border-bottom: 1px solid var(--line-3); }
+  .re-tools .x-seg button { height: 32px; padding: 0 10px; font-size: 12.5px; }
+  .re-tools .x-search { flex: 1 1 160px; min-width: 0; }
+  .re-tools .x-search .x-input { height: 40px; }
+  .re-allbox { display: inline-flex; align-items: center; gap: 8px; border: none; background: none; font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--ink-2); cursor: pointer; padding: 4px 2px; }
+  .re-allbox .x-box { margin: 0; }
+  .re-allbox.part .x-box { border-color: var(--accent); background: var(--accent); }
+  .re-allbox.part .x-box svg { opacity: 0; }
+  .re-allbox.part .x-box::after { content: ''; width: 10px; height: 2.5px; border-radius: 2px; background: #fff; }
+  .re-list { padding: 4px 8px 8px; }
+  .re-row { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-radius: 14px; border-bottom: 1px solid var(--row-line); min-width: 0; transition: background .15s; }
+  .re-row:last-child { border-bottom: none; }
+  .re-row:hover { background: var(--field-bg); }
+  .re-row.sel { background: var(--accent-tint-2); }
+  .re-row.confirm { background: var(--bad-tint); }
+  .re-chk { border: none; background: none; padding: 0; cursor: pointer; display: flex; }
+  .re-chk .x-box { margin: 0; }
+  .re-n { width: 28px; height: 28px; border-radius: 50%; background: var(--soft-2); color: var(--ink-2); font-size: 12.5px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .re-row.done .re-n { background: var(--good-tint); color: var(--good); }
+  .re-t { display: flex; flex-direction: column; min-width: 0; flex-grow: 1; gap: 1px; }
+  .re-t b { font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .re-t .x-small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .re-state { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
+  .re-state .x-small { font-size: 11px; }
+  .re-del { width: 36px; height: 36px; border: none; background: transparent; color: var(--muted); border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .re-del:hover { background: var(--bad-tint); color: var(--bad); }
+  .re-ask { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .re-ask span { font-size: 12.5px; font-weight: 700; color: var(--bad-fg); }
+  @media (max-width: 640px) {
+    .re-row { flex-wrap: wrap; row-gap: 6px; }
+    .re-row .re-del, .re-row .re-ask { order: 4; }
+    .re-row .re-state { order: 5; flex-basis: 100%; flex-direction: row; align-items: center; gap: 8px; padding-inline-start: 70px; }
+    .re-row.confirm .re-ask { flex-basis: 100%; justify-content: flex-end; }
+    .re-main.re-selpad .re-list { padding-bottom: 110px; }
+  }
+  .re-foot { padding: 10px 14px 14px; border-top: 1px solid var(--line-3); display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .re-empty { padding: 34px 18px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--muted); }
+  .re-empty .ic { width: 52px; height: 52px; border-radius: 16px; background: var(--soft-2); color: var(--muted-2); display: flex; align-items: center; justify-content: center; }
+  .re-empty b { font-size: 15px; color: var(--ink); }
+  .re-empty .x-row-flex { justify-content: center; }
+
+  .re-add { min-height: 420px; }
+  @media (min-width: 1024px) { .re-add { position: sticky; top: 16px; max-height: calc(100vh - 32px); } }
+  .re-add-head { padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid var(--line-3); }
+  .re-add-list { overflow-y: auto; padding: 4px 8px 10px; flex-grow: 1; }
+  .re-sec { display: block; font-size: 11.5px; font-weight: 800; color: var(--muted-2); padding: 10px 8px 4px; }
+  .re-arow { display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-bottom: 1px solid var(--row-line); min-width: 0; }
+  .re-arow:last-child { border-bottom: none; }
+  .re-arow .x-btn { flex-shrink: 0; }
+
+  .re-selbar { position: fixed; z-index: 60; bottom: 16px; left: 16px; right: 16px; max-width: 640px; margin: 0 auto; animation: fadeUp .2s ease; }
+  body.rep-mode .re-selbar { bottom: 88px; }
+  @media (min-width: 1024px) { .re-selbar { right: calc(var(--side-w) + 24px); left: 24px; } }
+  .re-selbar .x-dirty-bar { flex-wrap: wrap; }
+  .re-selbar .x-btn.sm { height: 36px; }
+  .re-selbar .x-btn.danger { background: var(--bad); }
+  /* شريط المندوبين بعدد نقاط اليوم */
+  .re-repshead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .re-reps { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -14px; padding: 0 14px 2px; }
+  .re-reps::-webkit-scrollbar { display: none; }
+  @media (min-width: 1024px) { .re-reps { flex-wrap: wrap; overflow: visible; margin: 0; padding: 0; } }
+  .re-rep { flex-shrink: 0; height: 40px; padding: 0 6px 0 14px; border-radius: 999px; border: 1.5px solid var(--line-2); background: #fff; color: var(--ink-2); font-family: inherit; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; white-space: nowrap; }
+  .re-rep:hover { border-color: var(--box-idle); }
+  .re-rep .c { min-width: 28px; height: 28px; padding: 0 7px; border-radius: 999px; background: var(--pine-tint); color: var(--pine-ink); font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums; }
+  .re-rep .c.zero { background: var(--warn-tint); color: var(--warn-fg); }
+  .re-rep .c.wait { background: var(--soft-2); color: var(--faint); }
+  .re-rep.on { border-color: var(--accent); background: var(--accent-tint); color: var(--accent-ink); }
+  .re-rep.on .c { background: var(--accent); color: #fff; }
+  .re-divider { height: 1px; background: var(--line-3); margin: 2px 0; }
+
+  /* عرض قائمة / خريطة على الراس الغامق */
+  .re-view { display: inline-flex; padding: 3px; gap: 2px; border-radius: 12px; background: rgba(246,241,232,.10); }
+  .re-view button { height: 32px; padding: 0 12px; border: none; border-radius: 9px; background: transparent; color: var(--pine-muted); font-family: inherit; font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .re-view button.on { background: var(--pine-fg); color: var(--pine); }
+  .re-headbtns { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  /* مجموعات المناطق */
+  .re-grp { display: flex; align-items: center; gap: 10px; padding: 12px 8px 6px; position: sticky; top: 0; background: #fff; z-index: 2; }
+  .re-grp b { font-size: 13px; font-weight: 800; color: var(--ink); }
+  .re-grp .x-small { font-size: 11.5px; }
+  .re-grp .re-chk .x-box { width: 20px; height: 20px; border-radius: 6px; }
+  .re-grp.part .x-box { border-color: var(--accent); background: var(--accent); }
+  .re-grp.part .x-box svg { opacity: 0; }
+  .re-grp.part .x-box::after { content: ''; width: 9px; height: 2.5px; border-radius: 2px; background: #fff; }
+  .re-row.re-new { animation: reFlash 2.4s ease; }
+  @keyframes reFlash { 0%, 40% { background: var(--good-tint); } 100% { background: transparent; } }
+
+  /* الخريطة */
+  .re-mapwrap { display: flex; flex-direction: column; }
+  .re-map { height: 460px; background: var(--soft-2); }
+  @media (max-width: 640px) { .re-map { height: 380px; } }
+  .re-maplegend { display: flex; align-items: center; gap: 6px 14px; flex-wrap: wrap; padding: 10px 14px; font-size: 12px; font-weight: 700; color: var(--ink-2); border-top: 1px solid var(--line-3); }
+  .re-maplegend .d { width: 12px; height: 12px; border-radius: 50%; display: inline-block; vertical-align: -1px; margin-left: 5px; }
+  .re-maplegend label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; margin-inline-start: auto; }
+  .re-pin span { width: 28px; height: 28px; border-radius: 50%; background: var(--pine); color: #fff; border: 2.5px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.3); font-family: var(--font-body); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .re-pin.done span { background: var(--good); }
+  .re-pin.sel span { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-ring), 0 2px 6px rgba(0,0,0,.3); }
+  .re-pop { direction: rtl; display: flex; flex-direction: column; gap: 6px; min-width: 190px; }
+  .re-pop b { font-size: 14px; }
+  .re-pop .x-small { font-size: 12px; }
+  .re-pop .re-mbtns .x-btn { flex: 1 1 auto; height: 34px; font-size: 12.5px; }
+
+  /* إضافة منطقة كاملة */
+  .re-areas { display: flex; gap: 6px; flex-wrap: wrap; padding: 4px 8px 6px; }
+  .re-area { height: 34px; padding: 0 6px 0 12px; border-radius: 999px; border: 1.5px dashed var(--accent); background: #fff; color: var(--accent-ink); font-family: inherit; font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .re-area:hover { background: var(--accent-tint-2); }
+  .re-area .c { min-width: 22px; height: 22px; padding: 0 5px; border-radius: 999px; background: var(--accent-tint); font-size: 11.5px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+
+  /* تراجع بعد الحذف */
+  .re-undo { position: fixed; z-index: 61; bottom: 16px; left: 16px; right: 16px; max-width: 520px; margin: 0 auto; display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 10px; border-radius: 16px; background: var(--ink); color: #fff; box-shadow: 0 10px 28px rgba(0,0,0,.28); animation: fadeUp .2s ease; }
+  .re-undo[hidden] { display: none !important; }
+  .re-undo span { flex-grow: 1; font-size: 13px; font-weight: 700; }
+  .re-undo .x-btn { flex-shrink: 0; }
+  .re-undo .re-undo-t { height: 3px; position: absolute; left: 12px; right: 12px; bottom: 5px; border-radius: 2px; background: rgba(255,255,255,.18); overflow: hidden; }
+  .re-undo .re-undo-t i { display: block; height: 100%; background: #9FD3B0; animation: reUndoT 7s linear forwards; }
+  @keyframes reUndoT { from { width: 100%; } to { width: 0; } }
+  @media (min-width: 1024px) { .re-undo { right: calc(var(--side-w) + 24px); left: 24px; } }
+  body.rep-mode .re-undo { bottom: 88px; }
+
+  .re-mtitle { font-family: var(--font-heading); font-size: 18px; font-weight: 800; }
+  .re-mtext { font-size: 13px; color: var(--muted); line-height: 1.7; }
+  .re-mbtns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .re-mbtns .x-btn { flex: 1 1 140px; }
   @media (min-width: 1024px) { .plan-route-foot { padding: 14px; border-top: 1px solid var(--line-3); display: flex; flex-direction: column; gap: 10px; } }
 
   /* شاشات المندوب */
@@ -3363,6 +3523,7 @@
         rebuildStaticRepSelect('routeRep');
         rebuildStaticRepSelect('rep');
         rebuildStaticRepSelect('filterByRepSelect', true);
+        if (document.getElementById('reReps')) reRenderReps();
       })
       .catch(function () { /* نضل على القائمة الاحتياطية لو فشل الطلب */ });
   }
@@ -4375,6 +4536,7 @@
       ] },
       { id: 'route', label: 'خطوط السير', icon: 'route', items: [
         canPlan() && { id: 'p-routePlan', label: 'تخطيط خط السير', fn: buildSupervisorPanel },
+        canPlan() && { id: 'p-routeEdit', label: 'تعديل خط السير', fn: buildRouteEditorPanel },
         (canDoFieldWork() && !isRep()) && { id: 'go-route', label: 'خط سيري', view: 'route', fn: goToRouteView },
         (canDoFieldWork() && !isRep()) && { id: 'go-newpoint', label: 'رفع نقطة جديدة', view: 'form', fn: openNewPointForm },
         canPlan() && { id: 'p-due', label: 'زبائن يجب زيارتهم', fn: buildDueCustomersPanel }
@@ -7336,6 +7498,11 @@
   let plannerOrder = [];
   let plannerPoints = [];
   let plannerSearch = '';
+  // بحث بكل الزبائن (بدون منطقة): القائمة الكاملة تنجاب مرة وحدة وتنحفظ بالذاكرة،
+  // والبحث بالاسم/الرقم/ID يصير محليًا فوري. plannerAreaMode = اكو منطقة أو فلتر مندوب.
+  const plannerAll = { list: null, loadedAt: 0, loading: false, failed: false };
+  let plannerAreaMode = false;
+  let plannerShown = [];
   let repeatMode_ = 'range';
   const PLAN_STATUS_FILTERS = [['تم البيع', 'good', true], ['لديه مخزون', 'warn', true], ['مسؤول المشتريات غير متواجد', 'neutral', true], ['لا يريد التعامل معنا', 'bad', false], ['__none__', '', true]];
 
@@ -7346,9 +7513,11 @@
     plannerOrder = [];
     plannerPoints = [];
     plannerSearch = '';
+    plannerAreaMode = false;
+    plannerShown = [];
     repeatMode_ = 'range';
-    setPage('تخطيط خط السير', 'اختار المندوب واليوم والمناطق، بعدين أشّر النقاط وترتيبها ينحفظ مثل ما تختارها',
-      '<button type="button" class="x-btn ghost" onclick="toggleSavedRoutePanel()">' + ic('clipboard', 18) + '<span>خطوط السير المحفوظة</span></button>');
+    setPage('تخطيط خط السير', 'اختار المندوب واليوم، بعدين اختار منطقة أو دوّر على الزبون بالاسم أو الرقم أو الـID، وأشّر النقاط — ترتيبها ينحفظ مثل ما تختارها',
+      '<button type="button" class="x-btn ghost" onclick="toggleSavedRoutePanel()">' + ic('clipboard', 18) + '<span>تعديل خط محفوظ</span></button>');
     content.innerHTML =
       '<div class="x-cols plan-cols">' +
       '<section class="x-card plan-settings" aria-label="إعدادات الخط">' +
@@ -7374,9 +7543,9 @@
       '<button type="button" class="x-btn ghost" onclick="loadAreaPoints()">' + ic('refresh', 16) + 'عرض النقاط</button>' +
       '</section>' +
       '<section class="x-card flush plan-points" aria-labelledby="planPtsT">' +
-      '<div class="plan-points-head"><div class="x-between"><div class="x-titles" style="display:flex;flex-direction:column;"><h2 class="x-h2" id="planPtsT">نقاط المناطق المختارة</h2><span class="x-small" id="adminStatus">اختار منطقة أو أكثر حتى تطلع نقاطها</span></div>' +
+      '<div class="plan-points-head"><div class="x-between"><div class="x-titles" style="display:flex;flex-direction:column;"><h2 class="x-h2" id="planPtsT">دوّر على زبون</h2><span class="x-small" id="adminStatus">ابحث بكل الزبائن، أو اختار منطقة</span></div>' +
       '<button type="button" class="x-btn ghost sm" id="planSelectAll" onclick="plannerSelectAll()">تحديد الكل</button></div>' +
-      '<div class="x-search"><input type="search" class="x-input sm" id="planSearch" placeholder="ابحث باسم النقطة أو الرقم..." aria-label="ابحث عن نقطة" oninput="plannerSearch=this.value;renderPlannerPoints()">' + ic('search', 16) + '</div></div>' +
+      '<div class="x-search"><input type="search" class="x-input sm" id="planSearch" placeholder="اسم المحل، رقم الهاتف، أو ID الزبون..." aria-label="ابحث عن زبون بالاسم أو الرقم أو ID" autocomplete="off" oninput="plannerSearch=this.value;renderPlannerPoints()">' + ic('search', 16) + '</div></div>' +
       '<div id="adminPointsList" class="plan-list"></div></section>' +
       '<section class="x-card flush plan-route" aria-labelledby="planRouteT">' +
       '<div class="plan-route-head"><h2 id="planRouteT">خط السير</h2><span id="planRouteSub">اختار المندوب واليوم</span></div>' +
@@ -7387,9 +7556,7 @@
       '<div class="msg success" id="adminSaveMsg" style="margin:0;"></div>' +
       '<div id="adminSelectedCount" hidden></div>' +
       '<button type="button" class="x-btn lg block" id="saveRouteBtn" onclick="saveRoute()" disabled>حفظ خط السير</button></div>' +
-      '</section></div>' +
-      '<section class="x-card flush" id="savedRouteCard" style="display:none;"><div class="x-card-head"><div class="x-titles" style="display:flex;flex-direction:column;"><h2>خط السير المحفوظ</h2><span class="meta" id="currentRouteStatus">اختار المندوب واليوم</span></div>' +
-      '<button type="button" class="x-btn ghost sm" onclick="loadCurrentRoute()">' + ic('refresh', 16) + 'تحديث</button></div><div id="currentRouteList"></div></section>';
+      '</section></div>';
     document.getElementById('adminDate').value = getTodayDateStr();
     initAreaPicker('areaPickerRoute', 'ابحث عن منطقة...');
     rebuildStaticRepSelect('filterByRepSelect', true);
@@ -7403,6 +7570,7 @@
       }, 250);
     }).observe(picker, { childList: true, subtree: true });
     renderPlannerRoute();
+    loadAreaPoints();
   }
   function toggleRepeatSwitch() {
     const cb = document.getElementById('repeatDaysToggle');
@@ -7443,8 +7611,6 @@
   function plannerRepChanged() {
     renderPlannerRoute();
     loadPlannerExisting();
-    const card = document.getElementById('savedRouteCard');
-    if (card && card.style.display !== 'none') loadCurrentRoute();
   }
   function loadPlannerExisting() {
     const box = document.getElementById('planExisting');
@@ -7463,18 +7629,30 @@
       })
       .catch(function () {});
   }
+  let plannerLoadSeq = 0;
+  let plannerAreaLoading = false;
+  // مفتاح الاختيار = ID الزبون (محلين بنفس الاسم بمنطقتين ما يتأشّرون سوا)، والاسم احتياط
+  function plannerKey(p) { return String((p && p['ID الزبون']) || '').trim() || String((p && p['اسم نقطة البيع']) || '').trim(); }
   function loadAreaPoints() {
     const areas = getPickerAreas('areaPickerRoute');
     const repFilterEl = document.getElementById('filterByRepSelect');
     const repFilter = repFilterEl ? repFilterEl.value.trim() : '';
     const status = document.getElementById('adminStatus');
     const list = document.getElementById('adminPointsList');
-    if (!areas.length && !repFilter) {
+    const title = document.getElementById('planPtsT');
+    if (!list) return;
+    const seq = ++plannerLoadSeq;
+    plannerAreaMode = !!(areas.length || repFilter);
+    if (title) title.textContent = !plannerAreaMode ? 'دوّر على زبون' : (areas.length ? 'نقاط المناطق المختارة' : 'زبائن زارهم ' + repFilter);
+    if (!plannerAreaMode) {
+      // بدون منطقة: البحث يصير بكل الزبائن (بالاسم/الرقم/ID)
       plannerPoints = [];
-      list.innerHTML = '<div class="x-empty plain">اختار منطقة أو أكثر من الإعدادات، أو فلتر حسب زبائن مندوب</div>';
-      status.textContent = 'اختار منطقة أو أكثر حتى تطلع نقاطها';
+      plannerAreaLoading = false;
+      loadPlannerAll();
+      renderPlannerPoints();
       return;
     }
+    plannerAreaLoading = true;
     status.textContent = 'جارٍ التحميل...';
     list.innerHTML = '<div class="x-loading">جارٍ تحميل النقاط...</div>';
     let url = WEB_APP_URL + '?action=points&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || '');
@@ -7483,68 +7661,163 @@
     fetchWithTimeout(url)
       .then(function (res) { return res.json(); })
       .then(function (data) {
+        if (seq !== plannerLoadSeq) return;
+        plannerAreaLoading = false;
         if (data.result !== 'success') { status.textContent = 'حدث خطأ أثناء التحميل'; list.innerHTML = ''; return; }
         plannerPoints = data.points || [];
         renderPlannerPoints();
       })
-      .catch(function () { status.textContent = 'تعذر الاتصال بالخادم'; list.innerHTML = ''; });
+      .catch(function () { if (seq !== plannerLoadSeq) return; plannerAreaLoading = false; status.textContent = 'تعذر الاتصال بالخادم'; list.innerHTML = ''; });
+  }
+  // قائمة كل الزبائن للبحث بدون منطقة — تنجاب مرة وحدة وتتجدّد بعد 5 دقايق
+  function loadPlannerAll(force) {
+    if (plannerAll.loading) return;
+    if (plannerAll.list && !force && Date.now() - plannerAll.loadedAt < 5 * 60 * 1000) return;
+    plannerAll.loading = true;
+    plannerAll.failed = false;
+    fetchWithTimeout(WEB_APP_URL + '?action=points&all=1&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || ''))
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        plannerAll.loading = false;
+        if (data.result === 'success') { plannerAll.list = data.points || []; plannerAll.loadedAt = Date.now(); }
+        else if (!plannerAll.list) plannerAll.failed = true;
+        if (!plannerAreaMode) renderPlannerPoints();
+        if (document.getElementById('reAddList')) reRenderAdd();
+      })
+      .catch(function () {
+        plannerAll.loading = false;
+        if (!plannerAll.list) plannerAll.failed = true;
+        if (!plannerAreaMode) renderPlannerPoints();
+        if (document.getElementById('reAddList')) reRenderAdd();
+      });
+  }
+  function plannerLatinDigits(s) {
+    return String(s || '').replace(/[٠-٩]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); }).replace(/[۰-۹]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d); });
+  }
+  // بحث بكل الزبائن يبدأ من حرفين، أو من رقم واحد (ID مثل 25 = C-0025)
+  function plannerQueryOk(q) {
+    const raw = plannerLatinDigits(q).trim();
+    return raw.length >= 2 || /^\d+$/.test(raw);
+  }
+  // رتبة التطابق (الأصغر أقوى) أو -1: ID مطابق، بعدها اسم يبدأ بالبحث، بعدها جزء من الاسم/الرقم/ID
+  function plannerMatchRank(p, q) {
+    const raw = plannerLatinDigits(q).trim();
+    if (!raw) return 3;
+    const idK = String(p['ID الزبون'] || '').toLowerCase().replace(/[\s_-]/g, '');
+    const idQ = raw.toLowerCase().replace(/[\s_-]/g, '');
+    if (/^c?\d+$/.test(idQ) && idK.charAt(0) === 'c' && parseInt(idQ.replace(/^c/, ''), 10) === parseInt(idK.slice(1), 10)) return 0;
+    const name = normAr(p['اسم نقطة البيع']);
+    const qn = normAr(raw);
+    if (qn && name.indexOf(qn) === 0) return 1;
+    if (qn && name.indexOf(qn) !== -1) return 2;
+    const d = raw.replace(/[^0-9]/g, '').replace(/^0+/, '');
+    if (d.length >= 4 && String(p['رقم الهاتف'] || '').replace(/^0+/, '').indexOf(d) !== -1) return 2;
+    if (/^c\d+$/.test(idQ) && idK.indexOf(idQ) !== -1) return 2;
+    return -1;
+  }
+  function plannerRanked(list, q) {
+    const out = [];
+    list.forEach(function (p) { const r = plannerMatchRank(p, q); if (r >= 0) out.push({ p: p, r: r }); });
+    out.sort(function (a, b) { return a.r - b.r || String(a.p['اسم نقطة البيع'] || '').localeCompare(String(b.p['اسم نقطة البيع'] || ''), 'ar'); });
+    return out.map(function (x) { return x.p; });
   }
   function plannerFiltered() {
-    const wanted = Array.from(document.querySelectorAll('.status-f:checked')).map(function (cb) { return cb.value; });
     const q = String(plannerSearch || '').trim();
-    return plannerPoints.filter(function (p) {
+    if (!plannerAreaMode) {
+      // البحث المباشر عن زبون ما يتقيّد بفلتر الحالات (المشرف قاصد هذا الزبون بالذات)
+      if (!plannerAll.list || !plannerQueryOk(q)) return [];
+      return plannerRanked(plannerAll.list, q);
+    }
+    const wanted = Array.from(document.querySelectorAll('.status-f:checked')).map(function (cb) { return cb.value; });
+    const pts = plannerPoints.filter(function (p) {
       const st = String(p['حالة الزبون'] || '').trim();
-      const okSt = st ? wanted.indexOf(st) !== -1 : wanted.indexOf('__none__') !== -1;
-      if (!okSt) return false;
-      if (!q) return true;
-      return String(p['اسم نقطة البيع'] || '').indexOf(q) !== -1 || String(p['رقم الهاتف'] || '').indexOf(q) !== -1;
+      return st ? wanted.indexOf(st) !== -1 : wanted.indexOf('__none__') !== -1;
     });
+    return q ? plannerRanked(pts, q) : pts;
+  }
+  const PLANNER_ALL_MAX = 60;
+  let plannerTotal = 0;
+  function plannerStatusText() {
+    const sel = plannerOrder.length + ' مختارة';
+    if (plannerAreaMode) return plannerShown.length + ' نقطة تطابق الفلاتر · ' + sel;
+    const word = function (n) { return n === 1 ? 'نتيجة وحدة' : (n === 2 ? 'نتيجتين' : n + (n >= 3 && n <= 10 ? ' نتائج' : ' نتيجة')); };
+    return (plannerTotal > plannerShown.length ? 'أول ' + plannerShown.length + ' من ' + plannerTotal + ' نتيجة' : word(plannerTotal)) + ' بكل الزبائن · ' + sel;
   }
   function renderAreaPoints() { renderPlannerPoints(); }
   function renderPlannerPoints() {
     const list = document.getElementById('adminPointsList');
     const status = document.getElementById('adminStatus');
+    const selAll = document.getElementById('planSelectAll');
     if (!list) return;
-    if (!plannerPoints.length) return;
-    const shown = plannerFiltered();
-    status.textContent = shown.length + ' نقطة تطابق الفلاتر · ' + plannerOrder.length + ' مختارة';
-    if (!shown.length) { list.innerHTML = '<div class="x-empty plain">ما أكو نقاط تطابق الحالات أو البحث</div>'; return; }
-    list.innerHTML = shown.map(function (p, i) {
+    const setEmpty = function (statusTxt, html) {
+      plannerShown = [];
+      plannerTotal = 0;
+      if (selAll) selAll.disabled = true;
+      status.textContent = statusTxt;
+      list.innerHTML = html;
+    };
+    if (plannerAreaMode) {
+      if (plannerAreaLoading) return;
+      if (!plannerPoints.length) return setEmpty('0 نقطة · ' + plannerOrder.length + ' مختارة', '<div class="x-empty plain">ما أكو زبائن بهذا الاختيار</div>');
+    } else {
+      const q = String(plannerSearch || '').trim();
+      if (!plannerQueryOk(q)) {
+        return setEmpty(plannerOrder.length ? plannerOrder.length + ' مختارة — دوّر على زبون ثاني أو اختار منطقة' : 'ابحث بكل الزبائن، أو اختار منطقة',
+          '<div class="x-empty plain">اكتب اسم المحل أو رقم الهاتف أو ID الزبون حتى تدوّر بكل الزبائن<br><span class="x-small">أو اختار منطقة من الإعدادات حتى تطلع كل نقاطها</span></div>');
+      }
+      if (!plannerAll.list) {
+        if (plannerAll.failed) return setEmpty('تعذر تحميل الزبائن', '<div class="x-empty plain">تعذر تحميل قائمة الزبائن<br><button type="button" class="x-link" onclick="loadPlannerAll(true);renderPlannerPoints()">إعادة المحاولة</button></div>');
+        loadPlannerAll();
+        return setEmpty('جارٍ تحميل الزبائن...', '<div class="x-loading">جارٍ تحميل كل الزبائن...</div>');
+      }
+    }
+    const all = plannerFiltered();
+    plannerShown = plannerAreaMode ? all : all.slice(0, PLANNER_ALL_MAX);
+    plannerTotal = all.length;
+    if (selAll) selAll.disabled = !plannerShown.length;
+    status.textContent = plannerStatusText();
+    if (!plannerShown.length) {
+      list.innerHTML = '<div class="x-empty plain">' + (plannerAreaMode ? 'ما أكو نقاط تطابق الحالات أو البحث' : 'ما لكينا زبون بهذا الاسم أو الرقم أو الـID') + '</div>';
+      return;
+    }
+    list.innerHTML = plannerShown.map(function (p, i) {
       const name = p['اسم نقطة البيع'];
-      const on = !!selectedPoints[name];
+      const on = !!selectedPoints[plannerKey(p)];
       const st = String(p['حالة الزبون'] || '').trim();
       const n = daysSince(p['آخر زيارة']);
       const last = n === null ? 'بدون زيارة' : 'آخر زيارة ' + relDaysText(n);
+      const id = String(p['ID الزبون'] || '').trim();
+      const owner = !plannerAreaMode ? String(p['المندوب المسؤول'] || '').trim() : '';
+      const sub = [id ? '<bdi dir="ltr">' + esc(id) + '</bdi>' : '', esc(p['المنطقة'] || ''), owner ? 'باسم ' + esc(owner) : '', esc(last)].filter(Boolean).join(' · ');
       return '<button type="button" class="x-check-row' + (on ? ' on' : '') + '" role="checkbox" aria-checked="' + on + '" data-i="' + i + '" onclick="togglePlannerPoint(this)">' +
         '<span class="x-box">' + ic('checkBold', 13) + '</span>' +
-        '<span class="x-grow" style="display:flex;flex-direction:column;min-width:0;"><b style="font-size:14px;">' + esc(name) + '</b><span class="x-small">' + esc([p['المنطقة'], last].filter(Boolean).join(' · ')) + '</span></span>' +
+        '<span class="x-grow" style="display:flex;flex-direction:column;min-width:0;"><b style="font-size:14px;">' + esc(name) + '</b><span class="x-small">' + sub + '</span></span>' +
         (st ? statusPill(st) : '<span class="x-pill">بدون حالة</span>') + '</button>';
     }).join('');
   }
   function togglePlannerPoint(btn) {
-    const shown = plannerFiltered();
-    const p = shown[+btn.getAttribute('data-i')];
+    const p = plannerShown[+btn.getAttribute('data-i')];
     if (!p) return;
-    const name = p['اسم نقطة البيع'];
-    if (selectedPoints[name]) { delete selectedPoints[name]; plannerOrder = plannerOrder.filter(function (x) { return x !== name; }); }
-    else { selectedPoints[name] = p; plannerOrder.push(name); }
-    btn.classList.toggle('on', !!selectedPoints[name]);
-    btn.setAttribute('aria-checked', selectedPoints[name] ? 'true' : 'false');
-    document.getElementById('adminStatus').textContent = shown.length + ' نقطة تطابق الفلاتر · ' + plannerOrder.length + ' مختارة';
+    const key = plannerKey(p);
+    if (selectedPoints[key]) { delete selectedPoints[key]; plannerOrder = plannerOrder.filter(function (x) { return x !== key; }); }
+    else { selectedPoints[key] = p; plannerOrder.push(key); }
+    btn.classList.toggle('on', !!selectedPoints[key]);
+    btn.setAttribute('aria-checked', selectedPoints[key] ? 'true' : 'false');
+    document.getElementById('adminStatus').textContent = plannerStatusText();
     renderPlannerRoute();
   }
   function plannerSelectAll() {
-    plannerFiltered().forEach(function (p) {
-      const name = p['اسم نقطة البيع'];
-      if (!selectedPoints[name]) { selectedPoints[name] = p; plannerOrder.push(name); }
+    plannerShown.forEach(function (p) {
+      const key = plannerKey(p);
+      if (!selectedPoints[key]) { selectedPoints[key] = p; plannerOrder.push(key); }
     });
     renderPlannerPoints();
     renderPlannerRoute();
   }
   function removePlannerPoint(i) {
-    const name = plannerOrder[i];
-    if (name === undefined) return;
-    delete selectedPoints[name];
+    const key = plannerOrder[i];
+    if (key === undefined) return;
+    delete selectedPoints[key];
     plannerOrder.splice(i, 1);
     renderPlannerPoints();
     renderPlannerRoute();
@@ -7567,8 +7840,9 @@
     if (!t) return;
     t.textContent = rep ? 'خط سير ' + rep : 'خط السير';
     s.textContent = (plannerDaysLabel() || 'اختار اليوم') + ' · ' + plannerOrder.length + ' نقاط';
-    list.innerHTML = plannerOrder.length ? plannerOrder.map(function (name, i) {
-      const p = selectedPoints[name] || {};
+    list.innerHTML = plannerOrder.length ? plannerOrder.map(function (key, i) {
+      const p = selectedPoints[key] || {};
+      const name = p['اسم نقطة البيع'] || key;
       return '<div class="plan-rt-row"><span class="plan-n">' + (i + 1) + '</span><span class="x-grow" style="display:flex;flex-direction:column;min-width:0;"><b class="ell" style="font-size:13.5px;">' + esc(name) + '</b><span class="x-small">' + esc(p['المنطقة'] || '') + '</span></span>' +
         '<button type="button" class="icon-btn" style="width:34px;height:34px;border:none;" aria-label="إزالة ' + esc(name) + '" onclick="removePlannerPoint(' + i + ')">' + ic('x', 16) + '</button></div>';
     }).join('') : '<div class="x-empty plain" style="min-height:160px;display:flex;align-items:center;justify-content:center;">أشّر نقاط من القائمة حتى تنضاف هنا بالترتيب</div>';
@@ -7653,66 +7927,657 @@
     fill.style.width = '100%';
     setTimeout(function () { wrap.style.display = 'none'; }, 350);
   }
-  function toggleSavedRoutePanel(forceOpen) {
-    const card = document.getElementById('savedRouteCard');
-    if (!card) return;
-    const open = forceOpen === true || card.style.display === 'none';
-    card.style.display = open ? '' : 'none';
-    if (open) { loadCurrentRoute(); try { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }
+  // ═════════════ تعديل خط سير يوم (مندوب + يوم) ═════════════
+  // شاشة مستقلة: شريط المندوبين بعدد نقاط اليوم، شريط أسبوع بعدد نقاط المندوب لكل يوم،
+  // قائمة نقاط اليوم (مجمّعة بالمنطقة) أو خريطة، تحديد متعدد (حذف / نقل / نسخ لمندوب أو
+  // يوم ثاني)، حذف فوري مع «تراجع»، وإضافة زبائن بالبحث أو منطقة كاملة أو من الخريطة.
+  // كل الحذف بأرقام صفوف Route (مو بالاسم).
+  const RE_SHORT_DAYS = ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+  const routeEdit = {
+    rep: '', date: '', rows: null, failed: false, counts: {}, countsKey: '', repCounts: null, repCountsDate: '',
+    filter: 'all', q: '', sel: {}, addQ: '', addShown: [], addAreas: [], busy: false, seq: 0,
+    view: 'list', map: null, mapEl: null, mapLayer: null, showOthers: true, mapOthers: [], groups: [], shown: [],
+    flash: {}, undoFn: null, undoT: 0, moveMode: 'move'
+  };
+  let routeEditPrefill = null;
+  function toggleSavedRoutePanel() {
+    openRouteEditor((document.getElementById('adminRep') || {}).value || '', (document.getElementById('adminDate') || {}).value || '');
   }
-  function loadCurrentRoute() {
-    const date = document.getElementById('adminDate').value;
-    const rep = document.getElementById('adminRep').value;
-    const status = document.getElementById('currentRouteStatus');
-    const list = document.getElementById('currentRouteList');
-    list.innerHTML = '';
-    if (!date || !rep) { status.textContent = 'اختار المندوب واليوم أولاً حتى يطلع خط سيره المحفوظ'; return; }
-    status.textContent = 'جارٍ التحميل...';
-    fetchWithTimeout(WEB_APP_URL + '?rep=' + encodeURIComponent(rep) + '&date=' + encodeURIComponent(date) + '&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || ''))
+  function openRouteEditor(rep, date) {
+    routeEditPrefill = { rep: rep || '', date: date || '' };
+    navTo('p-routeEdit');
+  }
+  function openPlannerFor() {
+    const rep = routeEdit.rep, date = routeEdit.date;
+    navTo('p-routePlan');
+    const r = document.getElementById('adminRep'), d = document.getElementById('adminDate');
+    if (r && rep && REP_NAMES.indexOf(rep) !== -1) r.value = rep;
+    if (d && date) d.value = date;
+    if (typeof plannerRepChanged === 'function') plannerRepChanged();
+  }
+  // عدد النقاط بالعربي: نقطة وحدة / نقطتين / 3–10 نقاط / 11+ نقطة
+  function reN(n) { return n === 1 ? 'نقطة وحدة' : n === 2 ? 'نقطتين' : n + (n >= 3 && n <= 10 ? ' نقاط' : ' نقطة'); }
+  function reYmd(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function reAddDays(ymd, n) { const d = dateFromYmd(ymd); d.setDate(d.getDate() + n); return reYmd(d); }
+  // الأسبوع يبدأ السبت
+  function reWeekDates() {
+    const d = dateFromYmd(routeEdit.date);
+    const start = reAddDays(routeEdit.date, -((d.getDay() + 1) % 7));
+    const out = [];
+    for (let i = 0; i < 7; i++) out.push(reAddDays(start, i));
+    return out;
+  }
+  function reKey(row) { return String(row.Id || row['ID الزبون'] || row['اسم نقطة البيع'] || ''); }
+  function reTime(s) {
+    s = String(s || '');
+    const m = s.match(/[T ](\d{1,2}):(\d{2})/);
+    if (!m) return '';
+    let h = +m[1]; const suf = h < 12 ? 'ص' : 'م'; h = h % 12 || 12;
+    return h + ':' + m[2] + ' ' + suf;
+  }
+  function reUser() { return encodeURIComponent((currentAdmin && currentAdmin.username) || ''); }
+
+  function buildRouteEditorPanel() {
+    const content = document.getElementById('adminContent');
+    if (!canPlan()) { notAllowedPanel('تعديل خطوط السير متاح لمشرف المبيعات والإدارة فقط'); return; }
+    const pre = routeEditPrefill || {};
+    routeEditPrefill = null;
+    routeEdit.rep = pre.rep || routeEdit.rep || '';
+    routeEdit.date = pre.date || routeEdit.date || getTodayDateStr();
+    if (routeEdit.map) { try { routeEdit.map.remove(); } catch (e) {} }
+    Object.assign(routeEdit, { rows: null, failed: false, filter: 'all', q: '', sel: {}, addQ: '', addShown: [], busy: false, map: null, mapEl: null, mapLayer: null, repCountsDate: '' });
+    reHideUndo();
+    setPage('تعديل خط السير', 'اختار المندوب واليوم — احذف نقاط، أضف زبائن، أو انقلها لمندوب أو يوم ثاني',
+      '<button type="button" class="x-btn ghost" onclick="openPlannerFor()">' + ic('route', 18) + '<span>تخطيط بالمناطق</span></button>');
+    content.innerHTML =
+      '<section class="x-card re-pick" aria-label="المندوب واليوم">' +
+      '<div class="re-repshead"><span class="x-label" id="reRepsLbl">المندوب</span><span class="x-small" id="reRepsNote"></span></div>' +
+      '<div class="re-reps" id="reReps" role="radiogroup" aria-labelledby="reRepsLbl"></div>' +
+      '<div class="re-divider"></div>' +
+      '<div class="re-weekhead"><span class="re-month" id="reMonth"></span><div class="re-wnav">' +
+      '<button type="button" class="icon-btn" aria-label="الأسبوع السابق" onclick="reShiftWeek(-1)">' + ic('chevR', 18) + '</button>' +
+      '<button type="button" class="x-btn ghost sm" onclick="reSetDate(getTodayDateStr())">اليوم</button>' +
+      '<button type="button" class="icon-btn" aria-label="الأسبوع الجاي" onclick="reShiftWeek(1)">' + ic('chevL', 18) + '</button>' +
+      '<input type="date" id="reDate" class="x-input re-date" aria-label="اختار تاريخ" onchange="if(this.value)reSetDate(this.value)">' +
+      '</div></div>' +
+      '<div class="re-week" id="reWeek" aria-label="أيام الأسبوع"></div>' +
+      '</section>' +
+      '<div class="x-cols x-cols-main-side">' +
+      '<section class="x-card flush re-main" aria-labelledby="reTitle">' +
+      '<div class="re-head"><div class="x-between" style="flex-wrap:wrap;"><div style="display:flex;flex-direction:column;min-width:0;"><h2 id="reTitle">خط السير</h2><span id="reSub"></span></div>' +
+      '<div class="re-headbtns" id="reHeadBtns"><div class="re-view" role="tablist" aria-label="طريقة العرض">' +
+      '<button type="button" role="tab" id="reVList" onclick="reSetView(\'list\')">' + ic('list', 15) + 'قائمة</button>' +
+      '<button type="button" role="tab" id="reVMap" onclick="reSetView(\'map\')">' + ic('pin', 15) + 'خريطة</button></div>' +
+      '<button type="button" class="x-btn light sm" onclick="reFocusAdd()">' + ic('plus', 16) + 'إضافة نقاط</button></div></div>' +
+      '<div id="reStats"></div></div>' +
+      '<div class="re-tools" id="reTools" hidden></div>' +
+      '<div class="re-list" id="reList"></div>' +
+      '<div class="re-mapwrap" id="reMapWrap" hidden><div class="re-map" id="reMap"></div><div class="re-maplegend" id="reMapLegend"></div></div>' +
+      '<div class="re-foot" id="reFoot" hidden></div>' +
+      '</section>' +
+      '<section class="x-card flush re-add" aria-labelledby="reAddT">' +
+      '<div class="re-add-head"><h2 class="x-h2" id="reAddT">إضافة نقاط لهذا اليوم</h2>' +
+      '<div class="x-search"><input type="search" class="x-input sm" id="reAddQ" placeholder="اسم المحل، رقم الهاتف، أو ID الزبون..." aria-label="ابحث عن زبون حتى تضيفه" autocomplete="off" oninput="routeEdit.addQ=this.value;reRenderAdd()">' + ic('search', 16) + '</div></div>' +
+      '<div class="re-add-list" id="reAddList"></div>' +
+      '</section></div>' +
+      '<div class="re-selbar" id="reSelBar" hidden></div>' +
+      '<div class="re-undo" id="reUndo" hidden role="status" aria-live="polite"></div>';
+    reLoad();
+    loadPlannerAll();
+  }
+  function reSetRep(v) { if (routeEdit.rep === v) return; routeEdit.rep = v; routeEdit.countsKey = ''; reLoad(); }
+  function reSetRepI(i) { const r = REP_NAMES[i]; if (r) reSetRep(r); }
+  function reSetDate(d) { routeEdit.date = d; reLoad(); }
+  function reShiftWeek(n) { routeEdit.date = reAddDays(routeEdit.date, 7 * n); reLoad(); }
+  function reSetView(v) { routeEdit.view = v; reRender(); }
+  function reFocusAdd() {
+    const inp = document.getElementById('reAddQ');
+    if (!inp) return;
+    try { inp.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+    inp.focus({ preventScroll: true });
+  }
+  function reLoad() {
+    Object.assign(routeEdit, { rows: null, failed: false, sel: {}, q: '', filter: 'all' });
+    const di = document.getElementById('reDate');
+    if (di) di.value = routeEdit.date;
+    reRenderReps();
+    reRenderWeek();
+    reRender();
+    reRenderAdd();
+    if (routeEdit.repCountsDate !== routeEdit.date) reFetchRepCounts();
+    if (!routeEdit.rep) return;
+    reFetchRoute();
+    reFetchCounts();
+  }
+  function reFetchRoute() {
+    const seq = ++routeEdit.seq, rep = routeEdit.rep, date = routeEdit.date;
+    fetchWithTimeout(WEB_APP_URL + '?rep=' + encodeURIComponent(rep) + '&date=' + encodeURIComponent(date) + '&username=' + reUser())
       .then(function (res) { return res.json(); })
       .then(function (data) {
-        if (data.result !== 'success') { status.textContent = 'حدث خطأ أثناء التحميل'; return; }
-        if (!data.rows || !data.rows.length) { status.textContent = 'ما أكو خط محفوظ لـ' + rep + ' بيوم ' + arDate(date); return; }
-        status.textContent = rep + ' · ' + arDate(date) + ' · ' + data.rows.length + ' نقطة';
-        list.innerHTML = data.rows.map(function (row, i) {
-          const nm = row['اسم نقطة البيع'] || '';
-          return '<div class="x-li" id="savedRt' + i + '"><span class="plan-n">' + (i + 1) + '</span><div class="x-titles"><span class="t">' + esc(nm) + '</span><span class="s">' + esc(row['المنطقة'] || '') + (row.visited ? ' · تمت زيارتها' : '') + '</span></div>' +
-            '<button type="button" class="x-btn ghost danger sm" data-name="' + esc(nm) + '" onclick="confirmDeleteRoutePoint(this,' + i + ')">' + ic('trash', 16) + '<span class="desk-only">حذف</span></button></div>';
-        }).join('') +
-          '<div style="padding:12px 14px;"><button type="button" class="x-btn danger block" id="deleteDayBtn" onclick="deleteRouteDay()">' + ic('trash', 16) + 'حذف خط سير هذا اليوم بالكامل (' + data.rows.length + ' نقطة)</button></div>';
+        if (seq !== routeEdit.seq) return;
+        if (data.result !== 'success') { routeEdit.failed = true; reRender(); return; }
+        routeEdit.rows = data.rows || [];
+        routeEdit.counts[date] = routeEdit.rows.length;
+        if (routeEdit.repCounts && routeEdit.repCountsDate === date) routeEdit.repCounts[rep] = routeEdit.rows.length;
+        reRenderReps(); reRenderWeek(); reRender(); reRenderAdd();
+        if (Object.keys(routeEdit.flash).length) setTimeout(function () { routeEdit.flash = {}; }, 2600);
       })
-      .catch(function () { status.textContent = 'تعذر الاتصال بالخادم'; });
+      .catch(function () { if (seq !== routeEdit.seq) return; routeEdit.failed = true; reRender(); });
   }
-  function confirmDeleteRoutePoint(btn, i) {
-    const date = document.getElementById('adminDate').value;
-    const rep = document.getElementById('adminRep').value;
-    const name = btn.getAttribute('data-name');
-    if (!confirm('هل تريد حذف "' + name + '" من خط سير ' + rep + ' ليوم ' + date + '؟')) return;
-    deleteRoutePoint(date, rep, name, btn, document.getElementById('savedRt' + i), document.getElementById('currentRouteStatus'));
+  function reFetchCounts(force) {
+    const days = reWeekDates();
+    const key = routeEdit.rep + '|' + days[0];
+    if (!force && routeEdit.countsKey === key) return;
+    routeEdit.countsKey = key;
+    fetchWithTimeout(WEB_APP_URL + '?action=routeDayCounts&rep=' + encodeURIComponent(routeEdit.rep) + '&dates=' + encodeURIComponent(days.join(',')) + '&username=' + reUser())
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.result !== 'success' || routeEdit.countsKey !== key) return;
+        Object.keys(data.counts || {}).forEach(function (d) { if (!(d === routeEdit.date && routeEdit.rows)) routeEdit.counts[d] = data.counts[d]; });
+        reRenderWeek();
+      })
+      .catch(function () {});
   }
-  function deleteRoutePoint(date, rep, pointName, btn, card, status) {
-    btn.disabled = true;
+  function reFetchRepCounts() {
+    const date = routeEdit.date;
+    routeEdit.repCountsDate = date;
+    routeEdit.repCounts = null;
+    reRenderReps();
+    fetchWithTimeout(WEB_APP_URL + '?action=routeRepCounts&date=' + encodeURIComponent(date) + '&username=' + reUser())
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (routeEdit.repCountsDate !== date) return;
+        routeEdit.repCounts = data.result === 'success' ? (data.counts || {}) : {};
+        if (routeEdit.rows && routeEdit.rep) routeEdit.repCounts[routeEdit.rep] = routeEdit.rows.length;
+        reRenderReps();
+      })
+      .catch(function () { if (routeEdit.repCountsDate === date) { routeEdit.repCounts = {}; reRenderReps(); } });
+  }
+  function reRenderReps() {
+    const box = document.getElementById('reReps');
+    if (!box) return;
+    const rc = routeEdit.repCounts;
+    box.innerHTML = REP_NAMES.map(function (r, i) {
+      const on = r === routeEdit.rep;
+      const n = rc ? (rc[r] || 0) : null;
+      const badge = n === null ? '<span class="c wait">·</span>' : '<span class="c' + (n ? '' : ' zero') + '">' + (n || '—') + '</span>';
+      return '<button type="button" class="re-rep' + (on ? ' on' : '') + '" role="radio" aria-checked="' + on + '" aria-label="' + esc(r + (n === null ? '' : ' — ' + (n ? reN(n) : 'بدون خط'))) + '" onclick="reSetRepI(' + i + ')"><span>' + esc(r) + '</span>' + badge + '</button>';
+    }).join('') || '<span class="x-small">ما أكو مندوبين نشطين</span>';
+    const note = document.getElementById('reRepsNote');
+    if (note) {
+      if (!rc) note.textContent = 'جارٍ جلب خطوط ' + arDate(routeEdit.date) + '...';
+      else {
+        const none = REP_NAMES.filter(function (r) { return !rc[r]; }).length;
+        note.textContent = arDate(routeEdit.date) + ' · ' + (none ? (none === 1 ? 'مندوب واحد بدون خط' : none === 2 ? 'مندوبَين بدون خط' : none + (none <= 10 ? ' مندوبين' : ' مندوب') + ' بدون خط') : 'كل المندوبين عندهم خط');
+      }
+    }
+  }
+  function reRenderWeek() {
+    const box = document.getElementById('reWeek');
+    if (!box) return;
+    const today = getTodayDateStr();
+    const sel = dateFromYmd(routeEdit.date);
+    const m = document.getElementById('reMonth');
+    if (m) m.textContent = AR_MONTHS[sel.getMonth()] + ' ' + sel.getFullYear();
+    const key = routeEdit.rep + '|' + reWeekDates()[0];
+    box.innerHTML = reWeekDates().map(function (d) {
+      const dt = dateFromYmd(d);
+      const c = routeEdit.counts[d];
+      const known = routeEdit.rep && (c !== undefined) && (routeEdit.countsKey === key || d === routeEdit.date);
+      const cTxt = !routeEdit.rep ? '' : (known ? (c ? c : '—') : '·');
+      return '<button type="button" class="re-day' + (d === routeEdit.date ? ' on' : '') + (d === today ? ' today' : '') + '" aria-pressed="' + (d === routeEdit.date) + '" aria-label="' + esc(arDate(d) + (known ? ' — ' + reN(c || 0) : '')) + '" onclick="reSetDate(\'' + d + '\')">' +
+        '<span class="dn">' + RE_SHORT_DAYS[dt.getDay()] + '</span><span class="dd">' + dt.getDate() + '</span>' +
+        (routeEdit.rep ? '<span class="dc' + (known && c ? ' has' : '') + '">' + cTxt + '</span>' : '') + '</button>';
+    }).join('');
+  }
+  function reCounts() {
+    const rows = routeEdit.rows || [];
+    const done = rows.filter(function (r) { return r.visited; }).length;
+    return { all: rows.length, done: done, left: rows.length - done };
+  }
+  function reFiltered() {
+    const q = normAr(routeEdit.q);
+    return (routeEdit.rows || []).filter(function (r) {
+      if (routeEdit.filter === 'left' && r.visited) return false;
+      if (routeEdit.filter === 'done' && !r.visited) return false;
+      if (!q) return true;
+      return normAr(r['اسم نقطة البيع']).indexOf(q) !== -1 || String(r['ID الزبون'] || '').toLowerCase().indexOf(q) !== -1;
+    });
+  }
+  function reRender() {
+    const title = document.getElementById('reTitle');
+    if (!title) return;
+    const sub = document.getElementById('reSub'), stats = document.getElementById('reStats');
+    const tools = document.getElementById('reTools'), list = document.getElementById('reList'), foot = document.getElementById('reFoot');
+    const mapWrap = document.getElementById('reMapWrap'), btns = document.getElementById('reHeadBtns');
+    title.textContent = routeEdit.rep ? 'خط سير ' + routeEdit.rep : 'خط السير';
+    sub.textContent = arDate(routeEdit.date) + ' ' + dateFromYmd(routeEdit.date).getFullYear() + (routeEdit.date === getTodayDateStr() ? ' · اليوم' : '');
+    btns.hidden = !routeEdit.rep;
+    ['List', 'Map'].forEach(function (v) {
+      const b = document.getElementById('reV' + v), on = routeEdit.view === v.toLowerCase();
+      b.classList.toggle('on', on); b.setAttribute('aria-selected', on);
+    });
+    tools.hidden = true; foot.hidden = true; mapWrap.hidden = true; list.hidden = false; stats.innerHTML = '';
+    if (!routeEdit.rep) {
+      list.innerHTML = '<div class="re-empty"><span class="ic">' + ic('user', 26) + '</span><b>اختار المندوب</b><span>من شريط المندوبين فوق — الرقم جنب كل اسم = نقاط خطه بهذا اليوم</span></div>';
+      reRenderSelBar();
+      return;
+    }
+    if (routeEdit.failed) {
+      list.innerHTML = '<div class="re-empty"><span class="ic">' + ic('warn', 26) + '</span><b>تعذر تحميل خط السير</b><button type="button" class="x-btn ghost sm" onclick="reLoad()">' + ic('refresh', 16) + 'إعادة المحاولة</button></div>';
+      return;
+    }
+    if (!routeEdit.rows) {
+      list.innerHTML = [1, 2, 3, 4].map(function () { return '<div class="re-row"><span class="re-n"></span><span class="re-t"><span class="x-skel" style="width:55%;height:13px;"></span><span class="x-skel" style="width:35%;margin-top:6px;"></span></span></div>'; }).join('');
+      return;
+    }
+    const c = reCounts();
+    const pct = c.all ? Math.round(c.done / c.all * 100) : 0;
+    stats.innerHTML = '<div class="re-stats"><div class="re-stat"><span class="n">' + c.all + '</span><span class="l">نقطة بالخط</span></div>' +
+      '<div class="re-stat good"><span class="n">' + c.done + '</span><span class="l">تمت زيارتها</span></div>' +
+      '<div class="re-stat"><span class="n">' + c.left + '</span><span class="l">باقية</span></div></div>' +
+      (c.all ? '<div class="re-prog" style="margin-top:10px;" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100" aria-label="نسبة الزيارة"><span style="width:' + pct + '%"></span></div>' : '');
+    if (!c.all && routeEdit.view === 'list') {
+      list.innerHTML = '<div class="re-empty"><span class="ic">' + ic('route', 26) + '</span><b>ما عنده خط سير ' + esc(arDate(routeEdit.date)) + '</b>' +
+        '<span>ضيف زبائن من «إضافة نقاط لهذا اليوم» — بالبحث أو منطقة كاملة — أو انسخ خط يوم ثاني</span>' +
+        '<div class="x-row-flex"><button type="button" class="x-btn sm" onclick="reFocusAdd()">' + ic('plus', 16) + 'إضافة نقاط</button><button type="button" class="x-btn ghost sm" onclick="reSetView(\'map\')">' + ic('pin', 16) + 'اختار من الخريطة</button><button type="button" class="x-btn ghost sm" onclick="openPlannerFor()">' + ic('route', 16) + 'تخطيط بالمناطق</button></div></div>';
+      reRenderSelBar();
+      return;
+    }
+    const shown = reFiltered();
+    const selN = shown.filter(function (r) { return routeEdit.sel[reKey(r)]; }).length;
+    const allOn = selN && selN === shown.length;
+    if (c.all) {
+      tools.hidden = false;
+      tools.innerHTML =
+        '<button type="button" class="re-allbox' + (allOn ? ' on' : (selN ? ' part' : '')) + '" role="checkbox" aria-checked="' + (allOn ? 'true' : (selN ? 'mixed' : 'false')) + '" onclick="reSelAll()"><span class="x-box' + (allOn ? ' on' : '') + '">' + ic('checkBold', 13) + '</span>تحديد الكل</button>' +
+        '<div class="x-seg" role="tablist" aria-label="فلترة النقاط">' +
+        [['all', 'الكل', c.all], ['left', 'باقية', c.left], ['done', 'تمت', c.done]].map(function (f) {
+          return '<button type="button" role="tab" aria-selected="' + (routeEdit.filter === f[0]) + '" class="' + (routeEdit.filter === f[0] ? 'on' : '') + '" onclick="routeEdit.filter=\'' + f[0] + '\';reRender()">' + f[1] + ' <span class="tnum">' + f[2] + '</span></button>';
+        }).join('') + '</div>' +
+        '<div class="x-search"><input type="search" class="x-input sm" id="reQ" placeholder="دوّر بالخط..." aria-label="دوّر بنقاط الخط" value="' + esc(routeEdit.q) + '" oninput="routeEdit.q=this.value;reRefreshShown()">' + ic('search', 16) + '</div>';
+      foot.hidden = false;
+      foot.innerHTML = '<button type="button" class="x-btn ghost sm" onclick="reCopyAll()">' + ic('clipboard', 16) + 'نسخ الخط كامل ليوم ثاني</button>' +
+        '<button type="button" class="x-btn ghost danger sm" onclick="reAskDeleteDay()">' + ic('trash', 16) + 'حذف خط اليوم كامل</button>';
+    }
+    if (routeEdit.view === 'map') {
+      list.hidden = true;
+      mapWrap.hidden = false;
+      reRenderMap();
+      reRenderSelBar();
+      return;
+    }
+    reRenderList();
+  }
+  function reRefreshShown() { if (routeEdit.view === 'map') reRenderMap(); else reRenderList(); }
+
+  // ── القائمة: مجمّعة بالمنطقة إذا الخط بي أكثر من منطقة ──
+  function reRenderList() {
+    const list = document.getElementById('reList');
+    if (!list || !routeEdit.rows) return;
+    const shown = reFiltered();
+    routeEdit.shown = shown;
+    routeEdit.groups = [];
+    if (!shown.length) { list.innerHTML = '<div class="re-empty"><b>ما أكو نقاط بهذا الفلتر</b></div>'; reRenderSelBar(); return; }
+    const order = [], byArea = {};
+    shown.forEach(function (r, i) {
+      const a = String(r['المنطقة'] || '').trim() || 'بدون منطقة';
+      if (!byArea[a]) { byArea[a] = []; order.push(a); }
+      byArea[a].push(i);
+    });
+    const grouped = order.length > 1;
+    let html = '';
+    order.forEach(function (a, gi) {
+      const idxs = byArea[a];
+      routeEdit.groups.push(idxs);
+      if (grouped) {
+        const selN = idxs.filter(function (i) { return routeEdit.sel[reKey(shown[i])]; }).length;
+        const doneN = idxs.filter(function (i) { return shown[i].visited; }).length;
+        const all = selN === idxs.length;
+        html += '<div class="re-grp' + (selN && !all ? ' part' : '') + '"><button type="button" class="re-chk" role="checkbox" aria-checked="' + (all ? 'true' : (selN ? 'mixed' : 'false')) + '" aria-label="تحديد كل نقاط ' + esc(a) + '" onclick="reSelGroup(' + gi + ')"><span class="x-box' + (all ? ' on' : '') + '">' + ic('checkBold', 12) + '</span></button>' +
+          '<b>' + esc(a) + '</b><span class="x-small">' + reN(idxs.length) + (doneN ? ' · ' + doneN + ' تمت' : '') + '</span></div>';
+      }
+      html += idxs.map(function (i) { return reRowHtml(shown[i], i); }).join('');
+    });
+    list.innerHTML = html;
+    reRenderSelBar();
+  }
+  function reRowHtml(r, i) {
+    const k = reKey(r);
+    const sel = !!routeEdit.sel[k];
+    const idx = routeEdit.rows.indexOf(r) + 1;
+    const name = r['اسم نقطة البيع'] || '';
+    const id = String(r['ID الزبون'] || '').trim();
+    const sub = [id ? '<bdi dir="ltr">' + esc(id) + '</bdi>' : '', esc(r['المنطقة'] || ''), r['رقم الهاتف'] ? '<bdi dir="ltr">' + esc(normPhone(r['رقم الهاتف'])) + '</bdi>' : ''].filter(Boolean).join(' · ');
+    let state;
+    if (r.visited) {
+      const t = reTime(r.visitedAt);
+      state = '<span class="x-pill good">' + ic('check', 12) + 'تمت' + (t ? ' ' + t : '') + '</span>' + (r.visitedStatus ? '<span class="x-small">' + esc(r.visitedStatus) + '</span>' : '');
+    } else {
+      const n = daysSince(r['آخر زيارة']);
+      state = '<span class="x-pill outline">باقية</span><span class="x-small">' + (n === null ? 'ما انزارت قبل' : 'آخر زيارة ' + relDaysText(n)) + '</span>';
+    }
+    return '<div class="re-row' + (r.visited ? ' done' : '') + (sel ? ' sel' : '') + (id && routeEdit.flash[id] ? ' re-new' : '') + '">' +
+      '<button type="button" class="re-chk" role="checkbox" aria-checked="' + sel + '" aria-label="تحديد ' + esc(name) + '" onclick="reToggleSel(' + i + ')"><span class="x-box' + (sel ? ' on' : '') + '">' + ic('checkBold', 13) + '</span></button>' +
+      '<span class="re-n">' + (r.visited ? ic('check', 15) : idx) + '</span>' +
+      '<span class="re-t"><b>' + esc(name) + '</b><span class="x-small">' + sub + '</span></span>' +
+      '<div class="re-state">' + state + '</div><button type="button" class="re-del" aria-label="شيل ' + esc(name) + ' من الخط" title="شيلها من الخط" onclick="reDeleteOne(' + i + ')">' + ic('trash', 18) + '</button></div>';
+  }
+  function reDeleteOne(i) { const r = (routeEdit.shown || [])[i]; if (r) reDeleteRows([r]); }
+  function reToggleSel(i) {
+    const r = (routeEdit.shown || [])[i];
+    if (!r) return;
+    const k = reKey(r);
+    if (routeEdit.sel[k]) delete routeEdit.sel[k]; else routeEdit.sel[k] = true;
+    reRender();
+  }
+  function reSelGroup(gi) {
+    const idxs = routeEdit.groups[gi] || [];
+    const rows = idxs.map(function (i) { return routeEdit.shown[i]; }).filter(Boolean);
+    const all = rows.every(function (r) { return routeEdit.sel[reKey(r)]; });
+    rows.forEach(function (r) { if (all) delete routeEdit.sel[reKey(r)]; else routeEdit.sel[reKey(r)] = true; });
+    reRender();
+  }
+  function reSelAll() {
+    const shown = reFiltered();
+    const all = shown.length && shown.every(function (r) { return routeEdit.sel[reKey(r)]; });
+    shown.forEach(function (r) { if (all) delete routeEdit.sel[reKey(r)]; else routeEdit.sel[reKey(r)] = true; });
+    reRender();
+  }
+  function reSelectedRows() {
+    return (routeEdit.rows || []).filter(function (r) { return routeEdit.sel[reKey(r)]; });
+  }
+  function reRenderSelBar() {
+    const bar = document.getElementById('reSelBar');
+    if (!bar) return;
+    const n = reSelectedRows().length;
+    bar.hidden = !n;
+    const main = document.querySelector('.re-main');
+    if (main) main.classList.toggle('re-selpad', !!n);
+    if (!n) { bar.innerHTML = ''; return; }
+    reHideUndo();
+    bar.innerHTML = '<div class="x-dirty-bar"><span>' + 'تم تحديد ' + reN(n) + '</span>' +
+      '<button type="button" class="x-btn light sm" onclick="reOpenMove()">' + ic('arrowL', 16) + 'نقل أو نسخ</button>' +
+      '<button type="button" class="x-btn danger sm" onclick="reDeleteRows(reSelectedRows())">' + ic('trash', 16) + 'شيلها من الخط</button>' +
+      '<button type="button" class="x-btn ghost sm" aria-label="إلغاء التحديد" onclick="routeEdit.sel={};reRender()">' + ic('x', 16) + '</button></div>';
+  }
+
+  // ── الخريطة: نقاط الخط مرقّمة + زبائن المندوب الثانيين (تنضاف بضغطة) ──
+  function reRenderMap() {
+    const el = document.getElementById('reMap');
+    const legend = document.getElementById('reMapLegend');
+    if (!el || typeof L === 'undefined') { if (legend) legend.textContent = 'الخريطة ما اشتغلت — تأكد من الإنترنت'; return; }
+    if (!routeEdit.map || routeEdit.mapEl !== el) {
+      if (routeEdit.map) { try { routeEdit.map.remove(); } catch (e) {} }
+      routeEdit.map = L.map(el).setView([33.3, 44.4], 11);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(routeEdit.map);
+      routeEdit.mapEl = el;
+      routeEdit.mapFitKey = '';
+    }
+    const map = routeEdit.map;
+    if (routeEdit.mapLayer) map.removeLayer(routeEdit.mapLayer);
+    const layer = routeEdit.mapLayer = L.layerGroup().addTo(map);
+    const shown = reFiltered();
+    routeEdit.shown = shown;
+    const bounds = [];
+    let noLoc = 0;
+    // زبائن المندوب اللي مو بالخط — دوائر مفرغة تحت النقاط
+    routeEdit.mapOthers = [];
+    if (routeEdit.showOthers && plannerAll.list) {
+      const inRoute = reInRouteFn();
+      routeEdit.mapOthers = plannerAll.list.filter(function (p) {
+        return String(p['المندوب المسؤول'] || '').trim() === routeEdit.rep && !inRoute(p) && isFinite(parseFloat(p.Latitude)) && isFinite(parseFloat(p.Longitude));
+      });
+      routeEdit.mapOthers.forEach(function (p, i) {
+        const n = daysSince(p['آخر زيارة']);
+        L.circleMarker([parseFloat(p.Latitude), parseFloat(p.Longitude)], { radius: 7, color: '#A8521F', weight: 2.5, fillColor: '#fff', fillOpacity: 1 })
+          .bindPopup('<div class="re-pop"><b>' + esc(p['اسم نقطة البيع'] || '') + '</b><span class="x-small">' + esc([p['المنطقة'], n === null ? 'ما انزارت' : 'آخر زيارة ' + relDaysText(n)].filter(Boolean).join(' · ')) + '</span>' +
+            '<div class="re-mbtns"><button type="button" class="x-btn sm" id="reMapAdd' + i + '" onclick="reAddOther(' + i + ')">' + ic('plus', 15) + 'إضافة للخط</button></div></div>')
+          .addTo(layer);
+        if (!shown.length) bounds.push([parseFloat(p.Latitude), parseFloat(p.Longitude)]);
+      });
+    }
+    shown.forEach(function (r, i) {
+      const lat = parseFloat(r.Latitude), lng = parseFloat(r.Longitude);
+      if (!isFinite(lat) || !isFinite(lng)) { noLoc++; return; }
+      const sel = !!routeEdit.sel[reKey(r)];
+      const idx = routeEdit.rows.indexOf(r) + 1;
+      const icon = L.divIcon({ className: 're-pin' + (r.visited ? ' done' : '') + (sel ? ' sel' : ''), html: '<span>' + (r.visited ? '✓' : idx) + '</span>', iconSize: [28, 28], iconAnchor: [14, 14], popupAnchor: [0, -14] });
+      const t = reTime(r.visitedAt);
+      L.marker([lat, lng], { icon: icon, zIndexOffset: sel ? 1000 : 500 })
+        .bindPopup('<div class="re-pop"><b>' + idx + '. ' + esc(r['اسم نقطة البيع'] || '') + '</b><span class="x-small">' + esc([r['المنطقة'], r.visited ? 'تمت' + (t ? ' ' + t : '') + (r.visitedStatus ? ' · ' + r.visitedStatus : '') : 'باقية'].filter(Boolean).join(' · ')) + '</span>' +
+          '<div class="re-mbtns"><button type="button" class="x-btn ghost sm" onclick="reMapSel(' + i + ')">' + (sel ? 'إلغاء التحديد' : 'تحديد') + '</button><button type="button" class="x-btn ghost danger sm" onclick="reDeleteOne(' + i + ')">' + ic('trash', 14) + 'شيلها</button></div></div>')
+        .addTo(layer);
+      bounds.push([lat, lng]);
+    });
+    if (legend) {
+      legend.innerHTML = '<span><i class="d" style="background:var(--pine);"></i>باقية</span><span><i class="d" style="background:var(--good);"></i>تمت</span><span><i class="d" style="background:var(--accent);"></i>محدّدة</span>' +
+        (noLoc ? '<span class="x-small">' + reN(noLoc) + ' بدون موقع</span>' : '') +
+        '<label><input type="checkbox" id="reShowOthers"' + (routeEdit.showOthers ? ' checked' : '') + ' onchange="routeEdit.showOthers=this.checked;reRenderMap()"><span><i class="d" style="background:#fff;border:2.5px solid var(--accent);"></i>زبائنه مو بالخط' + (routeEdit.showOthers ? ' (' + routeEdit.mapOthers.length + ')' : '') + '</span></label>';
+    }
+    const fitKey = routeEdit.rep + '|' + routeEdit.date + '|' + routeEdit.filter;
+    setTimeout(function () {
+      map.invalidateSize();
+      if (routeEdit.mapFitKey !== fitKey) {
+        routeEdit.mapFitKey = fitKey;
+        if (bounds.length) map.fitBounds(bounds, { padding: [36, 36], maxZoom: 16 });
+      }
+    }, 60);
+  }
+  function reMapSel(i) {
+    const r = routeEdit.shown[i];
+    if (!r) return;
+    const k = reKey(r);
+    if (routeEdit.sel[k]) delete routeEdit.sel[k]; else routeEdit.sel[k] = true;
+    if (routeEdit.map) routeEdit.map.closePopup();
+    reRender();
+  }
+  function reAddOther(i) {
+    const p = routeEdit.mapOthers[i];
+    if (!p) return;
+    reBusyBtn('reMapAdd' + i, 'جارٍ الإضافة...');
+    reAddPoints([p], function () { if (routeEdit.map) routeEdit.map.closePopup(); });
+  }
+
+  // ── تراجع (يظهر 7 ثواني بعد كل حذف) ──
+  function reShowUndo(text, fn) {
+    const el = document.getElementById('reUndo');
+    if (!el) return;
+    clearTimeout(routeEdit.undoT);
+    routeEdit.undoFn = fn;
+    el.innerHTML = '<span>' + esc(text) + '</span><button type="button" class="x-btn light sm" onclick="reUndo()">' + ic('refresh', 15) + 'تراجع</button><div class="re-undo-t"><i></i></div>';
+    el.hidden = false;
+    routeEdit.undoT = setTimeout(reHideUndo, 7000);
+  }
+  function reHideUndo() {
+    clearTimeout(routeEdit.undoT);
+    routeEdit.undoFn = null;
+    const el = document.getElementById('reUndo');
+    if (el) { el.hidden = true; el.innerHTML = ''; }
+  }
+  function reUndo() {
+    const f = routeEdit.undoFn;
+    reHideUndo();
+    if (f) f();
+  }
+  // إرجاع نقاط محذوفة لنفس المندوب واليوم
+  function reRestore(rep, date, rows) {
+    rePostSave(rep, date, rows.map(reAsPoint))
+      .then(function (d) {
+        if (d.result !== 'success') throw new Error('save');
+        showToast(rows.length === 1 ? 'رجعت النقطة للخط' : 'رجعت ' + reN(rows.length) + ' للخط', 'success');
+        rows.forEach(function (r) { const id = String(r['ID الزبون'] || '').trim(); if (id) routeEdit.flash[id] = 1; });
+        if (routeEdit.rep === rep && routeEdit.date === date) reFetchRoute();
+        routeEdit.countsKey = ''; reFetchCounts(true);
+      })
+      .catch(function () { showToast('تعذر الإرجاع', 'error'); });
+  }
+
+  // ── نافذة تأكيد/نقل (x-modal) ──
+  function reModal(html) {
+    reCloseModal();
+    const back = document.createElement('div');
+    back.className = 'x-modal-back';
+    back.id = 'reModal';
+    back.innerHTML = '<div class="x-modal" role="dialog" aria-modal="true">' + html + '</div>';
+    back.addEventListener('click', function (e) { if (e.target === back && !routeEdit.busy) reCloseModal(); });
+    document.body.appendChild(back);
+    const f = back.querySelector('select, input, .x-btn');
+    if (f) f.focus();
+  }
+  function reCloseModal() {
+    const m = document.getElementById('reModal');
+    if (!m) return;
+    m.remove();
+    // إلغاء «نسخ الخط كامل» يرجّع التحديد مثل ما كان
+    if (routeEdit.copyAll) { routeEdit.copyAll = false; routeEdit.sel = {}; reRender(); }
+  }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && document.getElementById('reModal') && !routeEdit.busy) reCloseModal(); });
+  function reBusyBtn(id, txt) { const b = document.getElementById(id); if (b) { b.disabled = true; b.innerHTML = '<span class="x-spinner"></span> ' + txt; } }
+
+  // حذف فوري (بدون سؤال) — «تراجع» يرجعها خلال 7 ثواني
+  function reDeleteRows(rows) {
+    rows = (rows || []).filter(function (r) { return r && r.Id; });
+    if (!rows.length || routeEdit.busy) return;
+    const ids = rows.map(function (r) { return r.Id; });
+    const rep = routeEdit.rep, date = routeEdit.date;
+    routeEdit.busy = true;
+    // نشيلها من الشاشة فورًا، ونرجعها إذا فشل الطلب
+    const before = routeEdit.rows.slice();
+    routeEdit.rows = routeEdit.rows.filter(function (r) { return ids.indexOf(r.Id) === -1; });
+    rows.forEach(function (r) { delete routeEdit.sel[reKey(r)]; });
+    if (routeEdit.map) routeEdit.map.closePopup();
+    reAfterLocalChange();
+    rePostDelete(rep, date, ids)
+      .then(function (d) {
+        routeEdit.busy = false;
+        if (d.result !== 'success') throw new Error('delete');
+        reShowUndo(rows.length === 1 ? 'انشالت «' + (rows[0]['اسم نقطة البيع'] || '') + '» من الخط' : 'انشالت ' + reN(rows.length) + ' من الخط', function () { reRestore(rep, date, rows); });
+      })
+      .catch(function () {
+        routeEdit.busy = false;
+        if (routeEdit.rep === rep && routeEdit.date === date) { routeEdit.rows = before; reAfterLocalChange(); }
+        showToast('تعذر الحذف — حاول مرة ثانية', 'error');
+      });
+  }
+  function reAfterLocalChange() {
+    routeEdit.counts[routeEdit.date] = routeEdit.rows.length;
+    if (routeEdit.repCounts && routeEdit.repCountsDate === routeEdit.date) routeEdit.repCounts[routeEdit.rep] = routeEdit.rows.length;
+    reRenderReps(); reRenderWeek(); reRender(); reRenderAdd();
+  }
+  function rePostDelete(rep, date, ids) {
     const body = new FormData();
-    body.append('action', 'deleteRoutePoint');
+    body.append('action', 'deleteRoutePoints');
     body.append('username', (currentAdmin && currentAdmin.username) || '');
     body.append('password', (currentAdmin && currentAdmin.pass) || '');
-    body.append('date', date);
     body.append('rep', rep);
-    body.append('pointName', pointName);
-    fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body })
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
-        if (data.result === 'success' && data.deleted > 0) { if (card) card.remove(); showToast('انحذفت النقطة من خط السير', 'success'); loadPlannerExisting(); }
-        else { btn.disabled = false; showToast('تعذر حذف النقطة', 'error'); }
-      })
-      .catch(function () { btn.disabled = false; showToast('تعذر الاتصال بالخادم', 'error'); });
+    body.append('date', date);
+    body.append('ids', JSON.stringify(ids));
+    return fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body }).then(function (res) { return res.json(); });
   }
-  function deleteRouteDay() {
-    const date = document.getElementById('adminDate').value;
-    const rep = document.getElementById('adminRep').value;
-    const btn = document.getElementById('deleteDayBtn');
-    if (!confirm('هل تريد حذف كل نقاط خط سير ' + rep + ' ليوم ' + date + ' دفعة وحدة؟ هذا الإجراء لا يمكن التراجع عنه.')) return;
-    btn.disabled = true;
+  function rePostSave(rep, date, points) {
+    const body = new FormData();
+    body.append('action', 'saveRoute');
+    body.append('username', (currentAdmin && currentAdmin.username) || '');
+    body.append('password', (currentAdmin && currentAdmin.pass) || '');
+    body.append('rep', rep);
+    body.append('date', date);
+    body.append('points', JSON.stringify(points));
+    return fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body }).then(function (res) { return res.json(); });
+  }
+  function reAsPoint(r) {
+    return { 'ID الزبون': r['ID الزبون'] || '', 'اسم نقطة البيع': r['اسم نقطة البيع'] || '', 'رقم الهاتف': r['رقم الهاتف'] || '', 'المنطقة': r['المنطقة'] || '', Latitude: r.Latitude, Longitude: r.Longitude };
+  }
+
+  // ── نقل / نسخ (للمحدّد، أو للخط كامل) ──
+  function reCopyAll() {
+    (routeEdit.rows || []).forEach(function (r) { routeEdit.sel[reKey(r)] = true; });
+    reRender();
+    reOpenMove('copy');
+    routeEdit.copyAll = true;
+  }
+  function reOpenMove(mode) {
+    const rows = reSelectedRows();
+    if (!rows.length) return;
+    const done = rows.filter(function (r) { return r.visited; }).length;
+    const n = reN(rows.length);
+    const nextWeek = reAddDays(routeEdit.date, 7);
+    reModal('<span class="re-mtitle">' + (mode === 'copy' && rows.length === (routeEdit.rows || []).length ? 'نسخ خط اليوم كامل (' + n + ')' : 'نقل أو نسخ ' + n) + '</span>' +
+      '<div class="x-seg full" role="tablist" aria-label="نوع العملية"><button type="button" role="tab" id="reMvMove" onclick="reMoveMode(\'move\')">نقل</button><button type="button" role="tab" id="reMvCopy" onclick="reMoveMode(\'copy\')">نسخ</button></div>' +
+      '<span class="x-hint" id="reMvHint"></span>' +
+      '<div class="x-field"><label for="reMvRep">لخط سير المندوب</label><select id="reMvRep" class="x-select">' +
+      REP_NAMES.map(function (r) { return '<option value="' + esc(r) + '"' + (r === routeEdit.rep ? ' selected' : '') + '>' + esc(r) + (r === routeEdit.rep ? ' (نفسه)' : '') + '</option>'; }).join('') + '</select></div>' +
+      '<div class="x-field"><label for="reMvDate">ليوم</label><input type="date" id="reMvDate" class="x-input" value="' + reAddDays(routeEdit.date, 1) + '">' +
+      '<div class="x-chips wrap" style="margin-top:4px;"><button type="button" class="x-chip" onclick="document.getElementById(\'reMvDate\').value=\'' + reAddDays(routeEdit.date, 1) + '\'">اليوم الجاي</button>' +
+      '<button type="button" class="x-chip" onclick="document.getElementById(\'reMvDate\').value=\'' + nextWeek + '\'">نفس اليوم الأسبوع الجاي (' + esc(arDate(nextWeek, false)) + ')</button></div></div>' +
+      (done ? '<div class="x-note" id="reMvNote">' + done + ' من المحدّدة تمت زيارتها بهذا اليوم — بالنقل تنشال من هذا اليوم بس الزيارة تبقى مسجّلة.</div>' : '') +
+      '<div class="msg error" id="reMvErr" style="margin:0;"></div>' +
+      '<div class="re-mbtns"><button type="button" class="x-btn" id="reMOk" onclick="reDoMove()">' + ic('arrowL', 16) + '<span id="reMvOkT"></span></button><button type="button" class="x-btn ghost" onclick="reCloseModal()">إلغاء</button></div>');
+    reMoveMode(mode === 'copy' ? 'copy' : 'move');
+  }
+  function reMoveMode(m) {
+    routeEdit.moveMode = m;
+    const mv = document.getElementById('reMvMove'), cp = document.getElementById('reMvCopy');
+    mv.classList.toggle('on', m === 'move'); mv.setAttribute('aria-selected', m === 'move');
+    cp.classList.toggle('on', m === 'copy'); cp.setAttribute('aria-selected', m === 'copy');
+    document.getElementById('reMvHint').textContent = m === 'move' ? 'تنشال من هذا اليوم وتنضاف للخط الجديد' : 'تبقى بهذا اليوم، وتنضاف نسخة منها للخط الجديد';
+    const note = document.getElementById('reMvNote');
+    if (note) note.hidden = m !== 'move';
+    const n = reSelectedRows().length;
+    document.getElementById('reMvOkT').textContent = (m === 'move' ? 'نقل ' : 'نسخ ') + reN(n);
+  }
+  function reDoMove() {
+    const rows = reSelectedRows();
+    const toRep = document.getElementById('reMvRep').value;
+    const toDate = document.getElementById('reMvDate').value;
+    const err = document.getElementById('reMvErr');
+    const mode = routeEdit.moveMode || 'move';
+    err.style.display = 'none';
+    const fail = function (m) { err.textContent = m; err.style.display = 'block'; };
+    if (!toRep || !toDate) return fail('اختار المندوب واليوم');
+    if (toRep === routeEdit.rep && toDate === routeEdit.date) return fail('هذا نفس الخط — اختار يوم أو مندوب ثاني');
+    routeEdit.busy = true;
+    reBusyBtn('reMOk', mode === 'move' ? 'جارٍ النقل...' : 'جارٍ النسخ...');
+    const fromRep = routeEdit.rep, fromDate = routeEdit.date;
+    rePostSave(toRep, toDate, rows.map(reAsPoint))
+      .then(function (d) {
+        if (d.result !== 'success') throw new Error(d.error || 'save');
+        const added = d.added || 0, skipped = d.skippedDuplicates || 0;
+        if (mode !== 'move') return { added: added, skipped: skipped, deleted: 0 };
+        return rePostDelete(fromRep, fromDate, rows.map(function (r) { return r.Id; }).filter(Boolean))
+          .then(function (x) { return { added: added, skipped: skipped, deleted: x.result === 'success' ? x.deleted : -1 }; });
+      })
+      .then(function (res) {
+        routeEdit.busy = false;
+        reCloseModal();
+        const where = (toRep === fromRep ? '' : toRep + ' ') + arDate(toDate);
+        let msg = (mode === 'move' ? 'انتقلت ' : 'انتسخت ') + (rows.length === 1 ? 'النقطة' : reN(rows.length)) + ' لخط ' + where;
+        if (res.skipped) msg += ' (' + res.skipped + ' كانت موجودة أصلًا)';
+        showToast(res.deleted === -1 ? 'انضافت للخط الجديد بس تعذر شيلها من هذا اليوم' : msg, res.deleted === -1 ? 'error' : 'success');
+        routeEdit.sel = {};
+        if (toRep === fromRep) delete routeEdit.counts[toDate];
+        routeEdit.countsKey = '';
+        if (toDate === fromDate) routeEdit.repCountsDate = '';
+        reFetchRoute(); reFetchCounts(true);
+        if (toDate === fromDate) reFetchRepCounts();
+      })
+      .catch(function (e) {
+        routeEdit.busy = false;
+        const b = document.getElementById('reMOk');
+        if (b) { b.disabled = false; b.innerHTML = ic('arrowL', 16) + '<span id="reMvOkT">' + (mode === 'move' ? 'نقل ' : 'نسخ ') + reN(rows.length) + '</span>'; }
+        fail(String(e && e.message) === 'rep_not_found' ? 'هذا المندوب غير مسجّل بالنظام' : 'تعذر الحفظ — حاول مرة ثانية');
+      });
+  }
+  function reAskDeleteDay() {
+    const n = (routeEdit.rows || []).length;
+    reModal('<span class="re-mtitle">حذف خط اليوم كامل؟</span>' +
+      '<p class="re-mtext" style="margin:0;">تنشال كل نقاط خط سير <b>' + esc(routeEdit.rep) + '</b> ليوم <b>' + esc(arDate(routeEdit.date)) + '</b> (' + reN(n) + '). الزيارات المسجّلة ما تتأثر، وتكدر تتراجع خلال ثواني بعد الحذف.</p>' +
+      '<div class="re-mbtns"><button type="button" class="x-btn danger" id="reMOk" onclick="reDoDeleteDay()">' + ic('trash', 16) + 'حذف ' + reN(n) + '</button><button type="button" class="x-btn ghost" onclick="reCloseModal()">إلغاء</button></div>');
+  }
+  function reDoDeleteDay() {
+    const rep = routeEdit.rep, date = routeEdit.date, rows = (routeEdit.rows || []).slice();
+    routeEdit.busy = true;
+    reBusyBtn('reMOk', 'جارٍ الحذف...');
     const body = new FormData();
     body.append('action', 'deleteRouteForDay');
     body.append('date', date);
@@ -7722,10 +8587,113 @@
     fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body })
       .then(function (res) { return res.json(); })
       .then(function (d) {
-        if (d.result === 'success') { showToast('تم حذف ' + d.deleted + ' نقطة', 'success'); loadCurrentRoute(); loadPlannerExisting(); }
-        else btn.disabled = false;
+        routeEdit.busy = false;
+        reCloseModal();
+        if (d.result !== 'success') { showToast('تعذر الحذف', 'error'); return; }
+        routeEdit.rows = []; routeEdit.sel = {};
+        reAfterLocalChange();
+        reShowUndo('انحذف خط اليوم (' + reN(d.deleted) + ')', function () { reRestore(rep, date, rows); });
       })
-      .catch(function () { btn.disabled = false; });
+      .catch(function () { routeEdit.busy = false; reCloseModal(); showToast('تعذر الاتصال بالخادم', 'error'); });
+  }
+
+  // ── إضافة زبائن لليوم: بحث بكل الزبائن، أو منطقة كاملة، أو زبائن المندوب اللي مو بالخط ──
+  function reInRouteFn() {
+    const inIds = {}, inNames = {};
+    (routeEdit.rows || []).forEach(function (r) { if (r['ID الزبون']) inIds[String(r['ID الزبون']).trim()] = 1; inNames[String(r['اسم نقطة البيع'] || '').trim()] = 1; });
+    return function (p) { const id = String(p['ID الزبون'] || '').trim(); return (id && !!inIds[id]) || !!inNames[String(p['اسم نقطة البيع'] || '').trim()]; };
+  }
+  function reRenderAdd() {
+    const box = document.getElementById('reAddList');
+    if (!box) return;
+    routeEdit.addShown = [];
+    routeEdit.addAreas = [];
+    if (!routeEdit.rep) { box.innerHTML = '<div class="re-empty"><span>اختار المندوب أول</span></div>'; return; }
+    if (!plannerAll.list) {
+      box.innerHTML = plannerAll.failed
+        ? '<div class="re-empty"><span>تعذر تحميل الزبائن</span><button type="button" class="x-btn ghost sm" onclick="loadPlannerAll(true);reRenderAdd()">إعادة المحاولة</button></div>'
+        : '<div class="x-loading">جارٍ تحميل الزبائن...</div>';
+      loadPlannerAll();
+      return;
+    }
+    if (routeEdit.view === 'map' && routeEdit.rows) reRenderMap();
+    const inRoute = reInRouteFn();
+    const q = String(routeEdit.addQ || '').trim();
+    let list, head, areasHtml = '';
+    if (q) {
+      if (!plannerQueryOk(q)) { box.innerHTML = '<div class="re-empty"><span>اكتب حرفين على الأقل</span></div>'; return; }
+      const all = plannerRanked(plannerAll.list, q);
+      list = all.slice(0, 40);
+      head = all.length ? (all.length > list.length ? 'أول ' + list.length + ' من ' + all.length + ' نتيجة' : (all.length === 1 ? 'نتيجة وحدة' : all.length === 2 ? 'نتيجتين' : all.length + (all.length <= 10 ? ' نتائج' : ' نتيجة'))) : '';
+      if (!all.length) { box.innerHTML = '<div class="re-empty"><span>ما لكينا زبون بهذا الاسم أو الرقم أو الـID</span></div>'; return; }
+    } else {
+      const mine = plannerAll.list.filter(function (p) { return String(p['المندوب المسؤول'] || '').trim() === routeEdit.rep && !inRoute(p); });
+      if (!mine.length) {
+        const owns = plannerAll.list.some(function (p) { return String(p['المندوب المسؤول'] || '').trim() === routeEdit.rep; });
+        box.innerHTML = '<div class="re-empty"><span>' + (owns ? 'كل زبائن ' + esc(routeEdit.rep) + ' موجودين بهذا الخط.' : 'ما أكو زبائن مسجّلين باسم ' + esc(routeEdit.rep) + '.') + '<br>دوّر بالاسم أو الرقم أو الـID حتى تضيف زبائن.</span></div>';
+        return;
+      }
+      // مناطقه (اللي بيها زبائن مو بالخط) — ضغطة وحدة تضيف المنطقة كلها
+      const byArea = {};
+      mine.forEach(function (p) { const a = String(p['المنطقة'] || '').trim(); if (a) (byArea[a] = byArea[a] || []).push(p); });
+      routeEdit.addAreas = Object.keys(byArea).sort(function (a, b) { return byArea[b].length - byArea[a].length || a.localeCompare(b, 'ar'); }).map(function (a) { return { area: a, list: byArea[a] }; });
+      if (routeEdit.addAreas.length) {
+        areasHtml = '<span class="re-sec">إضافة منطقة كاملة من زبائنه</span><div class="re-areas">' + routeEdit.addAreas.map(function (x, i) {
+          return '<button type="button" class="re-area" onclick="reAskAddArea(' + i + ')">' + ic('plus', 14) + esc(x.area) + '<span class="c">' + x.list.length + '</span></button>';
+        }).join('') + '</div>';
+      }
+      mine.sort(function (a, b) { return String(a['آخر زيارة'] || '').localeCompare(String(b['آخر زيارة'] || '')); });
+      list = mine.slice(0, 40);
+      head = 'زبائن ' + routeEdit.rep + ' مو بهذا الخط (' + mine.length + ') — الأقدم زيارة أولًا';
+    }
+    routeEdit.addShown = list;
+    box.innerHTML = areasHtml + '<span class="re-sec">' + esc(head) + '</span>' + list.map(function (p, i) {
+      const id = String(p['ID الزبون'] || '').trim();
+      const n = daysSince(p['آخر زيارة']);
+      const owner = String(p['المندوب المسؤول'] || '').trim();
+      const sub = [id ? '<bdi dir="ltr">' + esc(id) + '</bdi>' : '', esc(p['المنطقة'] || ''), (q && owner && owner !== routeEdit.rep) ? 'باسم ' + esc(owner) : '', n === null ? 'ما انزارت' : 'آخر زيارة ' + relDaysText(n)].filter(Boolean).join(' · ');
+      return '<div class="re-arow"><span class="re-t"><b>' + esc(p['اسم نقطة البيع'] || '') + '</b><span class="x-small">' + sub + '</span></span>' +
+        (inRoute(p) ? '<span class="x-pill pine">' + ic('check', 12) + 'بالخط</span>' : '<button type="button" class="x-btn ghost accent sm" id="reAdd' + i + '" onclick="reAddPoint(' + i + ')">' + ic('plus', 15) + 'إضافة</button>') + '</div>';
+    }).join('');
+  }
+  function reAddPoint(i) {
+    const p = routeEdit.addShown[i];
+    if (!p || !routeEdit.rep) return;
+    const btn = document.getElementById('reAdd' + i);
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="x-spinner"></span>'; }
+    reAddPoints([p], null, function () { if (btn) { btn.disabled = false; btn.innerHTML = ic('plus', 15) + 'إضافة'; } });
+  }
+  function reAskAddArea(i) {
+    const x = routeEdit.addAreas[i];
+    if (!x) return;
+    routeEdit.pendingArea = x;
+    reModal('<span class="re-mtitle">إضافة ' + esc(x.area) + ' كاملة؟</span>' +
+      '<p class="re-mtext" style="margin:0;">تنضاف ' + reN(x.list.length) + ' من زبائن ' + esc(routeEdit.rep) + ' بمنطقة ' + esc(x.area) + ' (اللي مو بالخط) لخط ' + esc(arDate(routeEdit.date)) + '.</p>' +
+      '<div class="re-mbtns"><button type="button" class="x-btn" id="reMOk" onclick="reDoAddArea()">' + ic('plus', 16) + 'إضافة ' + reN(x.list.length) + '</button><button type="button" class="x-btn ghost" onclick="reCloseModal()">إلغاء</button></div>');
+  }
+  function reDoAddArea() {
+    const x = routeEdit.pendingArea;
+    if (!x) return;
+    routeEdit.busy = true;
+    reBusyBtn('reMOk', 'جارٍ الإضافة...');
+    reAddPoints(x.list, function () { routeEdit.busy = false; reCloseModal(); }, function () { routeEdit.busy = false; reCloseModal(); });
+  }
+  function reAddPoints(points, onOk, onFail) {
+    const rep = routeEdit.rep, date = routeEdit.date;
+    rePostSave(rep, date, points.map(reAsPoint))
+      .then(function (d) {
+        if (d.result !== 'success') throw new Error(d.error || 'save');
+        if (onOk) onOk();
+        const added = d.added || 0;
+        if (points.length === 1) showToast(added ? 'انضافت «' + (points[0]['اسم نقطة البيع'] || '') + '» للخط' : 'هذي النقطة موجودة أصلًا بالخط', added ? 'success' : 'info');
+        else showToast('انضافت ' + reN(added) + ' للخط' + (d.skippedDuplicates ? ' (' + d.skippedDuplicates + ' موجودة أصلًا)' : ''), 'success');
+        points.forEach(function (p) { const id = String(p['ID الزبون'] || '').trim(); if (id) routeEdit.flash[id] = 1; });
+        if (routeEdit.rep === rep && routeEdit.date === date) reFetchRoute();
+      })
+      .catch(function () {
+        if (onFail) onFail();
+        showToast('تعذر الإضافة — حاول مرة ثانية', 'error');
+      });
   }
 
   // ═════════════ شاشات المندوب: إجازاتي / حسابي / زبائن يجب زيارتهم ═════════════
