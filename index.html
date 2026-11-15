@@ -724,6 +724,19 @@
   .st-chip.on .d { background: currentColor; }
   .rs-chip { min-height: 38px; padding: 6px 12px; border-radius: 999px; border: 1.5px solid var(--line-2); background: #fff; color: var(--ink-2); font-size: 12.5px; font-weight: 700; cursor: pointer; }
   .rs-chip.on { border-color: var(--bad); background: var(--bad-tint); color: var(--bad-fg); }
+  /* موعد الزيارة الجاية */
+  .nv { gap: 10px; }
+  .nv-lbl { display: inline-flex; align-items: center; gap: 6px; }
+  .nv-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .rs-chip.nv-chip { display: inline-flex; align-items: center; gap: 5px; }
+  .rs-chip.nv-chip.on { border-color: var(--pine); background: var(--pine-tint); color: var(--pine-ink); }
+  .nv-sum { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--good-tint); color: var(--good-fg); font-size: 12.5px; line-height: 1.7; }
+  .nv-sum b { font-weight: 800; }
+  .nv-sum .nv-ic { flex-shrink: 0; margin-top: 2px; }
+  .nv-sum > span:nth-child(2) { flex-grow: 1; min-width: 0; }
+  .nv-warn { color: var(--warn-fg); }
+  .nv-x { flex-shrink: 0; width: 30px; height: 30px; border-radius: 9px; border: 0; background: rgba(255,255,255,.7); color: var(--ink-2); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+  .rt-tag.nv-tag { background: var(--info-tint); color: var(--info-ink); }
   .rt-end-row { display: flex; gap: 8px; align-items: stretch; }
   .rt-end-row .call { width: 48px; height: 50px; flex-shrink: 0; border-radius: 14px; border: 1px solid var(--line-2); background: #fff; color: var(--good); display: flex; align-items: center; justify-content: center; }
   .rt-end-row .x-btn { flex-grow: 1; height: 50px; border-radius: 14px; font-size: 15px; }
@@ -1837,6 +1850,9 @@
               <div id="customFieldsContainer" class="x-stack"></div>
             </div>
 
+            <section class="x-card nv" id="nvBox_form" aria-label="موعد الزيارة الجاية"></section>
+            <input type="hidden" id="nextVisitDate" value="">
+
             <section class="x-card" style="gap:8px;">
               <label for="notes" class="x-h2">ملاحظات <span class="x-small" style="color:var(--muted-2);font-weight:600;">(اختياري)</span></label>
               <textarea id="notes" class="x-textarea" name="ملاحظات" rows="3" placeholder="أي تفاصيل إضافية عن الزيارة..."></textarea>
@@ -2222,6 +2238,7 @@
   // Sends the logged-in user to their correct landing screen based on role.
   function routeAfterLogin() {
     refreshRepNames();
+    setTimeout(pushInit, 1500);
     if (isRep()) {
       showRepHome();
     } else {
@@ -3452,6 +3469,7 @@
   /* loadDailyProgress → نسخة V42 بالأسفل */
 
   function adminLogout() {
+    pushOnLogout(currentAdmin);
     // يلغي التوكن فعلياً من السيرفر (الـ Worker الجديد يدعم هذا)، إرسال بدون
     // انتظار الرد — العملية محلياً تكمل فوراً بغض النظر عن نتيجتها.
     if (currentAdmin && currentAdmin.username && currentAdmin.pass) {
@@ -4293,6 +4311,9 @@
     formData.append('Longitude', document.getElementById('lng').value);
     formData.append('isRouteVisit', isRouteVisit ? '1' : '0');
     formData.append('dupCheck', '1');
+    // موعد الزيارة الجاية (اختياري) — السيرفر يضيفه لخط السير ويذكّر قبلها بيوم
+    const nvDate = (document.getElementById('nextVisitDate') || {}).value || '';
+    if (nvDate) formData.append('nextVisitDate', nvDate);
     // زيارة خط سير: نرسل ID الزبون وموقعه الأصلي — السيرفر ما يعتمد على GPS المندوب للمطابقة
     if (isRouteVisit && activeVisit) {
       formData.append('customerId', activeVisit.customerId || '');
@@ -4361,7 +4382,10 @@
         // إرسال ناجح — بدون ما ننتظر المندوب يرجع للشاشة الرئيسية بنفسه.
         updateHomeStats();
         const wasRouteVisit = isRouteVisit;
-        showToast(wasRouteVisit ? 'تم إنهاء الزيارة بنجاح' : 'تم إرسال الزيارة بنجاح', 'success');
+        const fu = data.followUp;
+        showToast((wasRouteVisit ? 'تم إنهاء الزيارة بنجاح' : 'تم إرسال الزيارة بنجاح') + (nvDate && fu && !fu.error ? ' · الموعد الجاي (' + arDate(nvDate) + ') انضاف لخطك' : ''), 'success');
+        if (nvDate && (!fu || fu.error)) setTimeout(function () { showToast('انحفظت الزيارة بس تعذر حفظ الموعد', 'error'); }, 1800);
+        nvSet('form', '');
         successMsg.innerHTML = wasRouteVisit ? 'تم إنهاء الزيارة بنجاح <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : 'تم إرسال البيانات بنجاح <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         successMsg.style.display = 'block';
         document.getElementById('geoForm').reset();
@@ -4395,7 +4419,8 @@
         queueSubmission(formDataToObject(formData));
         updateHomeStats();
         const wasRouteVisitOffline = isRouteVisit;
-        showToast(wasRouteVisitOffline ? 'تم إنهاء الزيارة بنجاح' : 'تم إرسال الزيارة بنجاح', 'success');
+        showToast((wasRouteVisitOffline ? 'تم إنهاء الزيارة بنجاح' : 'تم إرسال الزيارة بنجاح') + (nvDate ? ' · الموعد الجاي ينضاف لخطك أول ما يرجع النت' : ''), 'success');
+        nvSet('form', '');
         successMsg.innerHTML = wasRouteVisitOffline ? 'تم إنهاء الزيارة بنجاح <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : 'تم إرسال البيانات بنجاح <svg viewBox="0 0 24 24" fill="none" width="15" height="15" style="vertical-align:-2px;display:inline-block;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         successMsg.style.display = 'block';
         document.getElementById('geoForm').reset();
@@ -5317,7 +5342,8 @@
     return '<div class="rt-card" id="rtCard_' + pid + '">' +
       '<div class="x-between" style="align-items:flex-start;"><div class="x-titles" style="display:flex;flex-direction:column;gap:2px;min-width:0;">' +
       '<span class="rt-name">' + esc(name) + '</span><span class="x-small">' + esc(routeLastLine(row)) + '</span></div>' + dist + '</div>' +
-      '<div class="rt-tags">' + (row['المنطقة'] ? '<span class="rt-tag">' + ic('pin', 14) + esc(row['المنطقة']) + '</span>' : '') + '</div>' +
+      '<div class="rt-tags">' + (row['المنطقة'] ? '<span class="rt-tag">' + ic('pin', 14) + esc(row['المنطقة']) + '</span>' : '') +
+      (row['موعد'] ? '<span class="rt-tag nv-tag">' + ic('calendar', 14) + 'موعد متفق عليه</span>' : '') + '</div>' +
       routeActionsHtml(row, 'route') +
       (hasLoc ? '<button type="button" class="rt-start route-visit-start-btn"' + (busy ? ' disabled' : '') + ' onclick="startPointVisitIdx(' + idx + ', this)">' + ic('play', 18) + '<span>بدء الزيارة</span></button>' +
         '<div class="geo-status" id="visitStatus_' + pid + '"></div>' : '<span class="x-small" style="color:var(--warn-fg);">النقطة ما عندها موقع مسجّل</span>') +
@@ -5349,6 +5375,7 @@
         REASON_LIST.map(function (r) {
           return '<button type="button" class="rs-chip' + (rs === r ? ' on' : '') + '" aria-pressed="' + (rs === r) + '" onclick="cardPickReason(\'' + r + '\')">' + r + '</button>';
         }).join('') + '</div></div>' : '') +
+      '<div class="x-field nv" id="nvBox_card">' + nvPickerInner('card') + '</div>' +
       '<div class="x-field"><label class="x-label" for="cardNotes">ملاحظات <span class="x-small" style="color:var(--muted-2);font-weight:600;">(اختياري)</span></label>' +
       '<textarea id="cardNotes" class="x-textarea" rows="2" maxlength="500" placeholder="أي تفاصيل إضافية عن الزيارة..." oninput="if (activeVisit) activeVisit.cardNotes = this.value">' + esc(activeVisit.cardNotes || '') + '</textarea></div>' +
       '<div class="rt-end-row">' + (phone ? '<a class="call" href="tel:' + esc(phone) + '" aria-label="اتصال بالزبون">' + ic('call', 20) + '</a>' : '') +
@@ -5719,6 +5746,7 @@
     setFormStatus(chosenStatus);
     if (chosenReason) setFormReason(chosenReason);
     document.getElementById('notes').value = activeVisit.cardNotes || '';
+    nvSet('form', activeVisit.cardNextDate || '');
     const missing = visitFormMissing();
     if (!missing.length) {
       document.getElementById('geoForm').requestSubmit();
@@ -5991,6 +6019,7 @@
   }
 
   function openNewPointForm() {
+    nvSet('form', '');
     if (!canDoFieldWork()) {
       if (currentAdmin) { openAdminPanel(); } else { showView('login'); }
       return;
@@ -6069,6 +6098,7 @@
   }
 
   function openVisitFormForPoint(pointName, area, myLat, myLng, phone, myAccuracy, silent) {
+    nvSet('form', '');
     isRouteVisit = true;
     document.getElementById('formTitle').textContent = 'تسجيل زيارة';
     document.getElementById('formSubTitle').textContent = pointName;
@@ -7927,6 +7957,192 @@
     fill.style.width = '100%';
     setTimeout(function () { wrap.style.display = 'none'; }, 350);
   }
+  // ═════════════ موعد الزيارة الجاية + تذكير على الهاتف ═════════════
+  // المندوب بالزيارة يختار «موعد الزيارة الجاية» → السيرفر يكتبه بالزبون، يضيفه
+  // لخط سيره بذاك اليوم، ويرسل إشعار للهاتف قبلها بيوم (6 المسا). الإشعارات
+  // عن طريق sw.js (بس push — بدون أي تخزين/cache).
+  const PUSH_PUBLIC_KEY = 'BPxSso3a9dUHAyAGJR0chMC9MwFaOeWu6ryjtCteM5reuQcq94jjF1hhJKE8Lmh_S5vOKcbSdIFqhWWkCz7rKkg';
+  const NV_QUICK = [[1, 'باچر'], [3, 'بعد 3 أيام'], [7, 'بعد أسبوع'], [14, 'بعد أسبوعين'], [30, 'بعد شهر']];
+  const nvCustomOpen = { card: false, form: false };
+  function nvGet(where) {
+    if (where === 'card') return (activeVisit && activeVisit.cardNextDate) || '';
+    return (document.getElementById('nextVisitDate') || {}).value || '';
+  }
+  function nvSet(where, v) {
+    if (where === 'card') { if (activeVisit) activeVisit.cardNextDate = v; }
+    else { const h = document.getElementById('nextVisitDate'); if (h) h.value = v; }
+    if (!v) nvCustomOpen[where] = false;
+    nvRender(where);
+  }
+  function nvRender(where) {
+    const box = document.getElementById('nvBox_' + where);
+    if (box) box.innerHTML = nvPickerInner(where);
+  }
+  function nvPickerInner(where) {
+    const v = nvGet(where);
+    const today = getTodayDateStr();
+    const quickDates = NV_QUICK.map(function (q) { return reAddDays(today, q[0]); });
+    const custom = nvCustomOpen[where] || (v && quickDates.indexOf(v) === -1);
+    let html = '<span class="x-label nv-lbl">' + ic('calendar', 16) + 'موعد الزيارة الجاية</span>' +
+      '<div class="nv-chips" role="group" aria-label="موعد الزيارة الجاية">' +
+      NV_QUICK.map(function (q, i) {
+        const on = v === quickDates[i];
+        return '<button type="button" class="rs-chip nv-chip' + (on ? ' on' : '') + '" aria-pressed="' + on + '" onclick="nvQuick(\'' + where + '\',' + q[0] + ')">' + q[1] + '</button>';
+      }).join('') +
+      '<button type="button" class="rs-chip nv-chip' + (custom ? ' on' : '') + '" aria-pressed="' + !!custom + '" onclick="nvOpenCustom(\'' + where + '\')">' + ic('calendar', 14) + 'يوم ثاني</button></div>';
+    if (custom) {
+      html += '<input type="date" class="x-input" id="nvDate_' + where + '" min="' + reAddDays(today, 1) + '" max="' + reAddDays(today, 365) + '" value="' + esc(v) + '" aria-label="اختار يوم الزيارة الجاية" onchange="nvPickDate(\'' + where + '\', this.value)">';
+    }
+    if (v) {
+      const fri = dateFromYmd(v).getDay() === 5;
+      html += '<div class="nv-sum" role="status"><span class="nv-ic">' + ic('check', 15) + '</span><span><b>' + esc(arDate(v)) + '</b>' + (fri ? ' <b class="nv-warn">(جمعة)</b>' : '') + '</span>' +
+        '<button type="button" class="nv-x" aria-label="إلغاء الموعد" onclick="nvSet(\'' + where + '\', \'\')">' + ic('x', 15) + '</button></div>';
+    }
+    return html;
+  }
+  function nvQuick(where, n) {
+    const d = reAddDays(getTodayDateStr(), n);
+    nvCustomOpen[where] = false;
+    nvSet(where, nvGet(where) === d ? '' : d);
+    if (nvGet(where)) pushAskIfNeeded(where);
+  }
+  function nvOpenCustom(where) {
+    nvCustomOpen[where] = true;
+    nvRender(where);
+    const inp = document.getElementById('nvDate_' + where);
+    if (inp) { inp.focus(); try { inp.showPicker(); } catch (e) {} }
+  }
+  function nvPickDate(where, v) {
+    if (!v) { nvSet(where, ''); return; }
+    if (v <= getTodayDateStr()) { showToast('اختار يوم بعد اليوم', 'error'); nvRender(where); return; }
+    nvCustomOpen[where] = true;
+    nvSet(where, v);
+    pushAskIfNeeded(where);
+  }
+
+  // ── إشعارات الهاتف ──
+  function pushSupported() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+  function pushStatus() {
+    if (!pushSupported()) return /iphone|ipad|ipod/i.test(navigator.userAgent) ? 'ios' : 'unsupported';
+    return Notification.permission; // granted | denied | default
+  }
+  function pushKeyBytes() {
+    const s = PUSH_PUBLIC_KEY.replace(/-/g, '+').replace(/_/g, '/');
+    const bin = atob(s + '==='.slice((s.length + 3) % 4));
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function pushRegister() {
+    return navigator.serviceWorker.register('sw.js').then(function () { return navigator.serviceWorker.ready; });
+  }
+  function pushSubscribeAndSave() {
+    return pushRegister()
+      .then(function (reg) {
+        return reg.pushManager.getSubscription().then(function (s) {
+          return s || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: pushKeyBytes() });
+        });
+      })
+      .then(function (sub) {
+        const body = new FormData();
+        body.append('action', 'savePushSub');
+        body.append('username', (currentAdmin && currentAdmin.username) || '');
+        body.append('password', (currentAdmin && currentAdmin.pass) || '');
+        body.append('sub', JSON.stringify(sub));
+        return fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body }).then(function (r) { return r.json(); });
+      });
+  }
+  // بعد الدخول: لو الإذن ممنوح من قبل، نتأكد إن اشتراك هذا الجهاز محفوظ (مرة باليوم)
+  function pushInit() {
+    if (!currentAdmin || !isRep() || !pushSupported() || Notification.permission !== 'granted') return;
+    const key = 'ifcoPushSync:' + currentAdmin.username;
+    const today = getTodayDateStr();
+    let synced = false;
+    try { synced = localStorage.getItem(key) === today; } catch (e) {}
+    if (synced) { pushRegister().catch(function () {}); return; }
+    pushSubscribeAndSave()
+      .then(function (d) { if (d && d.result === 'success') { try { localStorage.setItem(key, today); } catch (e) {} } })
+      .catch(function () {});
+  }
+  // طلب الإذن — لازم يجي من ضغطة المستخدم (خصوصًا الآيفون)
+  function pushEnable() {
+    if (!pushSupported()) return Promise.resolve(pushStatus());
+    return Promise.resolve(Notification.requestPermission())
+      .then(function (p) {
+        if (p !== 'granted') return p;
+        return pushSubscribeAndSave().then(function (d) {
+          if (d && d.result === 'success') { try { localStorage.setItem('ifcoPushSync:' + currentAdmin.username, getTodayDateStr()); } catch (e) {} return 'granted'; }
+          return 'error';
+        });
+      })
+      .catch(function () { return 'error'; });
+  }
+  function pushAskIfNeeded(where) {
+    if (pushSupported() && Notification.permission === 'default') pushEnable().then(function () { nvRender(where); });
+  }
+  // تسجيل الخروج: هذا الجهاز ما يبقى يستلم تذكيرات الحساب القديم
+  function pushOnLogout(user) {
+    try { localStorage.removeItem('ifcoPushSync:' + ((user && user.username) || '')); } catch (e) {}
+    if (!user || !pushSupported()) return;
+    navigator.serviceWorker.getRegistration().then(function (reg) {
+      return reg && reg.pushManager.getSubscription();
+    }).then(function (sub) {
+      if (!sub) return;
+      const body = new FormData();
+      body.append('action', 'removePushSub');
+      body.append('username', user.username || '');
+      body.append('password', user.pass || '');
+      body.append('endpoint', sub.endpoint);
+      fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body }).catch(function () {});
+      return sub.unsubscribe();
+    }).catch(function () {});
+  }
+  // كارت «تذكيرات الهاتف» بشاشة حسابي
+  function accPushRender() {
+    const pill = document.getElementById('accPushPill'), btns = document.getElementById('accPushBtns');
+    if (!pill) return;
+    const s = pushStatus();
+    const map = {
+      granted: ['good', 'مفعّلة'],
+      denied: ['bad', 'مقفولة من المتصفح'],
+      default: ['outline', 'مو مفعّلة'],
+      ios: ['outline', 'تحتاج إضافة للشاشة الرئيسية'],
+      unsupported: ['outline', 'غير مدعومة']
+    };
+    const m = map[s] || map.unsupported;
+    pill.className = 'x-pill ' + m[0];
+    pill.textContent = m[1];
+    btns.innerHTML = s === 'default' ? '<button type="button" class="x-btn sm" id="accPushOn" onclick="accPushEnable()">' + ic('bell', 16) + 'تفعيل التذكيرات</button>'
+      : s === 'granted' ? '<button type="button" class="x-btn ghost sm" id="accPushTest" onclick="accPushTest()">' + ic('send', 16) + 'إرسال إشعار تجربة</button>' : '';
+  }
+  function accPushEnable() {
+    const b = document.getElementById('accPushOn');
+    if (b) { b.disabled = true; b.innerHTML = '<span class="x-spinner"></span> جارٍ التفعيل...'; }
+    pushEnable().then(function (r) {
+      if (r === 'granted') showToast('تفعّلت التذكيرات على هذا الجهاز', 'success');
+      else if (r === 'error') showToast('تعذر التفعيل — تأكد من النت وحاول مرة ثانية', 'error');
+      accPushRender();
+    });
+  }
+  function accPushTest() {
+    const b = document.getElementById('accPushTest');
+    if (b) { b.disabled = true; b.innerHTML = '<span class="x-spinner"></span> جارٍ الإرسال...'; }
+    pushSubscribeAndSave()
+      .then(function () {
+        const body = new FormData();
+        body.append('action', 'testPush');
+        body.append('username', (currentAdmin && currentAdmin.username) || '');
+        body.append('password', (currentAdmin && currentAdmin.pass) || '');
+        return fetchWithTimeout(WEB_APP_URL, { method: 'POST', body: body }).then(function (r) { return r.json(); });
+      })
+      .then(function (d) {
+        if (d && d.result === 'success' && d.sent) showToast('انرسل إشعار التجربة — راح يوصلك خلال ثواني', 'success');
+        else showToast('ما انرسل الإشعار — حاول مرة ثانية', 'error');
+      })
+      .catch(function () { showToast('تعذر الاتصال بالخادم', 'error'); })
+      .then(accPushRender);
+  }
+
   // ═════════════ تعديل خط سير يوم (مندوب + يوم) ═════════════
   // شاشة مستقلة: شريط المندوبين بعدد نقاط اليوم، شريط أسبوع بعدد نقاط المندوب لكل يوم،
   // قائمة نقاط اليوم (مجمّعة بالمنطقة) أو خريطة، تحديد متعدد (حذف / نقل / نسخ لمندوب أو
@@ -8260,7 +8476,7 @@
     return '<div class="re-row' + (r.visited ? ' done' : '') + (sel ? ' sel' : '') + (id && routeEdit.flash[id] ? ' re-new' : '') + '">' +
       '<button type="button" class="re-chk" role="checkbox" aria-checked="' + sel + '" aria-label="تحديد ' + esc(name) + '" onclick="reToggleSel(' + i + ')"><span class="x-box' + (sel ? ' on' : '') + '">' + ic('checkBold', 13) + '</span></button>' +
       '<span class="re-n">' + (r.visited ? ic('check', 15) : idx) + '</span>' +
-      '<span class="re-t"><b>' + esc(name) + '</b><span class="x-small">' + sub + '</span></span>' +
+      '<span class="re-t"><b>' + esc(name) + (r['موعد'] ? ' <span class="x-pill info" style="font-size:11px;padding:1px 8px;">موعد متفق عليه</span>' : '') + '</b><span class="x-small">' + sub + '</span></span>' +
       '<div class="re-state">' + state + '</div><button type="button" class="re-del" aria-label="شيل ' + esc(name) + ' من الخط" title="شيلها من الخط" onclick="reDeleteOne(' + i + ')">' + ic('trash', 18) + '</button></div>';
   }
   function reDeleteOne(i) { const r = (routeEdit.shown || [])[i]; if (r) reDeleteRows([r]); }
@@ -8813,10 +9029,13 @@
       '<div class="x-grid x-g2" style="gap:10px;"><div class="acc-tile"><span>الصلاحية</span><b>' + esc((currentAdmin && currentAdmin.role) || '') + '</b></div><div class="acc-tile"><span>خط السير</span><b id="accRouteMode">—</b></div></div></section>' +
       '<section class="x-card flush" aria-label="هذا الجهاز"><div class="x-li"><span class="ic pine" style="width:38px;height:38px;">' + ic('phone', 18) + '</span><div class="x-titles"><span class="t">مسجّل دخول على هذا الجهاز</span><span class="s">' + esc(until) + '</span></div></div>' +
       '<div class="x-li"><span class="ic info" style="width:38px;height:38px;">' + ic('locate', 18) + '</span><div class="x-titles"><span class="t">الموقع (GPS)</span><span class="s" id="accGps">لازم يبقى شغّال حتى تبدي الزيارات</span></div></div></section>' +
+      (isRep() ? '<section class="x-card" aria-labelledby="accPushT" style="gap:10px;"><div class="x-between"><h2 class="x-h2" id="accPushT">تذكيرات الهاتف</h2><span class="x-pill" id="accPushPill"></span></div>' +
+        '<div class="x-row-flex" id="accPushBtns"></div></section>' : '') +
       '<section class="x-card" style="flex-direction:row;align-items:center;gap:12px;"><span class="ic" style="width:38px;height:38px;border-radius:12px;background:var(--soft-2);color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + ic('help', 18) + '</span>' +
       '<span style="font-size:13px;color:var(--ink-2);line-height:1.6;">نسيت كلمة المرور أو عندك مشكلة؟ تواصل مع الإدارة وهمّه يساعدوك.</span></section>' +
       '<div id="accLogoutBox"><button type="button" class="x-btn ghost danger lg block" onclick="accAskLogout()">' + ic('logout', 18) + 'تسجيل الخروج</button></div>' +
       '<span style="text-align:center;font-size:11.5px;color:var(--faint);letter-spacing:.3px;">IFCO · Injazaat Aifayhaa Co.</span>';
+    accPushRender();
     if (navigator.permissions) {
       navigator.permissions.query({ name: 'geolocation' }).then(function (p) {
         const el = document.getElementById('accGps');
