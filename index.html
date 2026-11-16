@@ -498,6 +498,7 @@
   .x-alert.info { background: var(--info-tint); border-color: #C9D8FA; color: var(--info-ink); }
   .x-alert a, .x-alert .lnk { color: inherit; font-weight: 700; text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; background: none; border: none; font-size: 13.5px; }
   .x-note { padding: 12px; border-radius: 14px; background: var(--note-bg); font-size: 12px; color: var(--muted); line-height: 1.7; }
+  .x-note:empty, #custTimelineBox:empty { display: none; }
   .x-note.soft { background: var(--soft); color: var(--ink-2); font-size: 12.5px; }
   .x-empty { padding: 22px 14px; text-align: center; font-size: 13px; color: var(--muted-2); border: 1.5px dashed var(--line-2); border-radius: 14px; }
   .x-empty.plain { border: none; }
@@ -709,6 +710,16 @@
   .ph-strip .msg-l { font-size: 12.5px; font-weight: 700; color: var(--bad-fg); min-height: 0; }
   .rt-start { height: 50px; border-radius: 14px; border: 1.5px solid var(--accent); background: #fff; color: var(--accent); font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; width: 100%; }
   .rt-start:disabled { opacity: .5; cursor: not-allowed; }
+  .rt-card.next { border: 1.5px solid var(--accent); box-shadow: 0 6px 18px var(--accent-ring); }
+  .rt-card.next .rt-start { background: var(--accent); color: #fff; }
+  .flt-sum { display: none; }
+  @media (max-width: 1023.98px) {
+    .flt-sum { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 0 14px; border-radius: 16px; border: 1px solid var(--line); background: #fff; color: var(--ink); font: inherit; font-size: 13.5px; font-weight: 700; text-align: start; cursor: pointer; }
+    .flt-sum .t { flex-grow: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .flt-sum svg { flex-shrink: 0; color: var(--muted); }
+    .flt-sum[aria-expanded="true"] svg:last-child { transform: rotate(180deg); }
+    .flt-body.flt-closed { display: none !important; }
+  }
   .rt-timer { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; background: var(--accent-tint); color: var(--accent); font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; padding: 6px 12px; border-radius: 999px; }
   .rt-timer i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: block; animation: pulseDot 1.2s ease infinite; }
   .rt-divider { height: 1px; background: var(--line-3); }
@@ -773,6 +784,7 @@
   @media (max-width: 1023.98px) {
     .topbar .tb-actions { display: flex; order: 5; flex-basis: 100%; overflow-x: auto; margin: 0 -16px; padding: 2px 16px; scrollbar-width: none; }
     .topbar .tb-actions::-webkit-scrollbar { display: none; }
+    .topbar.tb-inline .tb-actions { order: 0; flex-basis: auto; margin: 0; padding: 0; overflow: visible; }
     .x-seg.adapt { background: transparent; padding: 0; gap: 8px; }
     .x-seg.adapt button { flex-shrink: 0; height: 38px; border-radius: 999px; border: 1.5px solid var(--line-2); background: #fff; color: var(--ink-2); }
     .x-seg.adapt button.on, .x-seg.adapt button[aria-selected="true"] { border-color: var(--pine); background: var(--pine); color: var(--pine-fg); box-shadow: none; }
@@ -799,8 +811,9 @@
   .dash-row { display: grid; gap: 12px; align-items: center; padding: 11px 4px; border-bottom: 1px solid var(--row-line); font-size: 13.5px; }
   .dash-row:last-child { border-bottom: none; }
   .dash-row.th { padding: 8px 4px; border-bottom: 1px solid var(--line); color: var(--muted-2); font-size: 12px; font-weight: 700; }
-  .dash-reps { grid-template-columns: minmax(0, 1fr) 150px 70px 110px; }
+  .dash-reps { grid-template-columns: minmax(118px, 1.25fr) minmax(76px, 1fr) 62px 100px; }
   .dash-areas { grid-template-columns: minmax(0, 1fr) 70px 80px 90px; padding-top: 13px; padding-bottom: 13px; }
+  @media (min-width: 1024px) { .x-cols.dash-pair { align-items: stretch; } }
   @media (max-width: 1023.98px) {
     .dash-areas { grid-template-columns: minmax(0, 1fr) 52px 60px 64px; gap: 8px; font-size: 13px; }
     .dash-tbl { padding-bottom: 6px; }
@@ -1049,7 +1062,7 @@
   .users-cell { display: flex; align-items: center; gap: 10px; }
   .users-confirm { margin: 0 14px 12px; flex-wrap: wrap; }
   @media (max-width: 1023.98px) { .users-cell { justify-content: space-between; flex-direction: row-reverse; } .users-cell > span, .users-cell > b { flex-grow: 1; } }
-  @media (min-width: 1024px) { .users-row, .users-row.th { grid-template-columns: minmax(0, 1fr) 230px 150px; gap: 16px; padding: 12px 20px; } .users-confirm { margin: 0 20px 12px; } }
+  @media (min-width: 1024px) { .users-row, .users-row.th { grid-template-columns: minmax(150px, 1fr) 210px 120px; gap: 16px; padding: 12px 20px; } .users-confirm { margin: 0 20px 12px; } }
 
   /* الإدارة: الشركات المنافسة */
   @media (min-width: 1024px) { .cm-cols { grid-template-columns: minmax(0, 1fr) 380px; } }
@@ -1187,6 +1200,11 @@
   .vl-name b { font-size: 14px; }
   .vl-dur { text-align: center; font-weight: 700; color: var(--ink-2); }
   .vl-dur.short { color: var(--warn-num); }
+  @media (max-width: 1023.98px) {
+    .vl-row { grid-template-columns: 58px minmax(0, 1fr) 46px; row-gap: 6px; }
+    .vl-row .vl-st { grid-column: 2; grid-row: 2; justify-self: start; }
+    .vl-row .vl-time, .vl-row .vl-dur { grid-row: 1 / span 2; }
+  }
   @media (min-width: 1024px) { .vl-row, .vl-row.th { grid-template-columns: 80px minmax(0, 1.3fr) minmax(0, 0.9fr) minmax(0, 1.2fr) 120px 190px 90px; gap: 12px; padding: 12px 20px; } }
   .vl-detail { padding: 4px 14px 14px; display: flex; flex-direction: column; gap: 10px; }
   .vl-kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
@@ -1545,7 +1563,6 @@
           <span>تسجيل الدخول</span>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <p class="login-help">نسيت كلمة المرور؟ <b>تواصل مع الإدارة</b> لإعادة تعيينها</p>
       </div>
       <div class="login-foot">IFCO · Injazaat Aifayhaa Co.</div>
     </div>
@@ -1733,7 +1750,7 @@
           <form id="geoForm" class="x-stack" novalidate>
             <div class="rep-head">
               <button type="button" class="icon-btn" onclick="goToMyHome()" aria-label="رجوع للرئيسية"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-              <div class="tb-titles"><h1 class="rep-h1" id="formTitle">رفع نقطة بيع جديدة</h1><span class="tb-sub" id="formSubTitle">الموقع ينحدد تلقائيًا من هاتفك</span></div>
+              <div class="tb-titles"><h1 class="rep-h1" id="formTitle">رفع نقطة بيع جديدة</h1><span class="tb-sub" id="formSubTitle"></span></div>
             </div>
             <div class="visit-counter" id="visitCounter" style="display:none;"></div>
             <div class="queue-badge x-alert warn" id="queueBadge" style="display:none;"></div>
@@ -1760,7 +1777,7 @@
               <h2 class="x-h2" id="npSecInfo">بيانات النقطة</h2>
               <div class="x-field">
                 <label for="store">اسم نقطة البيع</label>
-                <input type="text" id="store" class="x-input lgf" name="اسم نقطة البيع" list="storeSuggestions" autocomplete="off" placeholder="مثال: أسواق الفرات" required>
+                <input type="text" id="store" class="x-input lgf" name="اسم نقطة البيع" list="storeSuggestions" autocomplete="off" required>
                 <datalist id="storeSuggestions"></datalist>
                 <div class="field-hint" id="lastVisitHint" style="display:none;"></div>
               </div>
@@ -4248,7 +4265,6 @@
     box.className = 'dup-prompt';
     box.setAttribute('role', 'alert');
     box.innerHTML = '<b class="dp-t">' + ic('warn', 18) + 'يمكن هاي النقطة مسجّلة من قبل</b>' +
-      '<span class="x-small">راجعها قبل الإرسال حتى ما تتكرر:</span>' +
       cands.map(function (c, i) {
         const why = c.why === 'phone' ? 'رقم متقارب' : c.why === 'name+phone' ? 'نفس الاسم والرقم تقريبًا' : 'اسم متشابه';
         return '<div class="dp-row"><span class="dp-info"><b>' + esc(c.name) + '</b><span class="x-small">' + esc([c.area, c.phone, 'تبعد ' + c.distance + ' م', why].filter(Boolean).join(' · ')) + '</span></span>' +
@@ -4547,7 +4563,16 @@
     const a = document.getElementById('pageActions');
     if (t && title !== undefined && title !== null) t.textContent = title;
     if (s) s.textContent = sub || '';
-    if (a) a.innerHTML = actionsHtml || '';
+    if (a) {
+      a.innerHTML = actionsHtml || '';
+      // بالهاتف: إذا الأزرار أيقونات بس، تبقى بنفس سطر العنوان بدل سطر لحالها
+      const tb = document.getElementById('topbar');
+      if (tb) tb.classList.toggle('tb-inline', a.children.length > 0 && Array.prototype.every.call(a.children, function (k) {
+        const c = k.cloneNode(true);
+        c.querySelectorAll('.desk-only').forEach(function (x) { x.remove(); });
+        return !c.textContent.trim();
+      }));
+    }
     try { document.title = (title ? title + ' · ' : '') + 'إنجازات الفيحاء'; } catch (e) {}
   }
 
@@ -4747,8 +4772,8 @@
       const np = document.getElementById('notifPanel');
       if (np) np.style.display = 'none';
     }
-    if (!repMode && view === 'route') setPage('خط سيري', 'اختار المندوب واليوم', '');
-    if (!repMode && view === 'form') setPage(isRouteVisit ? 'تسجيل زيارة' : 'رفع نقطة بيع جديدة', isRouteVisit ? '' : 'الموقع ينحدد تلقائيًا من الهاتف', '');
+    if (!repMode && view === 'route') setPage('خط سيري', '', '');
+    if (!repMode && view === 'form') setPage(isRouteVisit ? 'تسجيل زيارة' : 'رفع نقطة بيع جديدة', '', '');
     if (loggedIn) buildSidebarMenu();
 
     if (view === 'route') {
@@ -5127,7 +5152,7 @@
     if (s) s.textContent = txt;
     if (!isRep() && document.getElementById('routeView').style.display !== 'none') {
       const rep = (document.getElementById('routeRep') || {}).value || '';
-      setPage('خط سيري', rep ? (rep + ' · ' + txt) : 'اختار المندوب واليوم', '');
+      setPage('خط سيري', rep ? (rep + ' · ' + txt) : '', '');
     }
   }
   function setRouteViewMode_(mode) {
@@ -5333,13 +5358,13 @@
       '<a href="https://www.google.com/maps/dir/?api=1&destination=' + esc(lat) + ',' + esc(lng) + '" target="_blank" rel="noopener">Google Maps</a></div>' +
       (ctx ? addPhoneStripHtml(row, ctx) : '');
   }
-  function routeCardHtml(row, idx) {
+  function routeCardHtml(row, idx, isNext) {
     const name = row['اسم نقطة البيع'] || '';
     const pid = encodeURIComponent(name);
     const dist = (row._dist !== undefined && isFinite(row._dist)) ? '<span class="rt-dist">' + fmtDistance(row._dist) + '</span>' : '';
     const hasLoc = row['Latitude'] && row['Longitude'];
     const busy = !!activeVisit;
-    return '<div class="rt-card" id="rtCard_' + pid + '">' +
+    return '<div class="rt-card' + (isNext && !busy ? ' next' : '') + '" id="rtCard_' + pid + '">' +
       '<div class="x-between" style="align-items:flex-start;"><div class="x-titles" style="display:flex;flex-direction:column;gap:2px;min-width:0;">' +
       '<span class="rt-name">' + esc(name) + '</span><span class="x-small">' + esc(routeLastLine(row)) + '</span></div>' + dist + '</div>' +
       '<div class="rt-tags">' + (row['المنطقة'] ? '<span class="rt-tag">' + ic('pin', 14) + esc(row['المنطقة']) + '</span>' : '') +
@@ -5419,7 +5444,7 @@
     rows.forEach(function (r, i) { if (i === activeIdx) return; (r.visited ? done : remaining).push(i); });
     if (remaining.length) {
       html += '<span class="rt-sec">' + (remaining.length === 1 ? 'النقطة التالية' : 'النقاط الباقية (' + remaining.length + ')') + '</span>';
-      html += remaining.map(function (i) { return routeCardHtml(rows[i], i); }).join('');
+      html += remaining.map(function (i, k) { return routeCardHtml(rows[i], i, k === 0); }).join('');
     }
     if (done.length) {
       html += '<span class="rt-sec">تمت زيارتها (' + done.length + ')</span>';
@@ -5428,7 +5453,7 @@
     list.innerHTML = html;
   }
 
-  const ROUTE_EMPTY_HTML = '<div class="x-empty">ما أكو نقاط بخط السير لهذا اليوم<br><span class="x-small">تكدر تزور أي محل من تبويب «بحث نقطة»</span></div>';
+  const ROUTE_EMPTY_HTML = '<div class="x-empty">ما أكو نقاط بخط السير لهذا اليوم</div>';
   function loadRoute() {
     const rep = document.getElementById('routeRep').value;
     const status = document.getElementById('routeStatus');
@@ -5613,12 +5638,12 @@
     const box = document.getElementById('rsResults');
     if (!box) return;
     if (!routeSearch.list) { box.innerHTML = [1, 2].map(function () { return '<div class="rt-card"><div class="x-skel" style="width:55%;height:14px;"></div><div class="x-skel" style="width:35%;"></div><div class="x-skel" style="height:44px;border-radius:12px;"></div></div>'; }).join(''); routeSearch.results = []; return; }
-    if (!routeSearch.list.length) { box.innerHTML = '<div class="x-empty">ما عندك زبائن مسجّلين باسمك لحد الآن<br><span class="x-small">الزبون يصير باسمك من تزوره، أو من ترفعه كنقطة جديدة</span></div>'; routeSearch.results = []; return; }
+    if (!routeSearch.list.length) { box.innerHTML = '<div class="x-empty">ما عندك زبائن مسجّلين باسمك لحد الآن</div>'; routeSearch.results = []; return; }
     const raw = document.getElementById('rsName').value;
     const q = normAr(raw);
     const qDigits = raw.replace(/[^0-9]/g, '');
     // بدون منطقة: البحث بالاسم/الرقم يشمل كل زبائنه
-    if (!routeSearch.area && !q && qDigits.length < 4) { box.innerHTML = '<div class="x-empty">اختار المنطقة، أو اكتب اسم المحل حتى تدوّر بكل زبائنك</div>'; routeSearch.results = []; return; }
+    if (!routeSearch.area && !q && qDigits.length < 4) { box.innerHTML = ''; routeSearch.results = []; return; }
     const pts = routeSearch.area ? routeSearch.list.filter(function (p) { return String(p['المنطقة'] || '').trim() === routeSearch.area; }) : routeSearch.list;
     let list = pts.filter(function (p) {
       if (!q) return true;
@@ -5637,7 +5662,7 @@
     const total = list.length;
     list = list.slice(0, 30);
     routeSearch.results = list;
-    if (!total) { box.innerHTML = '<div class="x-empty">ما لكينا هذا المحل بزبائنك' + (routeSearch.area ? ' بـ' + esc(routeSearch.area) : '') + '<br><span class="x-small">إذا المحل مو مسجّل باسمك أو جديد، سجّله من «رفع نقطة جديدة» — وإذا طلع مسجّل، أكّد إنه نفس المحل وينتقل باسمك</span></div>'; return; }
+    if (!total) { box.innerHTML = '<div class="x-empty">ما لكينا هذا المحل بزبائنك' + (routeSearch.area ? ' بـ' + esc(routeSearch.area) : '') + '</div>'; return; }
     const rep = (document.getElementById('routeRep') || {}).value || '';
     const date = (document.getElementById('routeDate') || {}).value || getTodayDateStr();
     const busy = !!activeVisit;
@@ -6044,7 +6069,7 @@
     document.getElementById('standToggleBtn').classList.remove('on');
     document.getElementById('standToggleBtn').disabled = false;
     document.getElementById('formTitle').textContent = 'رفع نقطة بيع جديدة';
-    document.getElementById('formSubTitle').textContent = 'الموقع ينحدد تلقائيًا من هاتفك';
+    document.getElementById('formSubTitle').textContent = '';
     phoneIsDuplicate = false;
     lastCheckedPhone = '';
     nearbyDupBlocked = false;
@@ -6467,7 +6492,7 @@
       html += '<div class="x-grid x-g4">' +
         '<div class="x-kpi"><span class="l">زيارات خط السير</span><span class="n">' + d.totalVisits + '</span>' + deltaHtml(tr.totalVisits) + '</div>' +
         '<div class="x-kpi"><span class="l">نقاط جديدة</span><span class="n">' + d.newPoints + '</span>' + deltaHtml(tr.newPoints) + '</div>' +
-        '<div class="x-kpi"><span class="l"><span class="desk-only">متوسط مدة الزيارة</span><span class="phone-only">متوسط الزيارة</span></span><span class="n">' + d.avgMinutes + ' <small><span class="desk-only">دقيقة</span><span class="phone-only">د</span></small></span><span class="s">من بدء الزيارة لحد إنهائها</span></div>' +
+        '<div class="x-kpi"><span class="l"><span class="desk-only">متوسط مدة الزيارة</span><span class="phone-only">متوسط الزيارة</span></span><span class="n">' + d.avgMinutes + ' <small><span class="desk-only">دقيقة</span><span class="phone-only">د</span></small></span></div>' +
         '<div class="x-kpi warn"><span class="l"><span class="desk-only">زيارات قصيرة مشبوهة</span><span class="phone-only">زيارات مشبوهة</span></span><span class="n">' + d.shortVisits + '</span><span class="s">أقل من دقيقة وحدة' + (d.totalVisits ? ' · ' + shortPct + '٪ من الزيارات' : '') + '</span></div>' +
         '</div>';
     }
@@ -6478,7 +6503,7 @@
     const statusTotal = statusEntries.reduce(function (s, e) { return s + e.count; }, 0);
     const hasStatus = w.status !== false && statusEntries.length;
     if (hasChart || hasStatus) {
-      html += '<div class="x-cols ' + (hasChart && hasStatus ? 'x-cols-2-1' : '') + '">';
+      html += '<div class="x-cols dash-pair ' + (hasChart && hasStatus ? 'x-cols-2-1' : '') + '">';
       if (hasChart) {
         html += '<section class="x-card"><div class="x-card-head"><h2><span class="desk-only">الزيارات والنقاط الجديدة يوميًا</span><span class="phone-only">يوميًا</span></h2>' +
           '<div class="x-row-flex" style="gap:8px;"><button type="button" class="x-legend-btn" aria-pressed="true" onclick="dbv2ToggleSeries(0,this)"><span class="ln" style="background:var(--accent);"></span>زيارة</button>' +
@@ -6539,7 +6564,7 @@
       }
       html += '</div>';
     }
-    if (!html) html = '<div class="x-empty">كل أقسام اللوحة مخفية حاليًا — فعّل قسم واحد على الأقل من "تخصيص اللوحة"</div>';
+    if (!html) html = '<div class="x-empty">كل أقسام اللوحة مخفية</div>';
     area.innerHTML = html;
     if (hasChart) dbv2InitChart(d.dailySeries);
     if (hasStatusChart) dbv2InitStatusChart(st.labels, st.series);
@@ -6586,6 +6611,8 @@
     };
   }
   function dayLabel(s) { const d = dateFromYmd(s); return isNaN(d) ? s : d.getDate() + '/' + (d.getMonth() + 1); }
+  // الجمعة عطلة: إذا ما بيها شي، تنشال من الخط بدل ما تنزله للصفر
+  function dbv2Off(s) { const d = dateFromYmd(s.date || ''); return !isNaN(d) && d.getDay() === 5 && !s.visits && !s.newPoints; }
   function dbv2InitChart(series) {
     const canvas = document.getElementById('dbv2TrendCanvas');
     if (!canvas || typeof Chart === 'undefined') return;
@@ -6595,8 +6622,8 @@
       data: {
         labels: series.map(function (s) { return dayLabel(s.date || ''); }),
         datasets: [
-          { label: 'زيارة', data: series.map(function (s) { return s.visits || 0; }), borderColor: acc, backgroundColor: 'rgba(168,82,31,0.10)', fill: true, tension: 0, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: acc, pointBorderColor: '#fff', pointBorderWidth: 2, borderWidth: 2.5 },
-          { label: 'نقطة جديدة', data: series.map(function (s) { return s.newPoints || 0; }), borderColor: info, backgroundColor: 'transparent', fill: false, tension: 0, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: info, pointBorderColor: '#fff', pointBorderWidth: 2, borderWidth: 2.5 }
+          { label: 'زيارة', data: series.map(function (s) { return dbv2Off(s) ? null : (s.visits || 0); }), spanGaps: true, borderColor: acc, backgroundColor: 'rgba(168,82,31,0.10)', fill: true, tension: 0, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: acc, pointBorderColor: '#fff', pointBorderWidth: 2, borderWidth: 2.5 },
+          { label: 'نقطة جديدة', data: series.map(function (s) { return dbv2Off(s) ? null : (s.newPoints || 0); }), spanGaps: true, borderColor: info, backgroundColor: 'transparent', fill: false, tension: 0, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: info, pointBorderColor: '#fff', pointBorderWidth: 2, borderWidth: 2.5 }
         ]
       },
       options: chartBaseOptions()
@@ -6625,7 +6652,7 @@
     periodData = null;
     periodTab = 'team';
     periodQuick = '7d';
-    setPage('تقرير الأداء', 'اختار يوم واحد تشوف تقدّم خطوط السير، أو فترة أطول لتقرير مجمّع',
+    setPage('تقرير الأداء', '',
       '<button type="button" class="x-btn ghost good" id="perExportBtn" style="display:none;" onclick="exportPeriodReport()">' + ic('download', 18) + '<span class="desk-only">تصدير Excel</span></button>');
     content.innerHTML =
       '<div class="x-card per-filters">' +
@@ -6687,7 +6714,7 @@
     status.textContent = '';
     result.innerHTML = '<div class="x-loading">جارٍ تحميل التقرير...</div>';
     const r = { from: from, to: to };
-    setPage('تقرير الأداء', rangeLabel(r) + ' · اختار يوم واحد تشوف تقدّم خطوط السير، أو فترة أطول لتقرير مجمّع');
+    setPage('تقرير الأداء', rangeLabel(r));
     fetchWithTimeout(WEB_APP_URL + '?action=periodSummary&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || '') + '&from=' + encodeURIComponent(from) + '&to=' + encodeURIComponent(to))
       .then(function (res) { return res.json(); })
       .then(function (data) {
@@ -6734,7 +6761,7 @@
         }
         if (areas.length) {
           const mx = Math.max.apply(null, areas.map(function (a) { return a.visits + a.newPoints; })) || 1;
-          h += '<section class="x-card"><div class="x-card-head"><h2>ترتيب المناطق</h2><span class="meta">حسب الزيارات والنقاط الجديدة</span></div>' + areas.slice(0, 12).map(function (a, i) {
+          h += '<section class="x-card"><div class="x-card-head"><h2>ترتيب المناطق</h2></div>' + areas.slice(0, 12).map(function (a, i) {
             return '<div class="per-bar-row"><span class="x-rank' + (i === 0 ? ' first' : '') + '">' + (i + 1) + '</span><div class="x-grow" style="display:flex;flex-direction:column;gap:5px;min-width:0;">' +
               '<div class="x-between"><b class="ell">' + esc(a.area) + '</b><span class="x-small tnum">' + a.visits + ' زيارة · <span style="color:var(--info-ink);font-weight:700;">' + a.newPoints + ' جديدة</span></span></div>' +
               '<span class="x-bar info"><span style="width:' + Math.round((a.visits + a.newPoints) / mx * 100) + '%"></span></span></div></div>';
@@ -6802,7 +6829,7 @@
     const content = document.getElementById('adminContent');
     if (!(canPlan() || isManagement() || isOwner())) { notAllowedPanel('هذه الصفحة غير متاحة لحسابك'); return; }
     progSort = 'attention';
-    setPage('تقدّم اليوم', 'وين وصل كل مندوب بخط سيره، لحظة بلحظة',
+    setPage('تقدّم اليوم', '',
       '<span class="x-small desk-only" id="progUpdated"></span>' +
       '<input type="date" id="progDate" class="x-input white" style="height:44px;width:auto;" aria-label="اليوم" onchange="loadDailyProgress()">');
     content.innerHTML =
@@ -6835,7 +6862,7 @@
         const upd = document.getElementById('progUpdated');
         const nowTxt = 'آخر تحديث ' + arTime(new Date());
         if (upd) upd.textContent = nowTxt;
-        setPage('تقدّم اليوم', window.innerWidth < 1024 ? arDate(date) + ' · ' + nowTxt : 'وين وصل كل مندوب بخط سيره، لحظة بلحظة', document.getElementById('pageActions').innerHTML);
+        setPage('تقدّم اليوم', arDate(date) + ' · ' + nowTxt, document.getElementById('pageActions').innerHTML);
         const pd = document.getElementById('progDate'); if (pd) pd.value = date;
         renderDailyProgress();
       })
@@ -6906,7 +6933,7 @@
     neglectedSelected = {};
     negData = null;
     negTab = 'high';
-    setPage('متابعة النقاط', 'نقاط تستاهل زيارة قريبة، وتكدر تضيفها لخط سير أي مندوب من هنا مباشرة');
+    setPage('متابعة النقاط', '');
     content.innerHTML =
       '<div class="x-card neg-filters">' +
       '<div class="x-field"><label for="negDays">مهملة إذا ما انزارت من</label><div class="x-row-flex" style="flex-wrap:nowrap;gap:8px;"><input type="number" id="negDays" class="x-input sm" value="30" min="1" inputmode="numeric" style="width:84px;"><span class="x-small">يوم</span></div></div>' +
@@ -7053,12 +7080,13 @@
     const content = document.getElementById('adminContent');
     if (!(canPlan() || isManagement() || isOwner())) { notAllowedPanel('هذه الصفحة غير متاحة لحسابك'); return; }
     currentVisitTypeFilter = '';
-    setPage('سجل الزيارات', 'كل زيارة ونقطة جديدة انسجلت، بالتفصيل',
+    setPage('سجل الزيارات', '',
       '<button type="button" class="x-btn ghost good" id="exportBtn" style="display:none;" onclick="exportReports()">' + ic('download', 18) + '<span class="desk-only">تصدير Excel</span></button>');
     content.innerHTML =
-      '<div class="x-card vl-filters">' +
+      '<button type="button" class="flt-sum" id="repFiltSum" aria-expanded="false" aria-controls="repFilt" onclick="toggleFilt(\'repFilt\', this)"></button>' +
+      '<div class="x-card vl-filters flt-body flt-closed" id="repFilt">' +
       '<div class="x-field" style="flex:1 1 200px;"><label for="repRep">المندوب</label><select id="repRep" class="x-select sm">' + repOptionsHtml() + '</select></div>' +
-      '<div class="x-field"><label for="repDate">اليوم <span class="opt">(فارغ = كل الأيام)</span></label><input type="date" id="repDate" class="x-input sm"></div>' +
+      '<div class="x-field"><label for="repDate">اليوم</label><input type="date" id="repDate" class="x-input sm"></div>' +
       '<div class="x-field" style="flex:1 1 180px;"><label for="repArea">المناطق</label><input type="search" id="repArea" class="x-input sm" list="repAreaList" placeholder="كل المناطق">' + areaDatalist('repAreaList') + '</div>' +
       '<div class="x-field"><span class="x-label">نوع السجل</span><div class="x-seg" id="vtSeg" role="tablist">' + vtSegHtml() + '</div></div>' +
       '<button type="button" class="x-btn" style="height:42px;align-self:flex-end;" onclick="loadReports()">عرض</button></div>' +
@@ -7069,6 +7097,22 @@
       '<div id="repList"></div></section>';
     document.getElementById('repDate').value = getTodayDateStr();
     loadReports();
+  }
+  function toggleFilt(id, btn) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const closed = el.classList.toggle('flt-closed');
+    if (btn) btn.setAttribute('aria-expanded', String(!closed));
+  }
+  function repFiltSummary() {
+    const b = document.getElementById('repFiltSum'), body = document.getElementById('repFilt');
+    if (!b) return;
+    const rep = document.getElementById('repRep').value, date = document.getElementById('repDate').value, area = (document.getElementById('repArea').value || '').trim();
+    const vt = { '': 'الكل', 'زيارة خط سير': 'خط السير', 'زيارة خارج خط السير': 'خارج الخط', 'نقطة جديدة': 'نقاط جديدة' }[currentVisitTypeFilter] || 'الكل';
+    const parts = [rep || 'كل المندوبين', date ? arDate(date) : 'كل الأيام', area || 'كل المناطق', vt];
+    b.innerHTML = ic('sliders', 18) + '<span class="t">' + parts.map(esc).join(' · ') + '</span>' + ic('chevD', 18);
+    if (body) body.classList.add('flt-closed');
+    b.setAttribute('aria-expanded', 'false');
   }
   function vtSegHtml() {
     return [['', 'الكل'], ['زيارة خط سير', 'خط السير'], ['زيارة خارج خط السير', 'خارج الخط'], ['نقطة جديدة', 'نقاط جديدة']].map(function (t) {
@@ -7106,6 +7150,7 @@
     const card = document.getElementById('repCard');
     const list = document.getElementById('repList');
     summary.style.display = 'none';
+    repFiltSummary();
     card.style.display = 'none';
     status.innerHTML = '<div class="x-loading">جارٍ التحميل...</div>';
     let url = WEB_APP_URL + '?action=reports&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || '');
@@ -7182,7 +7227,7 @@
     const content = document.getElementById('adminContent');
     if (!canPlan()) { notAllowedPanel('هذه الصفحة متاحة لمشرف المبيعات والإدارة فقط'); return; }
     sbrData = null;
-    setPage('الحالات حسب المندوب', 'اختار حالة، وشوف كل مندوب شكد عنده منها · حسب آخر حالة لكل زبون');
+    setPage('الحالات حسب المندوب', '');
     content.innerHTML = '<div class="sbr-tabs" id="sbrTabs"></div><div id="statusByRepResult"><div class="x-loading">جارٍ التحميل...</div></div>';
     const u = encodeURIComponent((currentAdmin && currentAdmin.username) || '');
     Promise.all(STATUS_LIST.map(function (s) {
@@ -7237,7 +7282,7 @@
     const content = document.getElementById('adminContent');
     if (!(canPlan() || isManagement() || isOwner())) { notAllowedPanel('هذه الصفحة غير متاحة لحسابك'); return; }
     mapHidden = {};
-    setPage('خريطة نقاط البيع', 'تتحدّث وحدها كل 3 دقايق',
+    setPage('خريطة نقاط البيع', '',
       '<button type="button" class="x-btn ghost" onclick="loadMapPoints()">' + ic('refresh', 18) + '<span class="desk-only">تحديث الآن</span></button>' +
       '<button type="button" class="icon-btn" aria-label="ملء الشاشة" onclick="toggleMapFullscreen()">' + ic('fullscreen', 20) + '</button>');
     content.innerHTML =
@@ -7283,7 +7328,7 @@
       .then(function (data) {
         if (!mapInstance || data.result !== 'success') { if (status) status.textContent = 'حدث خطأ'; return; }
         mapAllPoints = data.points || [];
-        setPage('خريطة نقاط البيع', 'تتحدّث وحدها كل 3 دقايق · آخر تحديث ' + arTime(new Date()), document.getElementById('pageActions').innerHTML);
+        setPage('خريطة نقاط البيع', 'آخر تحديث ' + arTime(new Date()), document.getElementById('pageActions').innerHTML);
         renderMapPoints(true);
       })
       .catch(function () { if (status) status.textContent = 'تعذر الاتصال بالخادم'; });
@@ -7325,7 +7370,7 @@
       return '<button type="button" class="map-leg' + (off ? ' off' : '') + '" aria-pressed="' + !off + '" onclick="toggleMapStatus(\'' + st + '\')"><span class="d" style="background:' + MAP_COLORS[st] + ';box-shadow:0 0 0 1px ' + MAP_COLORS[st] + ';"></span><span class="t">' + MAP_NAMES[st] + '</span><b class="tnum">' + (counts[st] || 0) + '</b></button>';
     }).join('');
     const status = document.getElementById('mapStatus');
-    if (status) status.textContent = 'معروضة ' + shown + ' من ' + mapAllPoints.length + ' نقطة. اضغط على أي نقطة حتى تشوف تفاصيلها.';
+    if (status) status.textContent = 'معروضة ' + shown + ' من ' + mapAllPoints.length + ' نقطة';
   }
   function openCustomerTimelineFor(id) {
     navTo('p-customerTimeline');
@@ -7339,7 +7384,7 @@
     const content = document.getElementById('adminContent');
     if (isOwner()) { notAllowedPanel('هذه الصفحة غير متاحة لحساب المالك'); return; }
     custResults = []; custSelId = '';
-    setPage('سجل الزبون', 'ابحث باسم المحل أو رقم الهاتف، وشوف كل تعامل صار وياه');
+    setPage('سجل الزبون', '');
     content.innerHTML =
       '<div class="x-cols ct-cols">' +
       '<section class="x-card flush ct-search" aria-label="البحث">' +
@@ -7349,7 +7394,7 @@
       '<button type="button" class="x-btn sm" onclick="searchCustomers()">' + ic('search', 16) + 'بحث</button>' +
       '<span class="x-small" id="custSearchStatus"></span></div>' +
       '<div id="custSearchResults" class="ct-results"></div></section>' +
-      '<section class="x-card flush" id="custTimelineBox"><div class="x-empty plain" style="padding:40px 20px;">اختار زبون من نتائج البحث حتى تشوف سجله الكامل</div></section>' +
+      '<section class="x-card flush" id="custTimelineBox"></section>' +
       '</div>';
     document.getElementById('custSearchQ').addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); searchCustomers(); } });
   }
@@ -7448,7 +7493,7 @@
   function buildCompetitorAnalysisPanel() {
     const content = document.getElementById('adminContent');
     if (isOwner()) { notAllowedPanel('هذه الصفحة غير متاحة لحساب المالك'); return; }
-    setPage('تحليل المنافسين', 'منو المنافس الأقوى، وبأي منطقة، حسب اللي سجّله المندوبين بالمحلات');
+    setPage('تحليل المنافسين', '');
     content.innerHTML =
       '<div class="x-card vl-filters">' +
       '<div class="x-field"><label for="compFrom">من</label><input type="date" id="compFrom" class="x-input sm"></div>' +
@@ -7517,7 +7562,7 @@
               const s = shade(n);
               return '<span role="cell" class="cm-c tnum" style="background:' + s[0] + ';color:' + s[1] + ';">' + (n || '—') + '</span>';
             }).join('') + '</div>';
-          }).join('') + '</div></div><span class="x-small">الرقم = عدد مرات تسجيل وجود المنافس بزيارات محلات المنطقة.</span></section></div>';
+          }).join('') + '</div></div></section></div>';
         result.innerHTML = h;
       })
       .catch(function (err) { result.innerHTML = ''; showError(status, err); });
@@ -7546,7 +7591,7 @@
     plannerAreaMode = false;
     plannerShown = [];
     repeatMode_ = 'range';
-    setPage('تخطيط خط السير', 'اختار المندوب واليوم، بعدين اختار منطقة أو دوّر على الزبون بالاسم أو الرقم أو الـID، وأشّر النقاط — ترتيبها ينحفظ مثل ما تختارها',
+    setPage('تخطيط خط السير', '',
       '<button type="button" class="x-btn ghost" onclick="toggleSavedRoutePanel()">' + ic('clipboard', 18) + '<span>تعديل خط محفوظ</span></button>');
     content.innerHTML =
       '<div class="x-cols plan-cols">' +
@@ -7569,11 +7614,11 @@
           (f[1] ? '<span class="dot" style="background:var(--' + f[1] + ');"></span>' : '') + (f[0] === '__none__' ? 'بدون حالة مسجّلة' : f[0]) + '</label>';
       }).join('') + '</div></div>' +
       '<div class="x-field"><label for="filterByRepSelect">زبائن مندوب ثاني <span class="opt">(اختياري)</span></label><select id="filterByRepSelect" class="x-select" onchange="loadAreaPoints()"><option value="">بدون فلترة</option></select>' +
-      '<span class="x-hint">يعرض الزبائن اللي زارهم هذا المندوب قبل، حتى تبني عليهم خط لمندوب ثاني</span></div>' +
+      '</div>' +
       '<button type="button" class="x-btn ghost" onclick="loadAreaPoints()">' + ic('refresh', 16) + 'عرض النقاط</button>' +
       '</section>' +
       '<section class="x-card flush plan-points" aria-labelledby="planPtsT">' +
-      '<div class="plan-points-head"><div class="x-between"><div class="x-titles" style="display:flex;flex-direction:column;"><h2 class="x-h2" id="planPtsT">دوّر على زبون</h2><span class="x-small" id="adminStatus">ابحث بكل الزبائن، أو اختار منطقة</span></div>' +
+      '<div class="plan-points-head"><div class="x-between"><div class="x-titles" style="display:flex;flex-direction:column;"><h2 class="x-h2" id="planPtsT">دوّر على زبون</h2><span class="x-small" id="adminStatus"></span></div>' +
       '<button type="button" class="x-btn ghost sm" id="planSelectAll" onclick="plannerSelectAll()">تحديد الكل</button></div>' +
       '<div class="x-search"><input type="search" class="x-input sm" id="planSearch" placeholder="اسم المحل، رقم الهاتف، أو ID الزبون..." aria-label="ابحث عن زبون بالاسم أو الرقم أو ID" autocomplete="off" oninput="plannerSearch=this.value;renderPlannerPoints()">' + ic('search', 16) + '</div></div>' +
       '<div id="adminPointsList" class="plan-list"></div></section>' +
@@ -7792,8 +7837,8 @@
     } else {
       const q = String(plannerSearch || '').trim();
       if (!plannerQueryOk(q)) {
-        return setEmpty(plannerOrder.length ? plannerOrder.length + ' مختارة — دوّر على زبون ثاني أو اختار منطقة' : 'ابحث بكل الزبائن، أو اختار منطقة',
-          '<div class="x-empty plain">اكتب اسم المحل أو رقم الهاتف أو ID الزبون حتى تدوّر بكل الزبائن<br><span class="x-small">أو اختار منطقة من الإعدادات حتى تطلع كل نقاطها</span></div>');
+        return setEmpty(plannerOrder.length ? plannerOrder.length + ' مختارة' : '',
+          '');
       }
       if (!plannerAll.list) {
         if (plannerAll.failed) return setEmpty('تعذر تحميل الزبائن', '<div class="x-empty plain">تعذر تحميل قائمة الزبائن<br><button type="button" class="x-link" onclick="loadPlannerAll(true);renderPlannerPoints()">إعادة المحاولة</button></div>');
@@ -7875,7 +7920,7 @@
       const name = p['اسم نقطة البيع'] || key;
       return '<div class="plan-rt-row"><span class="plan-n">' + (i + 1) + '</span><span class="x-grow" style="display:flex;flex-direction:column;min-width:0;"><b class="ell" style="font-size:13.5px;">' + esc(name) + '</b><span class="x-small">' + esc(p['المنطقة'] || '') + '</span></span>' +
         '<button type="button" class="icon-btn" style="width:34px;height:34px;border:none;" aria-label="إزالة ' + esc(name) + '" onclick="removePlannerPoint(' + i + ')">' + ic('x', 16) + '</button></div>';
-    }).join('') : '<div class="x-empty plain" style="min-height:160px;display:flex;align-items:center;justify-content:center;">أشّر نقاط من القائمة حتى تنضاف هنا بالترتيب</div>';
+    }).join('') : '<div class="x-empty plain" style="min-height:160px;display:flex;align-items:center;justify-content:center;">ما أكو نقاط مختارة</div>';
     btn.disabled = !plannerOrder.length || !rep;
     btn.textContent = plannerOrder.length ? 'حفظ ' + plannerOrder.length + ' نقاط بخط السير' : 'حفظ خط السير';
   }
@@ -8203,7 +8248,7 @@
     if (routeEdit.map) { try { routeEdit.map.remove(); } catch (e) {} }
     Object.assign(routeEdit, { rows: null, failed: false, filter: 'all', q: '', sel: {}, addQ: '', addShown: [], busy: false, map: null, mapEl: null, mapLayer: null, repCountsDate: '' });
     reHideUndo();
-    setPage('تعديل خط السير', 'اختار المندوب واليوم — احذف نقاط، أضف زبائن، أو انقلها لمندوب أو يوم ثاني',
+    setPage('تعديل خط السير', '',
       '<button type="button" class="x-btn ghost" onclick="openPlannerFor()">' + ic('route', 18) + '<span>تخطيط بالمناطق</span></button>');
     content.innerHTML =
       '<section class="x-card re-pick" aria-label="المندوب واليوم">' +
@@ -8919,7 +8964,7 @@
   function buildLeaveRequestPanel() {
     const content = document.getElementById('adminContent');
     lrType = 'إجازة'; lrDuration = 'يوم كامل';
-    setPage('طلب إجازة', 'يوصل للمشرف مباشرة، والرد يوصلك هنا');
+    setPage('طلب إجازة', '');
     content.innerHTML =
       '<section class="x-card" aria-label="تفاصيل الطلب" style="gap:14px;">' +
       '<div class="x-field"><span class="x-label">نوع الإجازة</span><div class="x-grid x-g2" style="gap:8px;" id="lrTypes"></div></div>' +
@@ -9028,18 +9073,16 @@
       '<div style="display:flex;flex-direction:column;min-width:0;"><span class="heading-font" style="font-size:20px;font-weight:700;">' + esc(name) + '</span><span style="font-size:13px;color:var(--pine-muted);direction:ltr;text-align:right;">' + esc((currentAdmin && currentAdmin.username) || '') + '</span></div></div>' +
       '<div class="x-grid x-g2" style="gap:10px;"><div class="acc-tile"><span>الصلاحية</span><b>' + esc((currentAdmin && currentAdmin.role) || '') + '</b></div><div class="acc-tile"><span>خط السير</span><b id="accRouteMode">—</b></div></div></section>' +
       '<section class="x-card flush" aria-label="هذا الجهاز"><div class="x-li"><span class="ic pine" style="width:38px;height:38px;">' + ic('phone', 18) + '</span><div class="x-titles"><span class="t">مسجّل دخول على هذا الجهاز</span><span class="s">' + esc(until) + '</span></div></div>' +
-      '<div class="x-li"><span class="ic info" style="width:38px;height:38px;">' + ic('locate', 18) + '</span><div class="x-titles"><span class="t">الموقع (GPS)</span><span class="s" id="accGps">لازم يبقى شغّال حتى تبدي الزيارات</span></div></div></section>' +
+      '<div class="x-li"><span class="ic info" style="width:38px;height:38px;">' + ic('locate', 18) + '</span><div class="x-titles"><span class="t">الموقع (GPS)</span><span class="s" id="accGps"></span></div></div></section>' +
       (isRep() ? '<section class="x-card" aria-labelledby="accPushT" style="gap:10px;"><div class="x-between"><h2 class="x-h2" id="accPushT">تذكيرات الهاتف</h2><span class="x-pill" id="accPushPill"></span></div>' +
         '<div class="x-row-flex" id="accPushBtns"></div></section>' : '') +
-      '<section class="x-card" style="flex-direction:row;align-items:center;gap:12px;"><span class="ic" style="width:38px;height:38px;border-radius:12px;background:var(--soft-2);color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;">' + ic('help', 18) + '</span>' +
-      '<span style="font-size:13px;color:var(--ink-2);line-height:1.6;">نسيت كلمة المرور أو عندك مشكلة؟ تواصل مع الإدارة وهمّه يساعدوك.</span></section>' +
       '<div id="accLogoutBox"><button type="button" class="x-btn ghost danger lg block" onclick="accAskLogout()">' + ic('logout', 18) + 'تسجيل الخروج</button></div>' +
       '<span style="text-align:center;font-size:11.5px;color:var(--faint);letter-spacing:.3px;">IFCO · Injazaat Aifayhaa Co.</span>';
     accPushRender();
     if (navigator.permissions) {
       navigator.permissions.query({ name: 'geolocation' }).then(function (p) {
         const el = document.getElementById('accGps');
-        if (el) el.textContent = (p.state === 'granted' ? 'مسموح' : p.state === 'denied' ? 'ممنوع — فعّله من إعدادات المتصفح' : 'راح يطلب الإذن أول ما تحتاجه') + ' · لازم يبقى شغّال حتى تبدي الزيارات';
+        if (el) el.textContent = (p.state === 'granted' ? 'مسموح' : p.state === 'denied' ? 'مقفول من المتصفح' : 'مو مفعّل');
       }).catch(function () {});
     }
     if (isRep()) {
@@ -9072,7 +9115,6 @@
     setPage('زبائن يجب زيارتهم', 'جارٍ التحميل...');
     const repOpts = REP_NAMES.map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + '</option>'; }).join('');
     content.innerHTML =
-      '<p class="x-small" style="margin:0;line-height:1.7;">يطلعون هنا إذا عندهم موعد زيارة محدد، أو صار لهم فترة بدون زيارة (تحددها الإدارة من الإعدادات).</p>' +
       (overview ? '<div class="x-field"><label for="dueRepFilter">المندوب</label><select id="dueRepFilter" class="x-select" onchange="loadDueCustomers()"><option value="">كل المندوبين</option>' + repOpts + '</select></div>' : '') +
       '<div class="x-seg full" id="dueTabs" role="tablist"></div>' +
       '<div class="geo-status" id="dueStatus"></div><div id="dueList" class="x-stack" style="gap:10px;"></div>' +
@@ -9150,14 +9192,14 @@
     hubDecided = {};
     leaveCalYear = new Date().getFullYear();
     leaveCalMonth = new Date().getMonth() + 1;
-    setPage('الموارد البشرية', 'طلبات الإجازة، تقويم الغيابات، ووين المندوبين اليوم',
+    setPage('الموارد البشرية', '',
       canPlan() ? '<button type="button" class="x-btn ghost" onclick="toggleAddLeave()">' + ic('plus', 18) + '<span>تسجيل إجازة</span></button>' : '');
     const repOpts = REP_NAMES.map(function (r) { return '<option value="' + esc(r) + '">' + esc(r) + '</option>'; }).join('');
     content.innerHTML =
       (canPlan() ? '<section class="x-card" id="addLeaveCard" style="display:none;"><div class="x-card-head"><h2>تسجيل إجازة لمندوب</h2><button type="button" class="x-btn ghost sm" onclick="toggleAddLeave()">إغلاق</button></div>' +
         '<div class="x-grid lv-form"><div class="x-field"><label for="leaveRep">المندوب</label><select id="leaveRep" class="x-select sm"><option value="" disabled selected>اختر المندوب</option>' + repOpts + '</select></div>' +
         '<div class="x-field"><label for="leaveType">النوع</label><select id="leaveType" class="x-select sm" onchange="document.getElementById(\'leaveOtherWrap\').style.display=this.value===\'أخرى\'?\'\':\'none\'">' + LEAVE_TYPES.map(function (t) { return '<option>' + t + '</option>'; }).join('') + '</select></div>' +
-        '<div class="x-field" id="leaveOtherWrap" style="display:none;"><label for="leaveOther">اكتب النوع</label><input type="text" id="leaveOther" class="x-input sm" placeholder="مثال: إجازة أبوّة"></div>' +
+        '<div class="x-field" id="leaveOtherWrap" style="display:none;"><label for="leaveOther">اكتب النوع</label><input type="text" id="leaveOther" class="x-input sm"></div>' +
         '<div class="x-field"><label for="leaveDuration">المدة</label><select id="leaveDuration" class="x-select sm"><option value="يوم كامل">يوم كامل</option><option value="فترة زمنية">فترة (صباحي/مسائي)</option></select></div>' +
         '<div class="x-field"><label for="leaveFrom">من</label><input type="date" id="leaveFrom" class="x-input sm"></div>' +
         '<div class="x-field"><label for="leaveTo">إلى</label><input type="date" id="leaveTo" class="x-input sm"></div>' +
@@ -9366,7 +9408,7 @@
     const content = document.getElementById('adminContent');
     if (!isManagement()) { notAllowedPanel('هذه الصفحة متاحة لحساب الإدارة فقط'); return; }
     repMgmtFilter = 'all'; repMgmtConfirm = '';
-    setPage('إدارة المندوبين', 'الحسابات، ونوع خط السير لكل مندوب',
+    setPage('إدارة المندوبين', '',
       '<button type="button" class="x-btn ghost" id="runAutoRouteBtn" onclick="runAutoRouteNow()">' + ic('refresh', 18) + '<span>شغّل التعبئة التلقائية الآن</span></button>');
     content.innerHTML =
       '<div class="msg success" id="runAutoRouteMsg" style="margin:0;"></div>' +
@@ -9376,12 +9418,10 @@
       '<div id="repMgmtList"><div class="x-loading">جارٍ التحميل...</div></div><div class="geo-status" id="repMgmtStatus" style="padding:0 14px;"></div></section>' +
       '<div class="x-stack">' +
       '<section class="x-card" aria-labelledby="addRepT"><h2 class="x-h2" id="addRepT">مندوب جديد</h2>' +
-      '<div class="x-field"><label for="newRepName">الاسم الكامل</label><input type="text" id="newRepName" class="x-input" autocomplete="off" placeholder="مثال: أحمد علي حسين"></div>' +
-      '<div class="x-field"><label for="newRepUsername">اسم المستخدم</label><input type="text" id="newRepUsername" class="x-input" autocomplete="off" placeholder="بالإنكليزي، بدون فراغات" style="direction:ltr;text-align:right;"></div>' +
-      '<div class="x-field"><label for="newRepPassword">كلمة المرور</label><input type="password" id="newRepPassword" class="x-input" autocomplete="new-password"><span class="x-hint">تنحفظ مشفّرة، وما يشوفها أحد بعد الحفظ</span></div>' +
+      '<div class="x-field"><label for="newRepName">الاسم الكامل</label><input type="text" id="newRepName" class="x-input" autocomplete="off"></div>' +
+      '<div class="x-field"><label for="newRepUsername">اسم المستخدم</label><input type="text" id="newRepUsername" class="x-input" autocomplete="off" style="direction:ltr;text-align:right;"></div>' +
+      '<div class="x-field"><label for="newRepPassword">كلمة المرور</label><input type="password" id="newRepPassword" class="x-input" autocomplete="new-password"></div>' +
       '<button type="button" class="x-btn block" onclick="submitAddRep()">' + ic('plus', 18) + 'إضافة المندوب</button><div class="msg success" id="repMgmtAddMsg" style="margin:0;"></div></section>' +
-      '<section class="x-note" style="font-size:12.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:10px;"><span><b>موظف طلع من الشركة؟</b> عطّل حسابه بس، لا تحذفه ولا تغيّر اسمه، حتى تضل زياراته القديمة صحيحة. الموظف الجديد ياخذ حساب جديد لحاله.</span>' +
-      '<span><b>خط السير التلقائي:</b> يتولّد خط المندوب وحده كل يوم الساعة 8 الصبح من كل زبائنه، بدل ما المشرف يحدده. أو فورًا من زر "شغّل التعبئة التلقائية الآن".</span></section>' +
       '</div></div>';
     loadRepManagementList();
   }
@@ -9425,7 +9465,7 @@
         '<div class="x-row-flex" style="flex-wrap:nowrap;gap:12px;min-width:0;"><span class="x-av' + (r.disabled ? ' soft' : '') + '">' + esc(initialOf(r.name)) + '</span>' +
         '<div style="display:flex;flex-direction:column;min-width:0;"><b class="ell" style="font-size:14px;">' + esc(r.name) + '</b><span class="x-small" style="direction:ltr;text-align:right;">' + esc(r.username) + '</span></div></div>' +
         '<div class="users-cell"><button type="button" class="x-switch pine" role="switch" aria-checked="' + auto + '" aria-label="خط سير تلقائي لـ' + esc(r.name) + '" onclick="toggleRepRouteMode(\'' + u + '\', ' + !auto + ', this)"></button>' +
-        '<span style="display:flex;flex-direction:column;"><b style="font-size:13px;color:' + (auto ? 'var(--pine-ink)' : 'var(--ink-2)') + ';">' + (auto ? 'تلقائي' : 'مخطط يدويًا') + '</b><span class="x-small">' + (auto ? 'من كل زبائنه، الساعة 8 الصبح' : 'المشرف يحدده') + '</span></span></div>' +
+        '<span style="display:flex;flex-direction:column;"><b style="font-size:13px;color:' + (auto ? 'var(--pine-ink)' : 'var(--ink-2)') + ';">' + (auto ? 'تلقائي' : 'مخطط يدويًا') + '</b></span></div>' +
         '<div class="users-cell"><button type="button" class="x-switch" role="switch" aria-checked="' + !r.disabled + '" aria-label="حساب ' + esc(r.name) + ' فعّال" onclick="askToggleRep(\'' + u + '\', ' + !r.disabled + ')"></button>' +
         '<b style="font-size:13px;color:' + (r.disabled ? 'var(--bad-fg)' : 'var(--ink)') + ';">' + (r.disabled ? 'معطّل' : 'فعّال') + '</b></div></div>' +
         (repMgmtConfirm === r.username ? '<div class="x-alert bad users-confirm" role="alertdialog"><span class="x-grow" style="font-weight:600;">متأكد تريد تعطيل حساب ' + esc(r.name) + '؟ تنقطع جلسته فورًا وما يكدر يسجل دخول. زياراته القديمة تبقى محفوظة.</span>' +
@@ -9533,7 +9573,7 @@
   function buildCompetitorsPanel() {
     const content = document.getElementById('adminContent');
     if (!isManagement()) { notAllowedPanel('هذه الصفحة متاحة لحساب الإدارة فقط'); return; }
-    setPage('الشركات المنافسة', 'هاي القائمة تطلع للمندوب بفورم رفع النقطة، حتى يأشّر المنافسين الموجودين بالمحل');
+    setPage('الشركات المنافسة', '');
     content.innerHTML =
       '<div class="x-cols cm-cols"><section class="x-card flush" aria-labelledby="cmT"><div class="x-card-head"><h2 id="cmT">القائمة الحالية</h2><span class="meta" id="compStatus">جارٍ التحميل...</span></div>' +
       '<div class="cm-add"><input type="text" id="newComp" class="x-input" placeholder="اسم الشركة الجديدة" aria-label="اسم شركة جديدة" autocomplete="off">' +
@@ -9541,7 +9581,7 @@
       '<div id="compList" class="cm-grid"></div><div id="compDirty"></div><div class="msg success" id="compMsg" style="margin:0 14px 14px;"></div></section>' +
       '<section class="x-card" aria-label="معاينة"><span class="x-small" style="font-weight:700;">شلون تطلع للمندوب</span>' +
       '<div class="cm-prev"><b style="font-size:14px;">الشركات المنافسة بالمحل</b><div class="x-chips wrap" id="compPreview"></div></div>' +
-      '<span class="x-small" style="line-height:1.6;">حذف شركة ما يمسح بيانات الزيارات القديمة اللي انسجلت بيها. بس ما تطلع بالزيارات الجديدة.</span></section></div>';
+      '</section></div>';
     document.getElementById('newComp').addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); addCompetitor(); } });
     loadCompetitors(function (list) {
       savedCompetitors = (list || []).slice();
@@ -9557,7 +9597,7 @@
       const isNew = savedCompetitors.indexOf(name) === -1;
       return '<div class="cm-item' + (isNew ? ' new' : '') + '"><b class="ell">' + esc(name) + '</b>' + (isNew ? '<span class="x-small" style="color:var(--good-fg);font-weight:700;">جديدة</span>' : '') +
         '<button type="button" class="icon-btn" style="width:34px;height:34px;border:none;background:transparent;" aria-label="حذف ' + esc(name) + '" onclick="removeCompetitor(' + idx + ')">' + ic('x', 15) + '</button></div>';
-    }).join('') : '<div class="x-empty" style="grid-column:1/-1;">القائمة فارغة — أضف شركة واحدة على الأقل</div>';
+    }).join('') : '<div class="x-empty" style="grid-column:1/-1;">القائمة فارغة</div>';
     document.getElementById('compPreview').innerHTML = editingCompetitors.slice(0, 12).map(function (n) { return '<span class="x-chip" style="cursor:default;">' + esc(n) + '</span>'; }).join('') +
       (editingCompetitors.length > 12 ? '<span class="x-small">+' + (editingCompetitors.length - 12) + '</span>' : '');
     const added = editingCompetitors.filter(function (n) { return savedCompetitors.indexOf(n) === -1; }).length;
@@ -9618,7 +9658,7 @@
     fbNewType = 'text';
     const content = document.getElementById('adminContent');
     if (!isManagement()) { notAllowedPanel('هذه الصفحة متاحة لحساب الإدارة فقط'); return; }
-    setPage('تصميم الفورمة', 'ضيف حقول إضافية للفورم. الحقول الأساسية ثابتة لأن النظام مبني عليها',
+    setPage('تصميم الفورمة', '',
       '<div class="x-seg" role="tablist" aria-label="الفورمة">' + [['new', 'فورمة رفع نقطة جديدة'], ['route', 'فورمة زيارة خط السير']].map(function (f) {
         const on = fbFormType === f[0];
         return '<button type="button" role="tab" aria-selected="' + on + '"' + (on ? ' class="on"' : '') + ' onclick="buildFormBuilderPanel(\'' + f[0] + '\')">' + f[1] + '</button>';
@@ -9627,11 +9667,11 @@
       '<div class="x-cols fb-cols">' +
       '<section class="x-card" aria-labelledby="fbT"><div class="x-field"><span class="x-small" style="font-weight:700;">الحقول الأساسية (ثابتة · ' + FB_BASE.length + ')</span><div class="x-chips wrap" style="gap:6px;">' +
       FB_BASE.map(function (b) { return '<span class="x-pill lg">' + ic('lock', 12) + b + '</span>'; }).join('') + '</div></div>' +
-      '<div class="rt-divider"></div><div class="x-between"><h2 class="x-h2" id="fbT">الحقول الإضافية</h2><span class="x-small desk-only">تطلع بعد الحقول الأساسية بنفس الترتيب</span></div>' +
+      '<div class="rt-divider"></div><div class="x-between"><h2 class="x-h2" id="fbT">الحقول الإضافية</h2></div>' +
       '<div id="fbList" class="x-stack" style="gap:10px;"><div class="x-loading">جارٍ التحميل...</div></div>' +
-      '<span class="x-small" style="line-height:1.6;">حذف حقل يخفيه من الفورم بس. البيانات اللي انسجلت بيه قبل تبقى محفوظة.</span></section>' +
+      '</section>' +
       '<section class="x-card" aria-labelledby="fbAddT"><h2 class="x-h2" id="fbAddT">حقل جديد</h2>' +
-      '<div class="x-field"><label for="fbNewLabel">اسم الحقل</label><input type="text" id="fbNewLabel" class="x-input" placeholder="مثال: مساحة المحل" oninput="fbPreview()"></div>' +
+      '<div class="x-field"><label for="fbNewLabel">اسم الحقل</label><input type="text" id="fbNewLabel" class="x-input" oninput="fbPreview()"></div>' +
       '<div class="x-field"><span class="x-label">نوع الحقل</span><div class="x-grid x-g2" style="gap:6px;" id="fbTypes"></div></div>' +
       '<div class="x-field" id="fbNewOptionsWrap" style="display:none;"><label for="fbNewOptions">الخيارات <span class="opt">(كل خيار بسطر)</span></label><textarea id="fbNewOptions" class="x-textarea" rows="3" oninput="fbPreview()"></textarea></div>' +
       '<div class="x-between"><span style="font-size:13.5px;font-weight:600;">إلزامي الملء</span><input type="checkbox" id="fbNewRequired" hidden><button type="button" class="x-switch" role="switch" id="fbReqSwitch" aria-checked="false" aria-label="إلزامي الملء" onclick="var c=document.getElementById(\'fbNewRequired\');c.checked=!c.checked;this.setAttribute(\'aria-checked\',c.checked);fbPreview()"></button></div>' +
@@ -9744,23 +9784,23 @@
   function buildSettingsHub() {
     const content = document.getElementById('adminContent');
     if (!isManagement()) { notAllowedPanel('هذه الصفحة متاحة لحساب الإدارة فقط'); return; }
-    setPage('الإشعارات والجدولة', 'إمتى النظام ينبّهك، وشنو يشتغل وحده كل يوم',
+    setPage('الإشعارات والجدولة', '',
       '<button type="button" class="x-btn lg" id="saveSettingsBtn" onclick="saveNotifSettings()">حفظ التغييرات</button>');
     content.innerHTML =
-      '<div class="x-cols st-cols"><section class="x-card flush" aria-labelledby="stNT"><div class="x-card-head"><div class="x-titles" style="display:flex;flex-direction:column;"><h2 id="stNT">حدود التنبيهات</h2><span class="meta">كل تنبيه يطلع بالجرس للمشرف والإدارة لما يتجاوز الحد</span></div></div>' +
+      '<div class="x-cols st-cols"><section class="x-card flush" aria-labelledby="stNT"><div class="x-card-head"><div class="x-titles" style="display:flex;flex-direction:column;"><h2 id="stNT">حدود التنبيهات</h2></div></div>' +
       '<div id="stRules"><div class="x-loading">جارٍ التحميل...</div></div><div class="msg success" id="notifSettingsMsg" style="margin:0 14px 14px;"></div></section>' +
       '<div class="x-stack">' +
       '<section class="x-card" aria-labelledby="stAT"><div class="x-between"><h2 class="x-h2" id="stAT">تعبئة خطوط السير التلقائية</h2><span class="x-pill good">شغّالة</span></div>' +
       '<span style="font-size:13px;color:var(--ink-2);line-height:1.7;">كل يوم الساعة <b>8:00 الصبح</b>، النظام يولّد خط سير لكل مندوب مفعّل عليه "خط سير تلقائي" من كل زبائنه.</span>' +
       '<button type="button" class="x-btn ghost" style="align-self:flex-start;" onclick="navTo(\'p-repManagement\')">اختيار المندوبين من صفحة المندوبين</button></section>' +
       '<section class="x-card" aria-labelledby="stET"><div class="x-between"><h2 class="x-h2" id="stET">الملخص الدوري بالإيميل</h2><span class="x-pill warn">بانتظار التفعيل</span></div>' +
-      '<div class="x-field"><label for="emailNewRecip">المستلمين</label><div class="chips-box" id="emailRecipBox"><input type="email" id="emailNewRecip" class="chips-input" placeholder="أضف إيميل واضغط Enter..." style="direction:ltr;text-align:right;"></div></div>' +
+      '<div class="x-field"><label for="emailNewRecip">المستلمين</label><div class="chips-box" id="emailRecipBox"><input type="email" id="emailNewRecip" class="chips-input" placeholder="إيميل..." style="direction:ltr;text-align:right;"></div></div>' +
       '<div class="st-email-row"><div class="x-field"><span class="x-label">التكرار</span><div class="x-seg full" id="emailFreqSeg" role="tablist"></div></div>' +
       '<div class="x-field" id="emailCustomDaysWrap" style="display:none;"><label for="emailCustomDays">كل كم يوم</label><input type="number" id="emailCustomDays" class="x-input sm" value="7" min="1"></div></div>' +
-      '<span class="x-small" style="line-height:1.6;">خدمة الإرسال بالنظام الجديد لسا ما انربطت. الإعدادات تنحفظ من هسة وتشتغل أول ما تنربط.</span>' +
+      '<span class="x-small">الإرسال مو مربوط بعد</span>' +
       '<div class="x-row-flex"><button type="button" class="x-btn ghost sm" onclick="saveEmailSettings()">حفظ إعدادات الإيميل</button><button type="button" class="x-link" onclick="var h=document.getElementById(\'emailHolidayBox\');h.hidden=!h.hidden;renderEmailHolidayCalendar()">أيام العطل (<span id="emailHolidayN">0</span>)</button></div>' +
       '<div id="emailHolidayBox" hidden class="x-stack" style="gap:8px;"><div class="x-between"><button type="button" class="icon-btn" style="width:34px;height:34px;" aria-label="الشهر السابق" onclick="shiftEmailCalMonth(-1)">' + ic('chevR', 15) + '</button><b id="emailCalLabel"></b><button type="button" class="icon-btn" style="width:34px;height:34px;" aria-label="الشهر الجاي" onclick="shiftEmailCalMonth(1)">' + ic('chevL', 15) + '</button></div>' +
-      '<div class="lv-grid" id="emailHolidayGrid"></div><span class="x-small">اضغط على أي يوم حتى تحدده عطلة (ما ينرسل بيه الملخص) أو تلغيه.</span></div>' +
+      '<div class="lv-grid" id="emailHolidayGrid"></div></div>' +
       '<div class="msg success" id="emailMsg" style="margin:0;"></div></section>' +
       '<section class="x-card" aria-labelledby="stBT"><div class="x-between"><h2 class="x-h2" id="stBT">النسخ الاحتياطي</h2><span class="x-pill warn">بانتظار التفعيل</span></div>' +
       '<span style="font-size:13px;color:var(--ink-2);line-height:1.7;">نسخة كاملة من كل البيانات يوميًا، والنسخ الأقدم من 30 يوم تنحذف وحدها.</span>' +
@@ -9952,21 +9992,19 @@
     const content = document.getElementById('adminContent');
     if (!isManagement()) { notAllowedPanel('هذه الصفحة متاحة للإدارة فقط'); return; }
     dupSelectedRows = {}; dupGroups = []; dupConfirm = false; custGroups = []; custPick = {}; custConfirm = -1;
-    setPage('أدوات البيانات', 'صيانة بيانات الزبائن. هاي الأدوات للإدارة فقط');
+    setPage('أدوات البيانات', '');
     content.innerHTML =
       '<div class="x-cols dt-cols2">' +
       '<section class="x-card flush" aria-labelledby="dtCustT"><div class="x-card-head"><div class="x-titles" style="display:flex;flex-direction:column;"><h2 id="dtCustT">زبائن مكررين</h2><span class="meta" id="custMeta">نفس المحل منسجل بأكثر من ID</span></div>' +
       '<button type="button" class="x-btn ghost sm" onclick="loadDuplicateCustomers()">' + ic('refresh', 16) + 'فحص</button></div>' +
-      '<div class="x-note soft" style="margin:14px 14px 0;">اختار الزبون الأساسي بكل مجموعة (الافتراضي: اللي عنده رقم وأكثر زيارات). الدمج ينقل كل زيارات وخطوط سير المكرر للأساسي، ويكمّل رقمه أو موقعه لو ناقص، وبعدين يحذف صف المكرر. إذا طلعوا محلين مختلفين، شيل التأشير عنهم.</div>' +
       '<div id="custList" class="x-stack" style="padding:14px;gap:12px;"></div><div class="msg success" id="custMsg" style="margin:0 14px 14px;"></div></section>' +
       '<section class="x-card flush" aria-labelledby="dtDupT"><div class="x-card-head"><div class="x-titles" style="display:flex;flex-direction:column;"><h2 id="dtDupT">زيارات انرسلت أكثر من مرة</h2><span class="meta" id="dupMeta">نفس الزبون والمندوب والحالة، وبينهم أقل من ساعة</span></div>' +
       '<button type="button" class="x-btn ghost sm" id="dupScanBtn" onclick="loadDuplicateGroups()">' + ic('refresh', 16) + 'فحص</button></div>' +
-      '<div class="x-note soft" style="margin:14px 14px 0;">أول صف بكل مجموعة هو الأصل. النسخ الزايدة مأشّرة للحذف، راجعها قبل ما تحذف.</div>' +
       '<div id="dupGroupsList" class="x-stack" style="padding:14px;gap:12px;"></div><div class="geo-status" id="dupStatus" style="padding:0 14px;"></div>' +
       '<div id="dupBar" class="dt-bar"></div><div class="msg success" id="dupMsg" style="margin:0 14px 14px;"></div></section></div>' +
       '<section class="x-card" aria-labelledby="dtIdT"><h2 class="x-h2" id="dtIdT">معرّفات الزبائن (ID)</h2>' +
       '<span style="font-size:13px;color:var(--ink-2);line-height:1.7;">كل زبون جديد ياخذ ID وحده. هاي الأداة تعطي ID للنقاط القديمة اللي ما عندها، وما تكرر أي ID موجود.</span>' +
-      '<div class="x-note soft" id="backfillStatus" style="font-weight:700;">شغّلها مرة وحدة بس إذا لاحظت نقاط قديمة بدون ID</div>' +
+      '<div class="x-note soft" id="backfillStatus" style="font-weight:700;"></div>' +
       '<button type="button" class="x-btn" id="backfillBtn" style="align-self:flex-start;" onclick="runCustomerIdBackfill()">توليد IDs للنقاط القديمة</button><div class="msg success" id="backfillMsg" style="margin:0;"></div></section>';
     loadDuplicateCustomers();
     loadDuplicateGroups();
@@ -10165,7 +10203,7 @@
     const bar = document.getElementById('dupBar');
     if (!bar) return;
     const n = Object.keys(dupSelectedRows).length;
-    if (!n) { bar.innerHTML = dupGroups.length ? '<span class="x-small">أشّر الصفوف اللي تريد تحذفها</span>' : ''; return; }
+    if (!n) { bar.innerHTML = ''; return; }
     bar.innerHTML = '<div class="x-row-flex" style="justify-content:space-between;"><span style="font-size:13px;color:var(--ink-2);">' + n + ' صف مختار للحذف</span>' +
       (dupConfirm ? '<span class="x-row-flex" style="gap:8px;"><b style="font-size:13px;color:var(--bad-fg);">الحذف نهائي. متأكد؟</b><button type="button" class="x-btn ghost sm" onclick="dupConfirm=false;renderDupBar()">إلغاء</button><button type="button" class="x-btn danger sm" onclick="deleteDuplicateSelected()">حذف نهائي</button></span>' :
         '<button type="button" class="x-btn danger sm" onclick="dupConfirm=true;renderDupBar()">' + ic('trash', 16) + 'حذف الصفوف المأشّرة</button>') + '</div>';
@@ -10198,7 +10236,7 @@
     const content = document.getElementById('adminContent');
     if (!(isMarketingManager() || isManagement())) { notAllowedPanel('هذه الصفحة متاحة لمدير التسويق والإدارة فقط'); return; }
     promoterSelectedPoints = {}; promOrder = []; promPoints = [];
-    setPage('خط سير المروّج', 'اختار المروّج واليوم، بعدين أشّر النقاط اللي تحتاج مروّج');
+    setPage('خط سير المروّج', '');
     content.innerHTML =
       '<div class="x-cols x-cols-3 pp-cols">' +
       '<section class="x-card" aria-label="الإعدادات">' +
@@ -10206,7 +10244,7 @@
       PROMOTER_NAMES.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join('') + '</select></div>' +
       '<div class="x-field"><label for="promRouteDate">اليوم</label><input type="date" id="promRouteDate" class="x-input" onchange="renderPromRoute()"></div>' +
       '<div class="x-field"><label for="promRouteArea">المنطقة <span class="opt">(اختياري)</span></label><input type="search" id="promRouteArea" class="x-input" list="promAreaList" placeholder="كل المناطق" onchange="loadPromoterCandidates()">' + areaDatalist('promAreaList') + '</div>' +
-      '<div class="x-note soft">النقاط هنا جاية من <b>نقاط تحتاج مروّج</b>: المندوب أشّرها بزيارته، أو المشرف حوّلها للتسويق.</div></section>' +
+      '</section>' +
       '<section class="x-card flush" aria-labelledby="ppPtsT"><div class="x-card-head"><div class="x-titles" style="display:flex;flex-direction:column;"><h2 id="ppPtsT">نقاط تحتاج مروّج</h2><span class="meta" id="promRouteStatus">جارٍ التحميل...</span></div>' +
       '<button type="button" class="x-btn ghost sm" onclick="promSelectAll()">تحديد الكل</button></div><div id="promRouteList" class="plan-list"></div></section>' +
       '<section class="x-card flush plan-route" aria-labelledby="ppRouteT"><div class="plan-route-head"><h2 id="ppRouteT">الجولة</h2><span id="ppRouteSub"></span></div>' +
@@ -10272,7 +10310,7 @@
       const p = promoterSelectedPoints[n] || {};
       return '<div class="plan-rt-row"><span class="plan-n">' + (i + 1) + '</span><span class="x-grow" style="display:flex;flex-direction:column;min-width:0;"><b class="ell" style="font-size:13.5px;">' + esc(n) + '</b><span class="x-small">' + esc(p['المنطقة'] || '') + '</span></span>' +
         '<button type="button" class="icon-btn" style="width:34px;height:34px;border:none;" aria-label="إزالة ' + esc(n) + '" onclick="removePromPoint(' + i + ')">' + ic('x', 16) + '</button></div>';
-    }).join('') : '<div class="x-empty plain" style="min-height:160px;display:flex;align-items:center;justify-content:center;">أشّر نقاط من القائمة حتى تنضاف للجولة</div>';
+    }).join('') : '<div class="x-empty plain" style="min-height:160px;display:flex;align-items:center;justify-content:center;">ما أكو نقاط مختارة</div>';
     document.getElementById('savePromRouteBtn').disabled = !(prom && date && promOrder.length);
   }
   function savePromoterRoute() {
@@ -10312,7 +10350,7 @@
     const content = document.getElementById('adminContent');
     if (!canPlan()) { notAllowedPanel('هذه الصفحة متاحة لمشرف المبيعات والإدارة فقط'); return; }
     flagPromoterSelected = {}; flagCandidates = [];
-    setPage('نقاط تحتاج مروّج', 'كل النقاط المحوّلة للتسويق بمكان واحد، ومنها يتخطط خط سير المروّج',
+    setPage('نقاط تحتاج مروّج', '',
       '<button type="button" class="x-btn ghost good" onclick="exportFlaggedPoints()">' + ic('download', 18) + '<span class="desk-only">تصدير</span></button>');
     content.innerHTML =
       '<div class="x-cols pn-cols">' +
@@ -10322,9 +10360,9 @@
       '<div id="flaggedBox"></div></section>' +
       '<section class="x-card flush pn-add" aria-labelledby="pnAddT"><div class="pn-add-top"><h2 class="x-h2" id="pnAddT">حوّل نقاط جديدة للتسويق</h2>' +
       '<div class="x-search"><input type="search" class="x-input" id="flagArea" list="flagAreaList" aria-label="المنطقة" placeholder="اكتب اسم المنطقة" onchange="loadFlagCandidates()">' + ic('search', 16) + '</div>' + areaDatalist('flagAreaList') +
-      '<span class="x-small" id="flagStatus">اختار منطقة حتى تطلع نقاطها</span></div>' +
+      '<span class="x-small" id="flagStatus"></span></div>' +
       '<div id="flagList" class="plan-list" style="max-height:52vh;"></div>' +
-      '<div style="padding:12px 14px 14px;border-top:1px solid var(--line-3);"><div class="msg success" id="flagMsg" style="margin:0 0 8px;"></div><button type="button" class="x-btn lg block" id="saveFlagBtn" onclick="saveFlagForPromoter()" disabled>أشّر نقاط حتى تحوّلها</button></div></section></div>';
+      '<div style="padding:12px 14px 14px;border-top:1px solid var(--line-3);"><div class="msg success" id="flagMsg" style="margin:0 0 8px;"></div><button type="button" class="x-btn lg block" id="saveFlagBtn" onclick="saveFlagForPromoter()" disabled>حوّل للتسويق</button></div></section></div>';
     loadFlaggedPoints();
   }
   function loadFlaggedPoints() {
@@ -10387,7 +10425,7 @@
     const status = document.getElementById('flagStatus');
     const list = document.getElementById('flagList');
     flagPromoterSelected = {};
-    if (all !== true && !areas.length) { status.textContent = 'اختار منطقة حتى تطلع نقاطها'; list.innerHTML = ''; flagCandidates = []; updateFlagCount(); return; }
+    if (all !== true && !areas.length) { status.textContent = ''; list.innerHTML = ''; flagCandidates = []; updateFlagCount(); return; }
     status.textContent = 'جارٍ التحميل...';
     list.innerHTML = '<div class="x-loading">جارٍ التحميل...</div>';
     let url = WEB_APP_URL + '?action=points&username=' + encodeURIComponent((currentAdmin && currentAdmin.username) || '');
@@ -10428,7 +10466,7 @@
     const btn = document.getElementById('saveFlagBtn');
     if (!btn) return;
     btn.disabled = !n;
-    btn.textContent = n ? 'حوّل ' + n + ' نقاط للتسويق' : 'أشّر نقاط حتى تحوّلها';
+    btn.textContent = n ? 'حوّل ' + n + ' نقاط للتسويق' : 'حوّل للتسويق';
   }
   function saveFlagForPromoter() {
     const names = Object.keys(flagPromoterSelected);
@@ -10462,7 +10500,7 @@
   function buildPromoterVisitReport() {
     const content = document.getElementById('adminContent');
     if (!(isMarketingManager() || isManagement())) { notAllowedPanel('هذه الصفحة متاحة لمدير التسويق والإدارة فقط'); return; }
-    setPage('زيارات المروّج', 'شنو زار المروّج من جولاته، وبأي يوم');
+    setPage('زيارات المروّج', '');
     content.innerHTML =
       '<div class="x-card vl-filters"><div class="x-field"><label for="promRepFrom">من</label><input type="date" id="promRepFrom" class="x-input sm"></div>' +
       '<div class="x-field"><label for="promRepTo">إلى</label><input type="date" id="promRepTo" class="x-input sm"></div>' +
@@ -10497,7 +10535,7 @@
         summary.innerHTML = '<div class="x-grid pr-kpis">' +
           '<div class="x-kpi"><span class="l">نقاط انزارت</span><span class="n">' + data.visited + ' <small>من ' + data.total + ' مخططة</small></span><span class="x-bar acc" style="margin-top:4px;"><span style="width:' + pct + '%"></span></span></div>' +
           '<div class="x-kpi"><span class="l">أيام بيها جولات</span><span class="n">' + days.length + '</span><span class="s">' + Math.min.apply(null, per) + (Math.min.apply(null, per) !== Math.max.apply(null, per) ? ' إلى ' + Math.max.apply(null, per) : '') + ' نقاط باليوم</span></div>' +
-          '<div class="x-kpi ' + (data.remaining ? 'bad' : 'good') + '"><span class="l">ما انزارت</span><span class="n">' + data.remaining + '</span><span class="s">كانت بالجولة وما انزارت</span></div></div>';
+          '<div class="x-kpi ' + (data.remaining ? 'bad' : 'good') + '"><span class="l">ما انزارت</span><span class="n">' + data.remaining + '</span></div></div>';
         list.innerHTML = '<section class="tr-days" aria-label="الزيارات حسب اليوم">' + days.map(function (d) {
           const rows = byDate[d];
           const v = rows.filter(function (r) { return r['تمت الزيارة'] === 'نعم'; }).length;
@@ -10691,7 +10729,7 @@
   function buildTruckAssignPanel() {
     const content = document.getElementById('adminContent');
     if (!canPlan()) { notAllowedPanel('هذه الصفحة متاحة لمشرف المبيعات والإدارة فقط'); return; }
-    setPage('تخصيص السيارات', arDate(getTodayDateStr()) + (window.matchMedia('(min-width: 1024px)').matches ? ' · السيارات اللي أمين المخزن حددها "تطلع مع مندوبين"' : ''));
+    setPage('تخصيص السيارات', arDate(getTodayDateStr()) + '');
     content.innerHTML =
       '<div class="ta-kpis" id="taKpis"></div><div id="taLeave"></div>' +
       '<div class="ta-cols"><section class="ta-col need" aria-labelledby="taNeedT"><h2 id="taNeedT">تحتاج تحديد مندوب<span class="ta-cnt" id="taNeedN">…</span></h2><div id="taNeed" class="x-stack" style="gap:10px;"><div class="x-loading">جارٍ التحميل...</div></div></section>' +
@@ -10771,7 +10809,7 @@
     const content = document.getElementById('adminContent');
     if (!(canPlan() || isManagement() || isOwner())) { notAllowedPanel('هذه الصفحة غير متاحة لحسابك'); return; }
     truckReportRange = 'today';
-    setPage('تقرير السيارات والسائقين', 'أي سيارة طلعت ويا أي مندوب، وهل أمين المخزن أكّدها');
+    setPage('تقرير السيارات والسائقين', '');
     content.innerHTML =
       '<div class="x-card tr-filters"><div class="x-field"><span class="lbl desk-only">الفترة</span><div class="tr-ranges" id="trRanges"></div></div>' +
       '<div class="tr-dates"><div class="x-field"><label for="trFrom" class="desk-only">من</label><input type="date" id="trFrom" class="x-input sm" aria-label="من"></div>' +
@@ -10865,7 +10903,7 @@
     const total = wkTrucksData.length;
     const ready = wkTrucksData.filter(function (t) { return t._orig; }).length;
     let html = '<div class="wk-kpis"><div><b>' + total + '</b><span>الإجمالي</span></div><div><b style="color:var(--good);">' + ready + '</b><span>محدّدة</span></div><div><b style="color:var(--warn-num);">' + (total - ready) + '</b><span>تحتاج تحديد</span></div></div>';
-    if (!total) html += '<div class="x-empty">ماكو سيارات مسجّلة بعد، ضيف سيارة من الزر جوّه</div>';
+    if (!total) html += '<div class="x-empty">ماكو سيارات مسجّلة</div>';
     html += '<div class="wk-grid">' + wkTrucksData.map(function (t, idx) {
       const dirty = wkDirty(t);
       return '<article class="wk-truck' + (t.status ? '' : ' unset') + '"><div class="x-between"><span style="display:flex;flex-direction:column;"><b style="font-size:15px;">سيارة رقم ' + esc(t.number) + '</b><span class="x-small">السائق: ' + esc(t.driver || '—') + '</span></span>' +
@@ -10878,7 +10916,6 @@
           const on = t.destination === d;
           return '<button type="button" role="tab" aria-selected="' + on + '"' + (on ? ' class="on"' : '') + ' onclick="selectTruckDestinationLocal(' + idx + ',\'' + d + '\')">' + d + '</button>';
         }).join('') + '</div>' : '') +
-        (t.status === 'تطلع مع مندوبين' && !t.assignedRep ? '<span class="x-small" style="line-height:1.6;">بعد الحفظ تروح للمشرف حتى يحدد وي أي مندوب تطلع.</span>' : '') +
         (t.assignedRep && dirty && t.status !== 'تطلع مع مندوبين' ? '<span class="x-small" style="color:var(--bad-fg);line-height:1.6;">مخصصة هسه لـ' + esc(t.assignedRep) + '، تغيير الحالة يلغي التخصيص</span>' : '') +
         (dirty ? '<button type="button" class="x-btn block" id="wkSave_' + idx + '" onclick="saveTruckStatusLocal(' + idx + ')">حفظ حالة السيارة</button>' : '') + '</article>';
     }).join('') + '</div>';
@@ -10915,7 +10952,7 @@
   }
   function showAddTruckForm() {
     const wrap = document.getElementById('addTruckWrap');
-    wrap.innerHTML = '<div class="x-card wk-addform"><div class="x-cols x-cols-1-1" style="gap:10px;"><div class="x-field"><label for="newTruckNumber">رقم السيارة</label><input type="text" class="x-input" id="newTruckNumber" placeholder="مثال: 12" inputmode="numeric"></div>' +
+    wrap.innerHTML = '<div class="x-card wk-addform"><div class="x-cols x-cols-1-1" style="gap:10px;"><div class="x-field"><label for="newTruckNumber">رقم السيارة</label><input type="text" class="x-input" id="newTruckNumber" inputmode="numeric"></div>' +
       '<div class="x-field"><label for="newTruckDriver">اسم السائق</label><input type="text" class="x-input" id="newTruckDriver" placeholder="الاسم الثلاثي"></div></div>' +
       '<div class="x-row-flex" style="gap:8px;"><button type="button" class="x-btn x-grow" id="newTruckBtn" onclick="saveNewTruck()">حفظ السيارة</button><button type="button" class="x-btn ghost" onclick="renderWarehouseStatusList()">إلغاء</button></div></div>';
     document.getElementById('newTruckNumber').focus();
